@@ -109,7 +109,7 @@
         const CLOUD_NAME = cfgCloudinary.CLOUD_NAME || 'p0qlmlor';
         const UPLOAD_PRESET = cfgCloudinary.UPLOAD_PRESET || 'subir_gestor';
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
             const loadingState = document.getElementById('loadingState');
@@ -132,15 +132,34 @@
                     return;
                 }
 
-                PROYECTO_ACTUAL = payload.project;
+                PROYECTO_ACTUAL = payload.project; // Ej: "monarca" o "enBlanco/residencial"
                 BASE_FOLDER = PROYECTO_ACTUAL; 
 
                 document.getElementById('displayProjectName').textContent = PROYECTO_ACTUAL;
                 document.getElementById('displayExpDate').textContent = new Date(payload.exp).toLocaleString('es-UY', { dateStyle: 'medium', timeStyle: 'short' });
 
+                // Cargar carpetas específicas desde proyectos.json
+                let projectFolders = [
+                    { value: 'galeria', label: 'Galería' },
+                    { value: 'instalaciones', label: 'Instalaciones' }
+                ];
+
+                try {
+                    const response = await fetch('proyectos.json');
+                    if (response.ok) {
+                        const data = await response.json();
+                        const foundProj = data.proyectos.find(p => p.id === PROYECTO_ACTUAL);
+                        if (foundProj && Array.isArray(foundProj.carpetas) && foundProj.carpetas.length > 0) {
+                            projectFolders = foundProj.carpetas;
+                        }
+                    }
+                } catch (err) {
+                    console.warn('No se pudo cargar proyectos.json, usando carpetas por defecto', err);
+                }
+
                 loadingState.classList.add('hidden');
                 mainInterface.classList.remove('hidden');
-                initApp(); 
+                initApp(projectFolders); 
 
             } catch (error) {
                 loadingState.classList.add('hidden');
@@ -149,14 +168,13 @@
             }
         });
 
-        function initApp() {
+        function initApp(initialFolders) {
             const NEW_FOLDER_OPTION = '__nueva__';
-            const LAST_FOLDER_KEY = `hub_ultima_carpeta_${PROYECTO_ACTUAL}`;
-            const FOLDERS_KEY = `hub_subcarpetas_${PROYECTO_ACTUAL}`;
-            const DEFAULT_FOLDERS = [
-                { value: 'galeria', label: 'Galería' },
-                { value: 'instalaciones', label: 'Instalaciones' }
-            ];
+            // Sanitizar el ID del proyecto para usarlo en localStorage (reemplaza '/' por '_')
+            const safeProjKey = PROYECTO_ACTUAL.replace(/\//g, '_');
+            const LAST_FOLDER_KEY = `hub_ultima_carpeta_${safeProjKey}`;
+            const FOLDERS_KEY = `hub_subcarpetas_${safeProjKey}`;
+            const DEFAULT_FOLDERS = initialFolders;
 
             const fileInput = document.getElementById('fileInput');
             const cardsContainer = document.getElementById('cardsContainer');
@@ -469,7 +487,7 @@
                 const item = imageFiles[index];
                 const statusEl = document.getElementById(`upload-status-${index}`);
                 const folderPath = `${BASE_FOLDER}/${item.category}`; 
-                const tag = `${PROYECTO_ACTUAL}_${item.category}`;
+                const tag = `${PROYECTO_ACTUAL.replace(/\//g, '_')}_${item.category}`;
 
                 if (statusEl) {
                     statusEl.textContent = 'Subiendo…'; 
