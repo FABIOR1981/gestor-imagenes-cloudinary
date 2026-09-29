@@ -3,51 +3,537 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subir Archivos | Upload Hub</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Subir Imágenes | Envío Seguro</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4A5D4E;
+            --primary-dark: #374439;
+            --accent: #D4A373;
+            --bg-light: #F9F8F6;
+            --text-main: #2C352D;
+            --text-muted: #52504A;
+            --white: #FFFFFF;
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg-light); color: var(--text-main); }
+        h1, .brand-font { font-family: 'Playfair Display', serif; }
+        .preview-canvas { max-width: 100%; height: auto; }
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-accent { background: var(--accent); color: var(--white); }
+        .btn-accent:hover { filter: brightness(0.92); }
+        .focus-ring:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(212,163,115,0.25); }
+    </style>
 </head>
-<body>
-    <main class="dashboard-container">
-        
-        <!-- Mensaje de Carga Inicial -->
-        <div id="loadingState" style="text-align: center; padding: 40px;">
-            <p>Validando acceso temporal...</p>
+<body class="min-h-screen p-6">
+
+    <!-- Mensaje de Validación Inicial -->
+    <div id="loadingState" class="max-w-6xl mx-auto text-center py-20">
+        <p class="text-xl text-gray-600">Validando acceso seguro...</p>
+    </div>
+
+    <!-- Pantalla de Error (Oculta por defecto) -->
+    <div id="errorState" class="max-w-2xl mx-auto bg-white rounded-xl border p-8 mt-10 text-center shadow-sm hidden" style="border-top: 4px solid #D32F2F; border-color:#E7E3DC;">
+        <h1 class="text-3xl font-bold mb-4" style="color: #D32F2F;">Enlace no válido o caducado</h1>
+        <p id="errorMessage" style="color:var(--text-muted);">Por seguridad, los enlaces de subida tienen una fecha límite. Solicita uno nuevo.</p>
+    </div>
+
+    <!-- Interfaz Principal (Oculta hasta validar) -->
+    <div id="mainInterface" class="max-w-6xl mx-auto hidden">
+        <header class="mb-6 border-b pb-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4" style="border-color:#E7E3DC;">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight" style="color:var(--primary-dark);">Envío de Archivos</h1>
+                <p class="text-sm mt-1" style="color:var(--text-muted);">Proyecto: <strong id="displayProjectName" class="capitalize"></strong></p>
+                <p class="text-xs mt-1 text-red-600">Válido hasta: <span id="displayExpDate"></span></p>
+            </div>
+            <div class="flex flex-wrap items-end gap-4 bg-white p-3 rounded-xl border" style="border-color:#E7E3DC;">
+                <!-- Controles Globales (Mantenidos de tu código original) -->
+                <div>
+                    <label for="globalCategory" class="text-sm font-medium block mb-1" style="color:var(--text-muted);">Carpeta destino</label>
+                    <select id="globalCategory" class="border rounded px-2 py-1.5 text-sm focus-ring" style="border-color:#D8D3C8; color:var(--primary-dark);"></select>
+                </div>
+                <div>
+                    <label for="globalMaxWidth" class="text-sm font-medium block mb-1" style="color:var(--text-muted);">Ancho Máx. (px)</label>
+                    <select id="globalMaxWidth" class="border rounded px-2 py-1.5 text-sm focus-ring" style="border-color:#D8D3C8; color:var(--primary-dark);">
+                        <option value="800">800 px (Liviana)</option>
+                        <option value="1200" selected>1200 px (Estándar)</option>
+                        <option value="1600">1600 px (Intermedia)</option>
+                        <option value="1920">1920 px (Alta / HD)</option>
+                        <option value="0">Original (Sin redimensionar)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="globalTitle" class="text-sm font-medium block mb-1" style="color:var(--text-muted);">Título global</label>
+                    <input type="text" id="globalTitle" placeholder="Ej.: Fotos Evento" class="border rounded px-2 py-1.5 text-sm focus-ring" style="border-color:#D8D3C8; color:var(--primary-dark);">
+                </div>
+                <div class="flex items-center gap-2 border-l pl-4" style="border-color:#E7E3DC;">
+                    <input type="checkbox" id="globalKeepOriginal" checked class="w-4 h-4 cursor-pointer" style="accent-color:var(--accent);">
+                    <label for="globalKeepOriginal" class="text-sm cursor-pointer">Respetar nombre</label>
+                </div>
+                <div class="flex items-center gap-2 border-l pl-4" style="border-color:#E7E3DC;">
+                    <label for="globalQuality" class="text-sm">Calidad (<span id="qualityVal">80</span>%)</label>
+                    <input type="range" id="globalQuality" min="40" max="100" value="80" class="cursor-pointer w-24" style="accent-color:var(--accent);">
+                </div>
+            </div>
+        </header>
+
+        <p class="text-sm mb-8" style="color:var(--text-main);">
+            Ajusta los píxeles máximos y la barra de compresión según prefieras. Cada tarjeta calculará automáticamente el peso final resultante.
+        </p>
+
+        <!-- Zona de Carga -->
+        <div class="mb-8">
+            <label for="fileInput" class="border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group bg-white"
+                   style="border-color:#D8D3C8;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='#D8D3C8'">
+                <svg class="w-12 h-12 mb-3 transition-colors" style="color:var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <span class="text-sm font-medium" style="color:var(--text-main);">Arrastra tus imágenes aquí o <span class="underline" style="color:var(--primary);">haz clic para buscar</span></span>
+                <span class="text-sm mt-1" style="color:var(--text-muted);">Soporta múltiples archivos PNG, JPG, WEBP</span>
+                <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
+            </label>
         </div>
 
-        <!-- Pantalla de Error (Enlace vencido o inválido) -->
-        <section id="errorState" class="card hidden" style="border-top: 4px solid #D32F2F;">
-            <header>
-                <h1 style="color: #D32F2F;">Enlace no válido</h1>
-                <p id="errorMessage">El enlace ha caducado o está mal formado.</p>
-            </header>
-        </section>
+        <!-- Acciones Globales -->
+        <div id="batchActions" class="hidden mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-xl border" style="border-color:#E7E3DC;">
+            <span id="counterText" class="text-sm font-medium">0 imágenes cargadas</span>
+            <div class="flex gap-2">
+                <button id="uploadAllBtn" class="btn-primary font-bold px-5 py-2 rounded-lg text-sm transition-colors shadow-sm cursor-pointer">
+                    Subir todas a Cloudinary
+                </button>
+                <button id="downloadAllBtn" class="btn-accent font-bold px-5 py-2 rounded-lg text-sm transition-colors shadow-sm cursor-pointer">
+                    Descargar todas (.WebP)
+                </button>
+            </div>
+        </div>
 
-        <!-- Pantalla de Subida (Enlace válido) -->
-        <section id="uploadState" class="card hidden" style="border-top: 4px solid var(--primary-color);">
-            <header>
-                <h1>Envío de Archivos</h1>
-                <p>Proyecto: <strong id="displayProjectName" style="text-transform: capitalize;"></strong></p>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">
-                    Acceso válido hasta: <span id="displayExpDate"></span>
-                </p>
-            </header>
+        <!-- Contenedor de Tarjetas -->
+        <div id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </div>
 
-            <form id="uploadForm">
-                <div class="form-group">
-                    <label for="fileInput">Selecciona tus imágenes</label>
-                    <input type="file" id="fileInput" name="files" multiple accept="image/*" required style="border: 1px dashed var(--border-color); padding: 20px; text-align: center; cursor: pointer;">
-                </div>
+    <!-- Cargar Configuración Base -->
+    <script src="js/config.js"></script>
+    
+    <!-- Script de Validación y Lógica (Adaptado) -->
+    <script>
+        // Variables globales que se inyectarán desde el Token
+        let PROYECTO_ACTUAL = "";
+        let BASE_FOLDER = "";
+
+        // Constantes de Configuración de Cloudinary
+        const cfgCloudinary = (typeof CONFIG !== 'undefined' && CONFIG.CLOUDINARY) ? CONFIG.CLOUDINARY : {};
+        const CLOUD_NAME = cfgCloudinary.CLOUD_NAME || 'p0qlmlor'; // Backup
+        const UPLOAD_PRESET = cfgCloudinary.UPLOAD_PRESET || 'subir_gestor';
+
+        // Lógica de Validación de Acceso
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const mainInterface = document.getElementById('mainInterface');
+
+            if (!token) {
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const decodedString = atob(token);
+                const payload = JSON.parse(decodedString);
                 
-                <div id="fileList" style="margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted);"></div>
+                if (Date.now() > payload.exp) {
+                    loadingState.classList.add('hidden');
+                    errorState.classList.remove('hidden');
+                    return;
+                }
 
-                <button type="submit" class="btn-primary" id="submitBtn">Subir a Cloudinary</button>
-            </form>
+                // 🌟 INYECCIÓN DINÁMICA DEL PROYECTO 🌟
+                PROYECTO_ACTUAL = payload.project;
+                BASE_FOLDER = `proyectos/${PROYECTO_ACTUAL}`; // Ej. proyectos/monarca
 
-            <div id="uploadStatus" class="status-msg"></div>
-        </section>
+                document.getElementById('displayProjectName').textContent = PROYECTO_ACTUAL;
+                document.getElementById('displayExpDate').textContent = new Date(payload.exp).toLocaleString('es-UY', { dateStyle: 'medium', timeStyle: 'short' });
 
-    </main>
+                // Iniciar la app
+                loadingState.classList.add('hidden');
+                mainInterface.classList.remove('hidden');
+                initApp(); // Llama a tu código original
 
-    <script src="js/subir.js"></script>
+            } catch (error) {
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                document.getElementById('errorMessage').textContent = "El enlace está corrupto o mal formado.";
+            }
+        });
+
+        // --------------------------------------------------------
+        // AQUÍ EMPIEZA TU LÓGICA ORIGINAL LIGERAMENTE ADAPTADA
+        // --------------------------------------------------------
+        function initApp() {
+            const NEW_FOLDER_OPTION = '__nueva__';
+            const LAST_FOLDER_KEY = `hub_ultima_carpeta_${PROYECTO_ACTUAL}`;
+            const FOLDERS_KEY = `hub_subcarpetas_${PROYECTO_ACTUAL}`;
+            const DEFAULT_FOLDERS = [
+                { value: 'galeria', label: 'Galería' },
+                { value: 'documentos', label: 'Documentos' },
+                { value: 'varios', label: 'Varios' }
+            ];
+
+            const fileInput = document.getElementById('fileInput');
+            const cardsContainer = document.getElementById('cardsContainer');
+            const globalCategory = document.getElementById('globalCategory');
+            const globalMaxWidth = document.getElementById('globalMaxWidth');
+            const globalTitle = document.getElementById('globalTitle');
+            const globalKeepOriginal = document.getElementById('globalKeepOriginal');
+            const globalQuality = document.getElementById('globalQuality');
+            const qualityVal = document.getElementById('qualityVal');
+            const batchActions = document.getElementById('batchActions');
+            const counterText = document.getElementById('counterText');
+            const downloadAllBtn = document.getElementById('downloadAllBtn');
+            const uploadAllBtn = document.getElementById('uploadAllBtn');
+
+            let imageFiles = [];
+
+            // Funciones de utilidad de tu código original (mantenidas igual)
+            function loadFolders() {
+                try {
+                    const stored = JSON.parse(localStorage.getItem(FOLDERS_KEY));
+                    if (Array.isArray(stored) && stored.length) return stored;
+                } catch {}
+                return [...DEFAULT_FOLDERS];
+            }
+
+            function saveFolders(list) {
+                try { localStorage.setItem(FOLDERS_KEY, JSON.stringify(list)); }
+                catch (e) { console.error(e); }
+            }
+
+            function getLastFolder() {
+                const last = localStorage.getItem(LAST_FOLDER_KEY);
+                const folders = loadFolders();
+                return (last && folders.find(f => f.value === last)) ? last : folders[0].value;
+            }
+
+            function setLastFolder(value) {
+                try { localStorage.setItem(LAST_FOLDER_KEY, value); } catch {}
+            }
+
+            function slugifyFolder(name) {
+                return name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+            }
+
+            function buildFolderOptionsHtml(selectedValue) {
+                const folders = loadFolders();
+                const opts = folders.map(f => `<option value="${f.value}" ${f.value === selectedValue ? 'selected' : ''}>${f.label}</option>`).join('');
+                return opts + `<option value="${NEW_FOLDER_OPTION}">+ Crear nueva carpeta…</option>`;
+            }
+
+            function populateGlobalCategory(selectedValue) {
+                globalCategory.innerHTML = buildFolderOptionsHtml(selectedValue || getLastFolder());
+            }
+            populateGlobalCategory(getLastFolder());
+
+            function handleFolderSelectChange(selectEl, onResolved) {
+                if (selectEl.value !== NEW_FOLDER_OPTION) {
+                    onResolved(selectEl.value);
+                    return;
+                }
+                const raw = prompt('Nombre de la nueva carpeta:');
+                const slug = raw ? slugifyFolder(raw) : '';
+                if (!slug) {
+                    selectEl.value = getLastFolder();
+                    onResolved(selectEl.value);
+                    return;
+                }
+                const folders = loadFolders();
+                if (!folders.find(f => f.value === slug)) {
+                    folders.push({ value: slug, label: raw.trim() });
+                    saveFolders(folders);
+                }
+                onResolved(slug);
+            }
+
+            globalCategory.addEventListener('change', () => {
+                handleFolderSelectChange(globalCategory, (finalValue) => {
+                    populateGlobalCategory(finalValue);
+                    setLastFolder(finalValue);
+                    imageFiles.forEach(item => { item.category = finalValue; });
+                    renderCards();
+                });
+            });
+
+            globalQuality.addEventListener('input', (e) => {
+                qualityVal.textContent = e.target.value;
+                const q = parseInt(e.target.value) / 100;
+                imageFiles.forEach(item => { item.quality = q; });
+                imageFiles.forEach((_, idx) => drawPreviewAndMeasure(idx));
+            });
+
+            globalMaxWidth.addEventListener('change', () => {
+                const maxWidthVal = parseInt(globalMaxWidth.value);
+                imageFiles.forEach(item => { item.maxWidth = maxWidthVal; });
+                renderCards();
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files);
+                let processedCount = 0;
+                const defaultFolder = globalCategory.value === NEW_FOLDER_OPTION ? getLastFolder() : globalCategory.value;
+
+                files.forEach(file => {
+                    if (!file.type.startsWith('image/')) return;
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const fileDate = file.lastModified ? new Date(file.lastModified) : new Date();
+                            const rawName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+                            
+                            // Formato fecha original de tu código
+                            const yyyy = fileDate.getFullYear();
+                            const mm = String(fileDate.getMonth() + 1).padStart(2, '0');
+                            const dd = String(fileDate.getDate()).padStart(2, '0');
+                            const hh = String(fileDate.getHours()).padStart(2, '0');
+                            const min = String(fileDate.getMinutes()).padStart(2, '0');
+                            const ss = String(fileDate.getSeconds()).padStart(2, '0');
+                            const dateStr = `${yyyy}${mm}${dd}${hh}${min}${ss}`;
+
+                            imageFiles.push({
+                                fileObj: file,
+                                imgElement: img,
+                                originalSize: file.size,
+                                timestamp: fileDate.getTime(),
+                                keepOriginal: globalKeepOriginal.checked,
+                                originalName: rawName,
+                                customName: 'imagen',
+                                category: defaultFolder,
+                                customTitle: globalTitle.value.trim(),
+                                customDescription: '',
+                                maxWidth: parseInt(globalMaxWidth.value),
+                                dateStr: dateStr,
+                                quality: parseInt(globalQuality.value) / 100
+                            });
+                            
+                            processedCount++;
+                            if (processedCount === files.filter(f => f.type.startsWith('image/')).length) {
+                                imageFiles.sort((a, b) => b.timestamp - a.timestamp);
+                                renderCards();
+                            }
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                });
+                fileInput.value = '';
+            });
+
+            globalKeepOriginal.addEventListener('change', () => {
+                const val = globalKeepOriginal.checked;
+                imageFiles.forEach(item => { item.keepOriginal = val; });
+                renderCards();
+            });
+
+            function formatBytes(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024, dm = 2;
+                const sizes = ['Bytes', 'KB', 'MB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+            }
+
+            function getFinalName(item) {
+                return item.keepOriginal ? item.originalName : `${item.dateStr}_${item.customName || 'imagen'}`;
+            }
+
+            function getScaledDimensions(img, maxWidth) {
+                let width = img.naturalWidth;
+                let height = img.naturalHeight;
+                if (maxWidth > 0 && width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+                return { width, height };
+            }
+
+            function drawPreviewAndMeasure(index) {
+                const item = imageFiles[index];
+                const canvas = document.getElementById(`canvas-${index}`);
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const { width, height } = getScaledDimensions(item.imgElement, item.maxWidth);
+                canvas.width = width; canvas.height = height;
+                ctx.drawImage(item.imgElement, 0, 0, width, height);
+                canvas.toBlob((blob) => {
+                    const badge = document.getElementById(`size-badge-${index}`);
+                    if (badge) {
+                        const newSize = blob.size;
+                        const diff = newSize - item.originalSize;
+                        const diffPercent = Math.round((diff / item.originalSize) * 100);
+                        badge.textContent = `${formatBytes(newSize)} (${diffPercent > 0 ? '+' : ''}${diffPercent}%)`;
+                        badge.style.color = newSize < item.originalSize ? '#3F6B4F' : '#B08A4E';
+                        badge.style.background = newSize < item.originalSize ? '#E9F1EA' : '#F6EEE1';
+                    }
+                }, 'image/webp', item.quality);
+            }
+
+            function buildProcessedBlob(item) {
+                return new Promise((resolve) => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const { width, height } = getScaledDimensions(item.imgElement, item.maxWidth);
+                    canvas.width = width; canvas.height = height;
+                    ctx.drawImage(item.imgElement, 0, 0, width, height);
+                    canvas.toBlob((blob) => resolve(blob), 'image/webp', item.quality);
+                });
+            }
+
+            function renderCards() {
+                cardsContainer.innerHTML = '';
+                if (imageFiles.length > 0) {
+                    batchActions.classList.remove('hidden');
+                    counterText.textContent = `${imageFiles.length} ${imageFiles.length === 1 ? 'imagen cargada' : 'imágenes cargadas'}`;
+                } else {
+                    batchActions.classList.add('hidden');
+                }
+
+                imageFiles.forEach((item, index) => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white rounded-xl border p-4 flex flex-col gap-3 shadow-sm";
+                    card.style.borderColor = '#E7E3DC';
+                    const finalGeneratedName = `${getFinalName(item)}.webp`;
+
+                    card.innerHTML = `
+                        <div class="relative rounded-lg overflow-hidden aspect-video flex items-center justify-center border" style="background:#F1EFEA; border-color:#E7E3DC;">
+                            <canvas id="canvas-${index}" class="preview-canvas object-contain w-full h-full"></canvas>
+                        </div>
+                        <div class="flex flex-col gap-2 text-sm">
+                            <div class="flex justify-between items-center text-sm" style="color:var(--text-muted);">
+                                <span>Original: <strong style="color:var(--text-main);">${formatBytes(item.originalSize)}</strong></span>
+                                <div class="flex items-center gap-1.5">
+                                    <input type="checkbox" data-index="${index}" class="card-keep-original w-3.5 h-3.5 cursor-pointer" style="accent-color:var(--accent);" ${item.keepOriginal ? 'checked' : ''}>
+                                    <span class="cursor-pointer">Respetar nombre</span>
+                                </div>
+                            </div>
+                            ${item.keepOriginal ? `<div class="w-full border rounded px-2 py-1.5 text-sm truncate" style="border-color:#E7E3DC; color:var(--text-muted); background:#F9F8F6;">${item.originalName}</div>` : `<input type="text" value="${item.customName}" data-index="${index}" placeholder="Nombre corto..." class="custom-name-input w-full border rounded px-2 py-1 text-sm focus-ring" style="border-color:#D8D3C8;">`}
+                            
+                            <div class="grid grid-cols-2 gap-2 mt-1">
+                                <div>
+                                    <label class="text-sm" style="color:var(--text-muted);">Carpeta:</label>
+                                    <select data-index="${index}" class="category-select w-full border rounded px-2 py-1 text-sm focus-ring" style="border-color:#D8D3C8;">
+                                        ${buildFolderOptionsHtml(item.category)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="text-sm" style="color:var(--text-muted);">Ancho máx. (px):</label>
+                                    <select data-index="${index}" class="card-maxwidth-select w-full border rounded px-2 py-1 text-sm focus-ring" style="border-color:#D8D3C8;">
+                                        <option value="800" ${item.maxWidth === 800 ? 'selected' : ''}>800 px</option>
+                                        <option value="1200" ${item.maxWidth === 1200 ? 'selected' : ''}>1200 px</option>
+                                        <option value="1600" ${item.maxWidth === 1600 ? 'selected' : ''}>1600 px</option>
+                                        <option value="1920" ${item.maxWidth === 1920 ? 'selected' : ''}>1920 px</option>
+                                        <option value="0" ${item.maxWidth === 0 ? 'selected' : ''}>Original</option>
+                                    </select>
+                                </div>
+                                <div class="col-span-2">
+                                    <label class="text-sm" style="color:var(--text-muted);">Título:</label>
+                                    <input type="text" value="${item.customTitle.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}" data-index="${index}" placeholder="Título (opcional)" class="title-input w-full border rounded px-2 py-1 text-sm focus-ring" style="border-color:#D8D3C8;">
+                                </div>
+                            </div>
+                            
+                            <div class="text-xs truncate mt-1 p-1.5 rounded border flex justify-between items-center" style="background:#F9F8F6; border-color:#E7E3DC; color:var(--primary-dark);">
+                                <span class="truncate"><span style="color:var(--text-muted);">${BASE_FOLDER}/${item.category}/</span>${finalGeneratedName}</span>
+                                <span id="size-badge-${index}" class="px-1 py-0.5 rounded shrink-0">Calc...</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t mt-auto gap-2 flex-wrap" style="border-color:#E7E3DC;">
+                            <button data-index="${index}" class="delete-btn text-sm font-medium cursor-pointer" style="color:#B85C5C;">Eliminar</button>
+                            <div class="flex items-center gap-2 flex-wrap justify-end">
+                                <span id="upload-status-${index}" class="text-sm px-1.5 py-0.5 rounded shrink-0" style="background:#F1EFEA; color:var(--text-muted);">Pendiente</span>
+                                <button data-index="${index}" class="upload-btn font-bold px-3 py-1.5 rounded text-sm transition-colors cursor-pointer" style="background:var(--primary); color:white;">Subir</button>
+                                <button data-index="${index}" class="download-single-btn font-bold px-3 py-1.5 rounded text-sm transition-colors cursor-pointer" style="background:var(--accent); color:white;">Descargar</button>
+                            </div>
+                        </div>
+                    `;
+                    cardsContainer.appendChild(card);
+                    drawPreviewAndMeasure(index);
+                });
+                attachEvents();
+            }
+
+            function attachEvents() {
+                // ... (Igual a tu código: listeners de los inputs dentro de cada tarjeta)
+                document.querySelectorAll('.custom-name-input').forEach(i => i.addEventListener('input', e => imageFiles[e.target.dataset.index].customName = e.target.value));
+                document.querySelectorAll('.card-keep-original').forEach(c => c.addEventListener('change', e => { imageFiles[e.target.dataset.index].keepOriginal = e.target.checked; renderCards(); }));
+                document.querySelectorAll('.title-input').forEach(i => i.addEventListener('input', e => imageFiles[e.target.dataset.index].customTitle = e.target.value));
+                document.querySelectorAll('.card-maxwidth-select').forEach(s => s.addEventListener('change', e => { imageFiles[e.target.dataset.index].maxWidth = parseInt(e.target.value); drawPreviewAndMeasure(e.target.dataset.index); }));
+                document.querySelectorAll('.category-select').forEach(s => s.addEventListener('change', e => handleFolderSelectChange(s, val => { imageFiles[e.target.dataset.index].category = val; renderCards(); })));
+                document.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', e => { imageFiles.splice(e.target.dataset.index, 1); renderCards(); }));
+                
+                document.querySelectorAll('.upload-btn').forEach(b => b.addEventListener('click', e => uploadToCloudinary(e.target.dataset.index)));
+                document.querySelectorAll('.download-single-btn').forEach(b => b.addEventListener('click', async e => {
+                    const item = imageFiles[e.target.dataset.index];
+                    const blob = await buildProcessedBlob(item);
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.href = url; a.download = `${getFinalName(item)}.webp`;
+                    a.click(); URL.revokeObjectURL(url);
+                }));
+                
+                uploadAllBtn.onclick = () => imageFiles.forEach((_, idx) => setTimeout(() => uploadToCloudinary(idx), idx * 400));
+                downloadAllBtn.onclick = () => imageFiles.forEach((_, idx) => setTimeout(async () => {
+                    const item = imageFiles[idx];
+                    const blob = await buildProcessedBlob(item);
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.href = url; a.download = `${getFinalName(item)}.webp`;
+                    a.click(); URL.revokeObjectURL(url);
+                }, idx * 250));
+            }
+
+            async function uploadToCloudinary(index) {
+                const item = imageFiles[index];
+                const statusEl = document.getElementById(`upload-status-${index}`);
+                // 🌟 RUTA DINÁMICA BASADA EN EL TOKEN 🌟
+                const folderPath = `${BASE_FOLDER}/${item.category}`; 
+                const tag = `${PROYECTO_ACTUAL}_${item.category}`;
+
+                if (statusEl) {
+                    statusEl.textContent = 'Subiendo…'; statusEl.style.background = '#F1EFEA'; statusEl.style.color = 'var(--text-muted)';
+                }
+
+                try {
+                    const blob = await buildProcessedBlob(item);
+                    const finalName = getFinalName(item);
+                    const formData = new FormData();
+                    
+                    formData.append('file', blob, `${finalName}.webp`);
+                    formData.append('upload_preset', UPLOAD_PRESET); // 'subir_gestor'
+                    formData.append('public_id', finalName);
+                    formData.append('folder', folderPath);
+                    formData.append('tags', tag);
+
+                    const title = (item.customTitle || '').trim().replace(/[|]/g, ' ');
+                    if (title) formData.append('context', `caption=${title}`);
+
+                    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                        method: 'POST', body: formData
+                    });
+                    const data = await res.json();
+
+                    if (!res.ok) throw new Error(data.error?.message || 'Error de Cloudinary');
+
+                    if (statusEl) {
+                        statusEl.textContent = `✓ Éxito`; statusEl.style.background = '#E9F1EA'; statusEl.style.color = '#3F6B4F';
+                    }
+                } catch (err) {
+                    if (statusEl) {
+                        statusEl.textContent = 'Error ✕'; statusEl.style.background = '#F5E7E7'; statusEl.style.color = '#B85C5C'; statusEl.title = err.message;
+                    }
+                }
+            }
+        }
+    </script>
 </body>
 </html>
