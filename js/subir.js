@@ -43,8 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.warn('Usando carpetas por defecto', err);
         }
 
-        $('loadingState').classList.add('hidden');
-        $('mainInterface').classList.remove('hidden');
+        $('loadingState').classList.add('hidden');$('mainInterface').classList.remove('hidden');
         iniciarApp(carpetas);
     } catch (error) {
         fallo('El enlace está corrupto o mal formado.');
@@ -149,8 +148,10 @@ function iniciarApp(carpetasIniciales) {
         actualizarBarra();
     }
     function mostrarAviso(txt) {
-        aviso.textContent = txt;
-        aviso.classList.toggle('hidden', !txt);
+        if (aviso) {
+            aviso.textContent = txt;
+            aviso.classList.toggle('hidden', !txt);
+        }
     }
 
     /* ---------- Agregar archivos ---------- */
@@ -173,7 +174,7 @@ function iniciarApp(carpetasIniciales) {
                     nombreOrig: f.name.replace(/\.[^.]+$/, '') || f.name,
                     nombre: 'imagen', carpeta,
                     titulo: inTitulo.value.trim(), desc: '',
-                    ancho: parseInt(selAncho.value), calidad: parseFloat(selCalidad.value),
+                    ancho: parseInt(selAncho.value), calidad: selCalidad ? parseFloat(selCalidad.value) : 0.8,
                     estado: 'pendiente'
                 });
             };
@@ -188,37 +189,67 @@ function iniciarApp(carpetasIniciales) {
         render();
     }
 
-    /* ---------- Render ---------- */
+    /* ---------- Render (Con Título y Descripción fijos y visibles) ---------- */
     function tarjeta(it) {
         return `
-        <article class="tarjeta" data-id="${it.id}">
-            <div class="tarjeta-media">
-                <img src="${it.url}" alt="Vista previa de ${esc(it.nombreOrig)}">
-                <span class="peso" id="peso-${it.id}">…</span>
+        <article class="card flex flex-col gap-4 shadow-sm transition-all hover:shadow-md p-4 bg-white rounded-xl border" data-id="${it.id}" style="border-color: var(--border-color);">
+            <div class="relative rounded-lg overflow-hidden aspect-video flex items-center justify-center border bg-slate-900" style="border-color: var(--border-color);">
+                <img src="${it.url}" alt="Vista previa de ${esc(it.nombreOrig)}" class="preview-canvas object-contain w-full h-full">
+                <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-200" id="peso-${it.id}">…</span>
             </div>
-            <div class="tarjeta-cuerpo">
-                <div class="fila-nombre">
-                    ${it.keep
-                ? `<span class="nombre-fijo" title="${esc(it.nombreOrig)}">${esc(it.nombreOrig)}</span>`
-                : `<input type="text" data-campo="nombre" value="${esc(it.nombre)}" placeholder="Nombre corto" aria-label="Nombre">`}
-                    <label class="check"><input type="checkbox" data-campo="keep" ${it.keep ? 'checked' : ''}> Original</label>
+            
+            <div class="flex flex-col gap-2.5 text-xs">
+                <div class="flex justify-between items-center pb-1 border-b border-slate-100">
+                    <span style="color: var(--text-muted);">Original: <strong style="color: var(--text-main);">${formatoBytes(it.tam)}</strong></span>
+                    <div class="flex items-center gap-1.5">
+                        <input type="checkbox" data-campo="keep" ${it.keep ? 'checked' : ''} class="w-3.5 h-3.5 cursor-pointer accent-blue-600">
+                        <span class="cursor-pointer font-medium" style="color: var(--text-main);">Respetar nombre</span>
+                    </div>
                 </div>
-                <input type="text" data-campo="titulo" value="${esc(it.titulo)}" placeholder="Título descriptivo (opcional)" aria-label="Título">
-                <div class="fila-2">
-                    <select data-campo="carpeta" aria-label="Carpeta">${opcionesCarpeta(it.carpeta)}</select>
-                    <select data-campo="ancho" aria-label="Ancho máximo">${opcionesAncho(it.ancho)}</select>
+
+                ${it.keep 
+                    ? `<div class="w-full border rounded px-2.5 py-1.5 truncate bg-slate-50 font-mono text-xs" style="border-color: var(--border-color); color: var(--text-muted);">${esc(it.nombreOrig)}</div>` 
+                    : `<input type="text" data-campo="nombre" value="${esc(it.nombre)}" placeholder="Nombre corto..." class="w-full border rounded px-2.5 py-1.5 focus-ring font-mono text-xs bg-white" style="border-color: var(--border-color);">`}
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="font-semibold block mb-1" style="color: var(--text-muted);">Carpeta:</label>
+                        <select data-campo="carpeta" class="w-full border rounded px-2 py-1.5 focus-ring bg-white" style="border-color: var(--border-color);">
+                            ${opcionesCarpeta(it.carpeta)}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1" style="color: var(--text-muted);">Ancho máx.:</label>
+                        <select data-campo="ancho" class="w-full border rounded px-2 py-1.5 focus-ring bg-white" style="border-color: var(--border-color);">
+                            ${opcionesAncho(it.ancho)}
+                        </select>
+                    </div>
+
+                    <!-- TÍTULO VISIBLE Y FIJO -->
+                    <div class="col-span-2">
+                        <label class="font-semibold block mb-1" style="color: var(--text-muted);">Título descriptivo:</label>
+                        <input type="text" data-campo="titulo" value="${esc(it.titulo)}" placeholder="Ej. Vista principal" class="w-full border rounded px-2.5 py-1.5 focus-ring bg-white" style="border-color: var(--border-color);">
+                    </div>
+
+                    <!-- DESCRIPCIÓN VISIBLE Y FIJA -->
+                    <div class="col-span-2">
+                        <label class="font-semibold block mb-1" style="color: var(--text-muted);">Descripción (Opcional):</label>
+                        <textarea data-campo="desc" rows="2" placeholder="Detalles de la toma..." class="w-full border rounded px-2.5 py-1.5 focus-ring bg-white" style="border-color: var(--border-color);">${esc(it.desc)}</textarea>
+                    </div>
                 </div>
-                <details ${it.desc ? 'open' : ''}>
-                    <summary>Descripción (opcional)</summary>
-                    <textarea data-campo="desc" rows="2" placeholder="Detalles de la toma…">${esc(it.desc)}</textarea>
-                </details>
-                <p class="ruta"></p>
+                
+                <div class="truncate mt-1 p-2 rounded border flex justify-between items-center bg-slate-50 font-mono text-[11px] text-blue-700 font-medium" style="border-color: var(--border-color);">
+                    <span class="truncate"><span style="color: var(--text-muted);">${esc(BASE_FOLDER)}/${esc(it.carpeta)}/</span>${esc(nombreFinal(it))}.webp</span>
+                </div>
             </div>
-            <div class="tarjeta-pie">
-                <button class="btn btn-texto" type="button" data-acc="eliminar">Eliminar</button>
-                <span class="estado ${it.estado}" id="estado-${it.id}">${textoEstado(it)}</span>
-                <button class="btn btn-secundario" type="button" data-acc="bajar">Descargar</button>
-                <button class="btn btn-primario" type="button" data-acc="subir">Subir</button>
+
+            <div class="flex justify-between items-center pt-3 border-t mt-auto gap-2 flex-wrap" style="border-color: var(--border-color);">
+                <button class="btn btn-danger text-xs font-semibold text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded transition-colors cursor-pointer" type="button" data-acc="eliminar">Eliminar</button>
+                <div class="flex items-center gap-2 flex-wrap justify-end">
+                    <span class="estado ${it.estado} text-xs px-2.5 py-1.5 rounded shrink-0 bg-slate-100 font-medium" id="estado-${it.id}" style="color: var(--text-muted);">${textoEstado(it)}</span>
+                    <button class="btn btn-secundario btn-base btn-sec font-semibold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-slate-200 hover:bg-slate-300 text-slate-700" type="button" data-acc="bajar">Descargar</button>
+                    <button class="btn btn-primario btn-base btn-main font-semibold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-blue-600 hover:bg-blue-700 text-white shadow-sm" type="button" data-acc="subir">Subir</button>
+                </div>
             </div>
         </article>`;
     }
@@ -235,12 +266,11 @@ function iniciarApp(carpetasIniciales) {
         if (!el || !blob) return;
         const dif = it.tam ? Math.round((blob.size - it.tam) / it.tam * 100) : 0;
         el.textContent = `${formatoBytes(blob.size)} · ${dif > 0 ? '+' : ''}${dif}%`;
-        el.classList.toggle('mejora', blob.size < it.tam);
     }
 
     function render() {
         contenedor.innerHTML = items.map(tarjeta).join('');
-        items.forEach(it => { actualizarRuta(it); medir(it); });
+        items.forEach(it => { medir(it); });
         actualizarBarra();
     }
 
@@ -248,9 +278,9 @@ function iniciarApp(carpetasIniciales) {
         const total = items.length;
         const ok = items.filter(i => i.estado === 'ok').length;
         const err = items.filter(i => i.estado === 'error').length;
-        barra.classList.toggle('hidden', !total);
-        contador.textContent = `${total} ${total === 1 ? 'imagen' : 'imágenes'} · ${ok} subida${ok === 1 ? '' : 's'}${err ? ` · ${err} con error` : ''}`;
-        progreso.style.width = total ? `${ok / total * 100}%` : '0%';
+        if (barra) barra.classList.toggle('hidden', !total);
+        if (contador) contador.textContent = `${total} ${total === 1 ? 'imagen' : 'imágenes'} · ${ok} subida${ok === 1 ? '' : 's'}${err ? ` · ${err} con error` : ''}`;
+        if (progreso) progreso.style.width = total ? `${ok / total * 100}%` : '0%';
     }
 
     /* ---------- Subir / descargar ---------- */
@@ -286,11 +316,11 @@ function iniciarApp(carpetasIniciales) {
     async function subirTodas() {
         const cola = items.filter(i => i.estado === 'pendiente' || i.estado === 'error');
         if (!cola.length) return;
-        btnSubir.disabled = true;
+        if (btnSubir) btnSubir.disabled = true;
         await Promise.all(Array.from({ length: 3 }, async () => {
             while (cola.length) await subir(cola.shift());
         }));
-        btnSubir.disabled = false;
+        if (btnSubir) btnSubir.disabled = false;
     }
 
     async function descargar(it) {
@@ -304,7 +334,7 @@ function iniciarApp(carpetasIniciales) {
 
     /* ---------- Eventos de tarjetas (delegados) ---------- */
     const contexto = (e) => {
-        const art = e.target.closest('.tarjeta');
+        const art = e.target.closest('.card');
         return art ? items.find(x => x.id === +art.dataset.id) : null;
     };
 
@@ -337,23 +367,27 @@ function iniciarApp(carpetasIniciales) {
     });
 
     /* ---------- Controles globales ---------- */
-    selCarpeta.addEventListener('change', () => resolverCarpeta(selCarpeta, (v) => {
-        pintarCarpetaGlobal(v); guardarUltima(v);
-        items.forEach(i => { i.carpeta = v; });
-        render();
-    }));
-    selAncho.addEventListener('change', () => { items.forEach(i => { i.ancho = parseInt(selAncho.value); }); render(); });
-    selCalidad.addEventListener('change', () => { items.forEach(i => { i.calidad = parseFloat(selCalidad.value); }); render(); });
-    chkOriginal.addEventListener('change', () => { items.forEach(i => { i.keep = chkOriginal.checked; }); render(); });
+    if (selCarpeta) {
+        selCarpeta.addEventListener('change', () => resolverCarpeta(selCarpeta, (v) => {
+            pintarCarpetaGlobal(v); guardarUltima(v);
+            items.forEach(i => { i.carpeta = v; });
+            render();
+        }));
+    }
+    if (selAncho) selAncho.addEventListener('change', () => { items.forEach(i => { i.ancho = parseInt(selAncho.value); }); render(); });
+    if (selCalidad) selCalidad.addEventListener('change', () => { items.forEach(i => { i.calidad = parseFloat(selCalidad.value); }); render(); });
+    if (chkOriginal) chkOriginal.addEventListener('change', () => { items.forEach(i => { i.keep = chkOriginal.checked; }); render(); });
 
-    btnSubir.addEventListener('click', subirTodas);
-    btnBajar.addEventListener('click', () => items.forEach((it, i) => setTimeout(() => descargar(it), i * 250)));
+    if (btnSubir) btnSubir.addEventListener('click', subirTodas);
+    if (btnBajar) btnBajar.addEventListener('click', () => items.forEach((it, i) => setTimeout(() => descargar(it), i * 250)));
 
     /* ---------- Selección y arrastrar/soltar ---------- */
-    inArchivos.addEventListener('change', (e) => { agregarArchivos(e.target.files); inArchivos.value = ''; });
-    ['dragenter', 'dragover'].forEach(ev => zona.addEventListener(ev, (e) => { e.preventDefault(); zona.classList.add('arrastrando'); }));
-    ['dragleave', 'drop'].forEach(ev => zona.addEventListener(ev, (e) => { e.preventDefault(); zona.classList.remove('arrastrando'); }));
-    zona.addEventListener('drop', (e) => agregarArchivos(e.dataTransfer.files));
+    if (inArchivos) inArchivos.addEventListener('change', (e) => { agregarArchivos(e.target.files); inArchivos.value = ''; });
+    if (zona) {
+        ['dragenter', 'dragover'].forEach(ev => zona.addEventListener(ev, (e) => { e.preventDefault(); zona.classList.add('arrastrando'); }));
+        ['dragleave', 'drop'].forEach(ev => zona.addEventListener(ev, (e) => { e.preventDefault(); zona.classList.remove('arrastrando'); }));
+        zona.addEventListener('drop', (e) => agregarArchivos(e.dataTransfer.files));
+    }
 
     window.addEventListener('beforeunload', (e) => {
         if (items.some(i => i.estado === 'subiendo')) { e.preventDefault(); e.returnValue = ''; }
