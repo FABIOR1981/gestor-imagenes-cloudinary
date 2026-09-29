@@ -16,8 +16,10 @@
         <section class="card">
             <form id="linkGeneratorForm">
                 <div class="form-group">
-                    <label for="projectName">Proyecto / Cliente</label>
-                    <input type="text" id="projectName" name="projectName" placeholder="ej. monarca, consAge, espacia" required autocomplete="off">
+                    <label for="projectSelect">Seleccionar Proyecto</label>
+                    <select id="projectSelect" name="projectSelect" class="border rounded px-3 py-2 w-full" required>
+                        <option value="">Cargando proyectos...</option>
+                    </select>
                 </div>
 
                 <div class="form-group">

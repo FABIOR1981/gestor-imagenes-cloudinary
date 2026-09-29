@@ -1,0 +1,20 @@
+{
+  "proyectos": [
+    {
+      "id": "monarca",
+      "nombre": "Residencial Monarca",
+      "carpetas": [
+        { "value": "galeria", "label": "Galería" },
+        { "value": "instalaciones", "label": "Instalaciones" }
+      ]
+    },
+    {
+      "id": "consAge",
+      "nombre": "Consultorio Agenda (consAge)",
+      "carpetas": [
+        { "value": "general", "label": "General" },
+        { "value": "pacientes", "label": "Pacientes" }
+      ]
+    }
+  ]
+}
