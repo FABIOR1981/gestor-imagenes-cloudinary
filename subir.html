@@ -15,35 +15,35 @@
     <div class="max-w-6xl mx-auto">
         <!-- Mensaje de Validación Inicial -->
         <div id="loadingState" class="text-center py-20">
-            <p class="text-lg text-slate-400">Validando acceso seguro...</p>
+            <p class="text-lg" style="color: var(--text-muted);">Validando acceso seguro...</p>
         </div>
 
         <!-- Pantalla de Error (Oculta por defecto) -->
-        <div id="errorState" class="max-w-md mx-auto rounded-xl border p-8 text-center shadow-lg hidden bg-slate-800 border-slate-700" style="border-top: 4px solid #EF4444;">
-            <h1 class="text-2xl font-bold mb-3 text-red-400">Enlace no válido o caducado</h1>
-            <p id="errorMessage" class="text-slate-400 text-sm">Por seguridad, los enlaces de subida tienen una fecha límite. Solicita uno nuevo al administrador.</p>
+        <div id="errorState" class="card max-w-md mx-auto text-center hidden" style="border-top: 4px solid #EF4444;">
+            <h1 class="text-2xl font-bold mb-3" style="color: #EF4444;">Enlace no válido o caducado</h1>
+            <p id="errorMessage" style="color: var(--text-muted); font-size: 0.95rem;">Por seguridad, los enlaces de subida tienen una fecha límite. Solicita uno nuevo al administrador.</p>
         </div>
 
         <!-- Interfaz Principal (Oculta hasta validar) -->
         <div id="mainInterface" class="hidden">
             
-            <!-- Encabezado corregido para evitar solapamientos -->
-            <header class="mb-6 border-b pb-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-slate-700">
+            <!-- Encabezado Limpio y Estilizado -->
+            <header class="mb-8 border-b pb-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6" style="border-color: var(--border-color);">
                 <div>
-                    <h1 class="text-3xl font-bold tracking-tight text-white">Envío de Archivos</h1>
-                    <p class="text-sm mt-1 text-slate-400">Proyecto: <strong id="displayProjectName" class="capitalize text-white"></strong></p>
-                    <p class="text-xs mt-1 text-amber-400">Válido hasta: <span id="displayExpDate"></span></p>
+                    <h1 class="text-3xl font-bold tracking-tight" style="color: var(--text-main);">Envío de Archivos</h1>
+                    <p class="text-sm mt-1" style="color: var(--text-muted);">Proyecto: <strong id="displayProjectName" class="capitalize" style="color: var(--text-main);"></strong></p>
+                    <p class="text-xs mt-1 font-medium" style="color: #D97706;">Válido hasta: <span id="displayExpDate"></span></p>
                 </div>
                 
-                <!-- Controles Globales ordenados -->
-                <div class="flex flex-wrap items-center gap-4 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-sm w-full lg:w-auto">
+                <!-- Controles Globales integrados en tarjeta clara -->
+                <div class="card p-4 flex flex-wrap items-center gap-4 w-full lg:w-auto mb-0 shadow-sm">
                     <div>
-                        <label for="globalCategory" class="text-xs font-medium block mb-1 text-slate-400">Carpeta destino</label>
-                        <select id="globalCategory" class="border border-slate-600 rounded px-2.5 py-1.5 text-xs focus-ring bg-slate-900 text-white"></select>
+                        <label for="globalCategory" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Carpeta destino</label>
+                        <select id="globalCategory" class="border rounded px-2.5 py-1.5 text-xs focus-ring"></select>
                     </div>
                     <div>
-                        <label for="globalMaxWidth" class="text-xs font-medium block mb-1 text-slate-400">Ancho Máx.</label>
-                        <select id="globalMaxWidth" class="border border-slate-600 rounded px-2.5 py-1.5 text-xs focus-ring bg-slate-900 text-white">
+                        <label for="globalMaxWidth" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Ancho Máx.</label>
+                        <select id="globalMaxWidth" class="border rounded px-2.5 py-1.5 text-xs focus-ring">
                             <option value="800">800 px (Liviana)</option>
                             <option value="1200" selected>1200 px (Estándar)</option>
                             <option value="1600">1600 px (Intermedia)</option>
@@ -52,44 +52,44 @@
                         </select>
                     </div>
                     <div>
-                        <label for="globalTitle" class="text-xs font-medium block mb-1 text-slate-400">Título global</label>
-                        <input type="text" id="globalTitle" placeholder="Ej.: Fiesta 2026" class="border border-slate-600 rounded px-2.5 py-1.5 text-xs focus-ring bg-slate-900 text-white w-32">
+                        <label for="globalTitle" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Título global</label>
+                        <input type="text" id="globalTitle" placeholder="Ej.: Fiesta 2026" class="border rounded px-2.5 py-1.5 text-xs focus-ring w-32">
                     </div>
-                    <div class="flex items-center gap-2 border-l border-slate-700 pl-4 h-8">
+                    <div class="flex items-center gap-2 border-l pl-4 h-8" style="border-color: var(--border-color);">
                         <input type="checkbox" id="globalKeepOriginal" checked class="w-4 h-4 cursor-pointer accent-blue-600">
-                        <label for="globalKeepOriginal" class="text-xs cursor-pointer text-slate-300">Respetar nombre</label>
+                        <label for="globalKeepOriginal" class="text-xs cursor-pointer" style="color: var(--text-main);">Respetar nombre</label>
                     </div>
-                    <div class="flex flex-col gap-1 border-l border-slate-700 pl-4">
-                        <label for="globalQuality" class="text-xs text-slate-300">Calidad (<span id="qualityVal">80</span>%)</label>
+                    <div class="flex flex-col gap-1 border-l pl-4" style="border-color: var(--border-color);">
+                        <label for="globalQuality" class="text-xs font-semibold" style="color: var(--text-muted);">Calidad (<span id="qualityVal">80</span>%)</label>
                         <input type="range" id="globalQuality" min="40" max="100" value="80" class="cursor-pointer w-20 accent-blue-600">
                     </div>
                 </div>
             </header>
 
-            <p class="text-sm mb-6 text-slate-400">
+            <p class="text-sm mb-6" style="color: var(--text-muted);">
                 Ajusta los píxeles máximos y la barra de compresión según prefieras. Cada tarjeta calculará automáticamente el peso final resultante frente al original.
             </p>
 
-            <!-- Zona de Carga con contraste correcto -->
+            <!-- Zona de Carga Luminosa -->
             <div class="mb-8">
-                <label for="fileInput" class="border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group bg-slate-800 border-slate-600 hover:border-blue-500">
-                    <svg class="w-12 h-12 mb-3 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <label for="fileInput" class="card border-2 border-dashed p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group hover:border-blue-600" style="border-color: var(--border-color);">
+                    <svg class="w-12 h-12 mb-3 text-slate-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
-                    <span class="text-sm font-medium text-slate-200">Arrastra tus imágenes aquí o <span class="text-blue-400 underline">haz clic para buscar</span></span>
-                    <span class="text-xs mt-1 text-slate-400">Soporta múltiples archivos PNG, JPG, WEBP</span>
+                    <span class="text-sm font-semibold" style="color: var(--text-main);">Arrastra tus imágenes aquí o <span class="text-blue-600 underline">haz clic para buscar</span></span>
+                    <span class="text-xs mt-1" style="color: var(--text-muted);">Soporta múltiples archivos PNG, JPG, WEBP</span>
                     <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
                 </label>
             </div>
 
             <!-- Acciones Globales -->
-            <div id="batchActions" class="hidden mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-sm">
-                <span id="counterText" class="text-sm font-medium text-slate-300">0 imágenes cargadas</span>
+            <div id="batchActions" class="card hidden mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-4 shadow-sm">
+                <span id="counterText" class="text-sm font-semibold" style="color: var(--text-main);">0 imágenes cargadas</span>
                 <div class="flex gap-2">
-                    <button id="uploadAllBtn" class="font-bold px-5 py-2 rounded-lg text-sm transition-colors shadow-sm cursor-pointer bg-blue-600 hover:bg-blue-700 text-white">
+                    <button id="uploadAllBtn" class="btn-primary" style="width: auto; padding: 8px 16px; margin: 0; font-size: 0.85rem;">
                         Subir todas a Cloudinary
                     </button>
-                    <button id="downloadAllBtn" class="font-bold px-5 py-2 rounded-lg text-sm transition-colors shadow-sm cursor-pointer bg-slate-700 hover:bg-slate-600 text-white">
+                    <button id="downloadAllBtn" class="btn-secondary" style="font-size: 0.85rem; padding: 8px 16px;">
                         Descargar todas (.WebP)
                     </button>
                 </div>
@@ -342,33 +342,33 @@
 
                 imageFiles.forEach((item, index) => {
                     const card = document.createElement('div');
-                    card.className = "rounded-xl border p-4 flex flex-col gap-3 shadow-sm bg-slate-800 border-slate-700";
+                    card.className = "card flex flex-col gap-3";
                     const finalGeneratedName = `${getFinalName(item)}.webp`;
 
                     card.innerHTML = `
-                        <div class="relative rounded-lg overflow-hidden aspect-video flex items-center justify-center border bg-slate-900 border-slate-700">
+                        <div class="relative rounded-lg overflow-hidden aspect-video flex items-center justify-center border bg-slate-100" style="border-color: var(--border-color);">
                             <canvas id="canvas-${index}" class="preview-canvas object-contain w-full h-full"></canvas>
                         </div>
                         <div class="flex flex-col gap-2 text-xs">
-                            <div class="flex justify-between items-center text-slate-400">
-                                <span>Original: <strong class="text-white">${formatBytes(item.originalSize)}</strong></span>
+                            <div class="flex justify-between items-center" style="color: var(--text-muted);">
+                                <span>Original: <strong style="color: var(--text-main);">${formatBytes(item.originalSize)}</strong></span>
                                 <div class="flex items-center gap-1.5">
                                     <input type="checkbox" data-index="${index}" class="card-keep-original w-3.5 h-3.5 cursor-pointer accent-blue-600" ${item.keepOriginal ? 'checked' : ''}>
                                     <span class="cursor-pointer">Respetar nombre</span>
                                 </div>
                             </div>
-                            ${item.keepOriginal ? `<div class="w-full border border-slate-700 rounded px-2 py-1.5 truncate bg-slate-900 text-slate-400">${item.originalName}</div>` : `<input type="text" value="${item.customName}" data-index="${index}" placeholder="Nombre..." class="custom-name-input w-full border border-slate-700 rounded px-2 py-1 focus-ring bg-slate-900 text-white">`}
+                            ${item.keepOriginal ? `<div class="w-full border rounded px-2 py-1.5 truncate bg-slate-50" style="border-color: var(--border-color); color: var(--text-muted);">${item.originalName}</div>` : `<input type="text" value="${item.customName}" data-index="${index}" placeholder="Nombre..." class="custom-name-input w-full border rounded px-2 py-1 focus-ring">`}
                             
                             <div class="grid grid-cols-2 gap-2 mt-1">
                                 <div>
-                                    <label class="text-slate-400">Carpeta:</label>
-                                    <select data-index="${index}" class="category-select w-full border border-slate-700 rounded px-2 py-1 focus-ring bg-slate-900 text-white">
+                                    <label style="color: var(--text-muted);">Carpeta:</label>
+                                    <select data-index="${index}" class="category-select w-full border rounded px-2 py-1 focus-ring">
                                         ${buildFolderOptionsHtml(item.category)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="text-slate-400">Ancho máx.:</label>
-                                    <select data-index="${index}" class="card-maxwidth-select w-full border border-slate-700 rounded px-2 py-1 focus-ring bg-slate-900 text-white">
+                                    <label style="color: var(--text-muted);">Ancho máx.:</label>
+                                    <select data-index="${index}" class="card-maxwidth-select w-full border rounded px-2 py-1 focus-ring">
                                         <option value="800" ${item.maxWidth === 800 ? 'selected' : ''}>800 px</option>
                                         <option value="1200" ${item.maxWidth === 1200 ? 'selected' : ''}>1200 px</option>
                                         <option value="1600" ${item.maxWidth === 1600 ? 'selected' : ''}>1600 px</option>
@@ -377,26 +377,26 @@
                                     </select>
                                 </div>
                                 <div class="col-span-2">
-                                    <label class="text-slate-400">Título:</label>
-                                    <input type="text" value="${item.customTitle.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}" data-index="${index}" placeholder="Título opcional" class="title-input w-full border border-slate-700 rounded px-2 py-1 focus-ring bg-slate-900 text-white">
+                                    <label style="color: var(--text-muted);">Título:</label>
+                                    <input type="text" value="${item.customTitle.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}" data-index="${index}" placeholder="Título opcional" class="title-input w-full border rounded px-2 py-1 focus-ring">
                                 </div>
                                 <div class="col-span-2">
-                                    <label class="text-slate-400">Descripción:</label>
-                                    <textarea data-index="${index}" placeholder="Descripción opcional" class="description-input w-full border border-slate-700 rounded px-2 py-1 focus-ring bg-slate-900 text-white" rows="2">${item.customDescription ? item.customDescription.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])) : ''}</textarea>
+                                    <label style="color: var(--text-muted);">Descripción:</label>
+                                    <textarea data-index="${index}" placeholder="Descripción opcional" class="description-input w-full border rounded px-2 py-1 focus-ring" rows="2">${item.customDescription ? item.customDescription.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])) : ''}</textarea>
                                 </div>
                             </div>
                             
-                            <div class="truncate mt-1 p-1.5 rounded border border-slate-700 flex justify-between items-center bg-slate-900 text-blue-300">
-                                <span class="truncate"><span class="text-slate-500">${BASE_FOLDER}/${item.category}/</span>${finalGeneratedName}</span>
-                                <span id="size-badge-${index}" class="px-1.5 py-0.5 rounded shrink-0 bg-slate-800 text-slate-300">Calc...</span>
+                            <div class="truncate mt-1 p-1.5 rounded border flex justify-between items-center bg-slate-50 text-blue-700 font-medium" style="border-color: var(--border-color);">
+                                <span class="truncate"><span style="color: var(--text-muted);">${BASE_FOLDER}/${item.category}/</span>${finalGeneratedName}</span>
+                                <span id="size-badge-${index}" class="px-1.5 py-0.5 rounded shrink-0 bg-slate-200 text-slate-700">Calc...</span>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center pt-2 border-t border-slate-700 mt-auto gap-2 flex-wrap">
-                            <button data-index="${index}" class="delete-btn text-xs font-medium text-red-400 hover:text-red-300 cursor-pointer">Eliminar</button>
+                        <div class="flex justify-between items-center pt-3 border-t mt-auto gap-2 flex-wrap" style="border-color: var(--border-color);">
+                            <button data-index="${index}" class="delete-btn text-xs font-semibold text-red-600 hover:text-red-700 cursor-pointer">Eliminar</button>
                             <div class="flex items-center gap-2 flex-wrap justify-end">
-                                <span id="upload-status-${index}" class="text-xs px-1.5 py-0.5 rounded shrink-0 bg-slate-900 text-slate-400">Pendiente</span>
+                                <span id="upload-status-${index}" class="text-xs px-2 py-1 rounded shrink-0 bg-slate-100 font-medium" style="color: var(--text-muted);">Pendiente</span>
                                 <button data-index="${index}" class="upload-btn font-bold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-blue-600 hover:bg-blue-700 text-white">Subir</button>
-                                <button data-index="${index}" class="download-single-btn font-bold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-slate-700 hover:bg-slate-600 text-white">Descargar</button>
+                                <button data-index="${index}" class="download-single-btn font-bold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-slate-200 hover:bg-slate-300 text-slate-800">Descargar</button>
                             </div>
                         </div>
                     `;
@@ -421,7 +421,7 @@
                         const diff = newSize - item.originalSize;
                         const diffPercent = Math.round((diff / item.originalSize) * 100);
                         badge.textContent = `${formatBytes(newSize)} (${diffPercent > 0 ? '+' : ''}${diffPercent}%)`;
-                        badge.style.color = newSize < item.originalSize ? '#4ADE80' : '#FBBF24';
+                        badge.style.color = newSize < item.originalSize ? '#16A34A' : '#D97706';
                     }
                 }, 'image/webp', item.quality);
             }
@@ -473,7 +473,7 @@
 
                 if (statusEl) {
                     statusEl.textContent = 'Subiendo…'; 
-                    statusEl.className = "text-xs px-1.5 py-0.5 rounded shrink-0 bg-slate-800 text-slate-300";
+                    statusEl.className = "text-xs px-2 py-1 rounded shrink-0 bg-blue-50 text-blue-600 font-medium";
                 }
 
                 try {
@@ -505,12 +505,12 @@
 
                     if (statusEl) {
                         statusEl.textContent = `✓ Éxito`; 
-                        statusEl.className = "text-xs px-1.5 py-0.5 rounded shrink-0 bg-emerald-950 text-emerald-400";
+                        statusEl.className = "text-xs px-2 py-1 rounded shrink-0 bg-emerald-50 text-emerald-700 font-medium";
                     }
                 } catch (err) {
                     if (statusEl) {
                         statusEl.textContent = 'Error ✕'; 
-                        statusEl.className = "text-xs px-1.5 py-0.5 rounded shrink-0 bg-red-950 text-red-400";
+                        statusEl.className = "text-xs px-2 py-1 rounded shrink-0 bg-red-50 text-red-600 font-medium";
                         statusEl.title = err.message;
                     }
                 }
