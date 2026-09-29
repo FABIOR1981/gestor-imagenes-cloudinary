@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir Archivos | Upload Hub</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <main class="dashboard-container">
+        
+        <!-- Mensaje de Carga Inicial -->
+        <div id="loadingState" style="text-align: center; padding: 40px;">
+            <p>Validando acceso temporal...</p>
+        </div>
+
+        <!-- Pantalla de Error (Enlace vencido o inválido) -->
+        <section id="errorState" class="card hidden" style="border-top: 4px solid #D32F2F;">
+            <header>
+                <h1 style="color: #D32F2F;">Enlace no válido</h1>
+                <p id="errorMessage">El enlace ha caducado o está mal formado.</p>
+            </header>
+        </section>
+
+        <!-- Pantalla de Subida (Enlace válido) -->
+        <section id="uploadState" class="card hidden" style="border-top: 4px solid var(--primary-color);">
+            <header>
+                <h1>Envío de Archivos</h1>
+                <p>Proyecto: <strong id="displayProjectName" style="text-transform: capitalize;"></strong></p>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">
+                    Acceso válido hasta: <span id="displayExpDate"></span>
+                </p>
+            </header>
+
+            <form id="uploadForm">
+                <div class="form-group">
+                    <label for="fileInput">Selecciona tus imágenes</label>
+                    <input type="file" id="fileInput" name="files" multiple accept="image/*" required style="border: 1px dashed var(--border-color); padding: 20px; text-align: center; cursor: pointer;">
+                </div>
+                
+                <div id="fileList" style="margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted);"></div>
+
+                <button type="submit" class="btn-primary" id="submitBtn">Subir a Cloudinary</button>
+            </form>
+
+            <div id="uploadStatus" class="status-msg"></div>
+        </section>
+
+    </main>
+
+    <script src="js/subir.js"></script>
+</body>
+</html>

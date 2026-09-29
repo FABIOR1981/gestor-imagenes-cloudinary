@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Upload Hub</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <main class="dashboard-container">
+        <header>
+            <h1>Generador de Enlaces</h1>
+            <p>Crea links de subida temporales para tus clientes.</p>
+        </header>
+
+        <section class="card">
+            <form id="linkGeneratorForm">
+                <div class="form-group">
+                    <label for="projectName">Proyecto / Cliente</label>
+                    <input type="text" id="projectName" name="projectName" placeholder="ej. monarca, consAge, espacia" required autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label for="expirationDate">Fecha y Hora de Vencimiento</label>
+                    <input type="datetime-local" id="expirationDate" name="expirationDate" required>
+                </div>
+
+                <button type="submit" class="btn-primary">Generar Link Único</button>
+            </form>
+        </section>
+
+        <!-- Contenedor oculto hasta que se genera el link -->
+        <section id="resultContainer" class="card result-card hidden">
+            <h2>Enlace Generado</h2>
+            <p>Copia este link y envíaselo al cliente:</p>
+            <div class="copy-wrapper">
+                <input type="text" id="generatedLink" readonly>
+                <button type="button" id="copyBtn" class="btn-secondary">Copiar</button>
+            </div>
+            <p id="copyStatus" class="status-msg"></p>
+        </section>
+    </main>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
