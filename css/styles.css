@@ -1,12 +1,14 @@
 :root {
-    --primary-color: #4A5D4E; /* Verde oliva (inspirado en Monarca) */
-    --primary-hover: #374439;
-    --bg-color: #F9F8F6;
+    :root {
+    --primary-color: #2563EB; /* Azul tecnológico corporativo (ej. Tailwind Blue 600) */
+    --primary-hover: #1D4ED8;
+    --bg-color: #F8FAFC;     /* Gris muy claro y limpio (Slate 50) */
     --card-bg: #FFFFFF;
-    --text-main: #2C352D;
-    --text-muted: #666666;
-    --border-color: #E0E0E0;
-    --radius: 8px;
+    --text-main: #0F172A;    /* Texto principal oscuro profundo (Slate 900) */
+    --text-muted: #64748B;   /* Gris medio para subtítulos (Slate 500) */
+    --border-color: #E2E8F0; /* Borde sutil (Slate 200) */
+    --radius: 10px;
+}
 }
 
 * {
