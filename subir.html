@@ -10,93 +10,90 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="min-h-screen p-6 md:p-10">
+<body class="min-h-screen p-4 md:p-8">
 
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-7xl mx-auto">
         <!-- Mensaje de Validación Inicial -->
-        <div id="loadingState" class="text-center py-20">
-            <p class="text-lg" style="color: var(--text-muted);">Validando acceso seguro...</p>
+        <div id="loadingState" class="text-center py-24">
+            <p class="text-base font-medium animate-pulse" style="color: var(--text-muted);">Validando acceso seguro...</p>
         </div>
 
-        <!-- Pantalla de Error (Oculta por defecto) -->
-        <div id="errorState" class="card max-w-md mx-auto text-center hidden" style="border-top: 4px solid #EF4444;">
+        <!-- Pantalla de Error -->
+        <div id="errorState" class="card max-w-md mx-auto text-center hidden mt-12 p-8 shadow-xl" style="border-top: 4px solid #EF4444;">
             <h1 class="text-2xl font-bold mb-3" style="color: #EF4444;">Enlace no válido o caducado</h1>
-            <p id="errorMessage" style="color: var(--text-muted); font-size: 0.95rem;">Por seguridad, los enlaces de subida tienen una fecha límite. Solicita uno nuevo al administrador.</p>
+            <p id="errorMessage" style="color: var(--text-muted); font-size: 0.95rem;">Por seguridad, los enlaces de subida tienen una fecha límite estricta. Solicita uno nuevo al administrador.</p>
         </div>
 
-        <!-- Interfaz Principal (Oculta hasta validar) -->
+        <!-- Interfaz Principal -->
         <div id="mainInterface" class="hidden">
             
-            <!-- Encabezado Limpio y Estilizado -->
-            <header class="mb-8 border-b pb-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6" style="border-color: var(--border-color);">
-                <div>
-                    <h1 class="text-3xl font-bold tracking-tight" style="color: var(--text-main);">Envío de Archivos</h1>
-                    <p class="text-sm mt-1" style="color: var(--text-muted);">Proyecto: <strong id="displayProjectName" class="capitalize" style="color: var(--text-main);"></strong></p>
-                    <p class="text-xs mt-1 font-medium" style="color: #D97706;">Válido hasta: <span id="displayExpDate"></span></p>
-                </div>
-                
-                <!-- Controles Globales integrados en tarjeta clara -->
-                <div class="card p-4 flex flex-wrap items-center gap-4 w-full lg:w-auto mb-0 shadow-sm">
+            <!-- Encabezado Pro y Organizado -->
+            <header class="mb-6 card p-5 md:p-6 shadow-sm">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                     <div>
-                        <label for="globalCategory" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Carpeta destino</label>
-                        <select id="globalCategory" class="border rounded px-2.5 py-1.5 text-xs focus-ring"></select>
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 inline-block mb-2">Portal Seguro</span>
+                        <h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: var(--text-main);">Envío de Archivos</h1>
+                        <p class="text-sm mt-1" style="color: var(--text-muted);">Proyecto: <strong id="displayProjectName" class="capitalize" style="color: var(--text-main);"></strong></p>
+                        <p class="text-xs mt-1 font-medium" style="color: #D97706;">Válido hasta: <span id="displayExpDate"></span></p>
                     </div>
-                    <div>
-                        <label for="globalMaxWidth" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Ancho Máx.</label>
-                        <select id="globalMaxWidth" class="border rounded px-2.5 py-1.5 text-xs focus-ring">
-                            <option value="800">800 px (Liviana)</option>
-                            <option value="1200" selected>1200 px (Estándar)</option>
-                            <option value="1600">1600 px (Intermedia)</option>
-                            <option value="1920">1920 px (Alta / HD)</option>
-                            <option value="0">Original</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="globalTitle" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Título global</label>
-                        <input type="text" id="globalTitle" placeholder="Ej.: Fiesta 2026" class="border rounded px-2.5 py-1.5 text-xs focus-ring w-32">
-                    </div>
-                    <div class="flex items-center gap-2 border-l pl-4 h-8" style="border-color: var(--border-color);">
-                        <input type="checkbox" id="globalKeepOriginal" checked class="w-4 h-4 cursor-pointer accent-blue-600">
-                        <label for="globalKeepOriginal" class="text-xs cursor-pointer" style="color: var(--text-main);">Respetar nombre</label>
-                    </div>
-                    <div class="flex flex-col gap-1 border-l pl-4" style="border-color: var(--border-color);">
-                        <label for="globalQuality" class="text-xs font-semibold" style="color: var(--text-muted);">Calidad (<span id="qualityVal">80</span>%)</label>
-                        <input type="range" id="globalQuality" min="40" max="100" value="80" class="cursor-pointer w-20 accent-blue-600">
+                    
+                    <!-- Controles Globales Responsivos -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap items-end gap-3 w-full lg:w-auto pt-4 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                        <div>
+                            <label for="globalCategory" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Carpeta destino</label>
+                            <select id="globalCategory" class="border rounded px-2.5 py-2 text-xs focus-ring w-full bg-slate-50 font-medium"></select>
+                        </div>
+                        <div>
+                            <label for="globalMaxWidth" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Ancho Máx.</label>
+                            <select id="globalMaxWidth" class="border rounded px-2.5 py-2 text-xs focus-ring w-full bg-slate-50 font-medium">
+                                <option value="800">800 px (Liviana)</option>
+                                <option value="1200" selected>1200 px (Estándar)</option>
+                                <option value="1600">1600 px (Intermedia)</option>
+                                <option value="1920">1920 px (Alta / HD)</option>
+                                <option value="0">Original</option>
+                            </select>
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label for="globalTitle" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Título global</label>
+                            <input type="text" id="globalTitle" placeholder="Ej.: Actividad 2026" class="border rounded px-2.5 py-2 text-xs focus-ring w-full bg-slate-50">
+                        </div>
+                        <div class="flex items-center gap-2 col-span-2 sm:col-span-3 lg:col-span-auto pt-2 lg:pt-0">
+                            <input type="checkbox" id="globalKeepOriginal" checked class="w-4 h-4 cursor-pointer accent-blue-600">
+                            <label for="globalKeepOriginal" class="text-xs cursor-pointer font-medium" style="color: var(--text-main);">Respetar nombre original</label>
+                        </div>
                     </div>
                 </div>
             </header>
 
-            <p class="text-sm mb-6" style="color: var(--text-muted);">
-                Ajusta los píxeles máximos y la barra de compresión según prefieras. Cada tarjeta calculará automáticamente el peso final resultante frente al original.
-            </p>
-
-            <!-- Zona de Carga Luminosa -->
+            <!-- Zona de Carga (Drag & Drop amigable para Celular y PC) -->
             <div class="mb-8">
-                <label for="fileInput" class="card border-2 border-dashed p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group hover:border-blue-600" style="border-color: var(--border-color);">
-                    <svg class="w-12 h-12 mb-3 text-slate-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    <span class="text-sm font-semibold" style="color: var(--text-main);">Arrastra tus imágenes aquí o <span class="text-blue-600 underline">haz clic para buscar</span></span>
-                    <span class="text-xs mt-1" style="color: var(--text-muted);">Soporta múltiples archivos PNG, JPG, WEBP</span>
+                <label for="fileInput" class="card border-2 border-dashed p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group hover:border-blue-600 hover:bg-blue-50/20 text-center" style="border-color: var(--border-color);">
+                    <div class="w-14 h-14 mb-3 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-sm md:text-base font-semibold" style="color: var(--text-main);">Toca aquí para seleccionar imágenes o arrástralas</span>
+                    <span class="text-xs mt-1" style="color: var(--text-muted);">Soporta múltiples archivos PNG, JPG, WEBP de alta calidad</span>
                     <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
                 </label>
             </div>
 
-            <!-- Acciones Globales -->
-            <div id="batchActions" class="card hidden mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-4 shadow-sm">
-                <span id="counterText" class="text-sm font-semibold" style="color: var(--text-main);">0 imágenes cargadas</span>
-                <div class="flex gap-2">
-                    <button id="uploadAllBtn" class="btn-primary" style="width: auto; padding: 8px 16px; margin: 0; font-size: 0.85rem;">
-                        Subir todas a Cloudinary
+            <!-- Acciones Globales Flotantes / de Lote -->
+            <div id="batchActions" class="card hidden mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 p-4 shadow-md bg-white border-l-4 border-l-blue-600">
+                <span id="counterText" class="text-sm font-bold" style="color: var(--text-main);">0 imágenes cargadas</span>
+                <div class="flex flex-wrap gap-2.5 w-full sm:w-auto justify-end">
+                    <button id="uploadAllBtn" class="btn-primary flex-1 sm:flex-none py-2.5 px-5 text-xs md:text-sm">
+                        🚀 Subir todas a Cloudinary
                     </button>
-                    <button id="downloadAllBtn" class="btn-secondary" style="font-size: 0.85rem; padding: 8px 16px;">
-                        Descargar todas (.WebP)
+                    <button id="downloadAllBtn" class="btn-secondary flex-1 sm:flex-none py-2.5 px-4 text-xs md:text-sm">
+                        📥 Descargar .WebP
                     </button>
                 </div>
             </div>
 
-            <!-- Contenedor de Tarjetas -->
-            <div id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <!-- Contenedor de Tarjetas (Grid Optimizado) -->
+            <div id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
         </div>
     </div>
 
@@ -132,13 +129,12 @@
                     return;
                 }
 
-                PROYECTO_ACTUAL = payload.project; // Ej: "monarca" o "enBlanco/residencial"
+                PROYECTO_ACTUAL = payload.project; 
                 BASE_FOLDER = PROYECTO_ACTUAL; 
 
                 document.getElementById('displayProjectName').textContent = PROYECTO_ACTUAL;
                 document.getElementById('displayExpDate').textContent = new Date(payload.exp).toLocaleString('es-UY', { dateStyle: 'medium', timeStyle: 'short' });
 
-                // Cargar carpetas específicas desde proyectos.json
                 let projectFolders = [
                     { value: 'galeria', label: 'Galería' },
                     { value: 'instalaciones', label: 'Instalaciones' }
@@ -154,7 +150,7 @@
                         }
                     }
                 } catch (err) {
-                    console.warn('No se pudo cargar proyectos.json, usando carpetas por defecto', err);
+                    console.warn('Usando carpetas por defecto', err);
                 }
 
                 loadingState.classList.add('hidden');
@@ -170,7 +166,6 @@
 
         function initApp(initialFolders) {
             const NEW_FOLDER_OPTION = '__nueva__';
-            // Sanitizar el ID del proyecto para usarlo en localStorage (reemplaza '/' por '_')
             const safeProjKey = PROYECTO_ACTUAL.replace(/\//g, '_');
             const LAST_FOLDER_KEY = `hub_ultima_carpeta_${safeProjKey}`;
             const FOLDERS_KEY = `hub_subcarpetas_${safeProjKey}`;
@@ -182,8 +177,6 @@
             const globalMaxWidth = document.getElementById('globalMaxWidth');
             const globalTitle = document.getElementById('globalTitle');
             const globalKeepOriginal = document.getElementById('globalKeepOriginal');
-            const globalQuality = document.getElementById('globalQuality');
-            const qualityVal = document.getElementById('qualityVal');
             const batchActions = document.getElementById('batchActions');
             const counterText = document.getElementById('counterText');
             const downloadAllBtn = document.getElementById('downloadAllBtn');
@@ -220,7 +213,7 @@
             function buildFolderOptionsHtml(selectedValue) {
                 const folders = loadFolders();
                 const opts = folders.map(f => `<option value="${f.value}" ${f.value === selectedValue ? 'selected' : ''}>${f.label}</option>`).join('');
-                return opts + `<option value="${NEW_FOLDER_OPTION}">+ Crear nueva carpeta…</option>`;
+                return opts + `<option value="${NEW_FOLDER_OPTION}">+ Nueva carpeta…</option>`;
             }
 
             function populateGlobalCategory(selectedValue) {
@@ -255,13 +248,6 @@
                     imageFiles.forEach(item => { item.category = finalValue; });
                     renderCards();
                 });
-            });
-
-            globalQuality.addEventListener('input', (e) => {
-                qualityVal.textContent = e.target.value;
-                const q = parseInt(e.target.value) / 100;
-                imageFiles.forEach(item => { item.quality = q; });
-                imageFiles.forEach((_, idx) => drawPreviewAndMeasure(idx));
             });
 
             globalMaxWidth.addEventListener('change', () => {
@@ -305,7 +291,7 @@
                                 customDescription: '',
                                 maxWidth: parseInt(globalMaxWidth.value),
                                 dateStr: dateStr,
-                                quality: parseInt(globalQuality.value) / 100
+                                quality: 0.8
                             });
                             
                             processedCount++;
@@ -360,33 +346,37 @@
 
                 imageFiles.forEach((item, index) => {
                     const card = document.createElement('div');
-                    card.className = "card flex flex-col gap-3";
+                    card.className = "card flex flex-col gap-4 shadow-sm transition-all hover:shadow-md";
                     const finalGeneratedName = `${getFinalName(item)}.webp`;
 
                     card.innerHTML = `
-                        <div class="relative rounded-lg overflow-hidden aspect-video flex items-center justify-center border bg-slate-100" style="border-color: var(--border-color);">
+                        <!-- Vista Previa de la Imagen -->
+                        <div class="relative rounded-lg overflow-hidden aspect-video flex items-center justify-center border bg-slate-900" style="border-color: var(--border-color);">
                             <canvas id="canvas-${index}" class="preview-canvas object-contain w-full h-full"></canvas>
                         </div>
-                        <div class="flex flex-col gap-2 text-xs">
-                            <div class="flex justify-between items-center" style="color: var(--text-muted);">
-                                <span>Original: <strong style="color: var(--text-main);">${formatBytes(item.originalSize)}</strong></span>
+
+                        <!-- Panel de Datos e Inputs -->
+                        <div class="flex flex-col gap-2.5 text-xs">
+                            <div class="flex justify-between items-center pb-1 border-b border-slate-100">
+                                <span style="color: var(--text-muted);">Original: <strong style="color: var(--text-main);">${formatBytes(item.originalSize)}</strong></span>
                                 <div class="flex items-center gap-1.5">
                                     <input type="checkbox" data-index="${index}" class="card-keep-original w-3.5 h-3.5 cursor-pointer accent-blue-600" ${item.keepOriginal ? 'checked' : ''}>
-                                    <span class="cursor-pointer">Respetar nombre</span>
+                                    <span class="cursor-pointer font-medium" style="color: var(--text-main);">Respetar nombre</span>
                                 </div>
                             </div>
-                            ${item.keepOriginal ? `<div class="w-full border rounded px-2 py-1.5 truncate bg-slate-50" style="border-color: var(--border-color); color: var(--text-muted);">${item.originalName}</div>` : `<input type="text" value="${item.customName}" data-index="${index}" placeholder="Nombre..." class="custom-name-input w-full border rounded px-2 py-1 focus-ring">`}
+
+                            ${item.keepOriginal ? `<div class="w-full border rounded px-2.5 py-1.5 truncate bg-slate-50 font-mono text-xs" style="border-color: var(--border-color); color: var(--text-muted);">${item.originalName}</div>` : `<input type="text" value="${item.customName}" data-index="${index}" placeholder="Nombre corto..." class="custom-name-input w-full border rounded px-2.5 py-1.5 focus-ring font-mono text-xs">`}
                             
-                            <div class="grid grid-cols-2 gap-2 mt-1">
+                            <div class="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label style="color: var(--text-muted);">Carpeta:</label>
-                                    <select data-index="${index}" class="category-select w-full border rounded px-2 py-1 focus-ring">
+                                    <label class="font-semibold block mb-1" style="color: var(--text-muted);">Carpeta:</label>
+                                    <select data-index="${index}" class="category-select w-full border rounded px-2 py-1.5 focus-ring bg-white">
                                         ${buildFolderOptionsHtml(item.category)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label style="color: var(--text-muted);">Ancho máx.:</label>
-                                    <select data-index="${index}" class="card-maxwidth-select w-full border rounded px-2 py-1 focus-ring">
+                                    <label class="font-semibold block mb-1" style="color: var(--text-muted);">Ancho máx.:</label>
+                                    <select data-index="${index}" class="card-maxwidth-select w-full border rounded px-2 py-1.5 focus-ring bg-white">
                                         <option value="800" ${item.maxWidth === 800 ? 'selected' : ''}>800 px</option>
                                         <option value="1200" ${item.maxWidth === 1200 ? 'selected' : ''}>1200 px</option>
                                         <option value="1600" ${item.maxWidth === 1600 ? 'selected' : ''}>1600 px</option>
@@ -395,25 +385,28 @@
                                     </select>
                                 </div>
                                 <div class="col-span-2">
-                                    <label style="color: var(--text-muted);">Título:</label>
-                                    <input type="text" value="${item.customTitle.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}" data-index="${index}" placeholder="Título opcional" class="title-input w-full border rounded px-2 py-1 focus-ring">
+                                    <label class="font-semibold block mb-1" style="color: var(--text-muted);">Título descriptivo:</label>
+                                    <input type="text" value="${item.customTitle.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}" data-index="${index}" placeholder="Ej. Vista principal" class="title-input w-full border rounded px-2.5 py-1.5 focus-ring">
                                 </div>
                                 <div class="col-span-2">
-                                    <label style="color: var(--text-muted);">Descripción:</label>
-                                    <textarea data-index="${index}" placeholder="Descripción opcional" class="description-input w-full border rounded px-2 py-1 focus-ring" rows="2">${item.customDescription ? item.customDescription.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])) : ''}</textarea>
+                                    <label class="font-semibold block mb-1" style="color: var(--text-muted);">Descripción (Opcional):</label>
+                                    <textarea data-index="${index}" placeholder="Detalles de la toma..." class="description-input w-full border rounded px-2.5 py-1.5 focus-ring" rows="2">${item.customDescription ? item.customDescription.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])) : ''}</textarea>
                                 </div>
                             </div>
                             
-                            <div class="truncate mt-1 p-1.5 rounded border flex justify-between items-center bg-slate-50 text-blue-700 font-medium" style="border-color: var(--border-color);">
+                            <!-- Ruta final resultante -->
+                            <div class="truncate mt-1 p-2 rounded border flex justify-between items-center bg-slate-50 font-mono text-[11px] text-blue-700 font-medium" style="border-color: var(--border-color);">
                                 <span class="truncate"><span style="color: var(--text-muted);">${BASE_FOLDER}/${item.category}/</span>${finalGeneratedName}</span>
-                                <span id="size-badge-${index}" class="px-1.5 py-0.5 rounded shrink-0 bg-slate-200 text-slate-700">Calc...</span>
+                                <span id="size-badge-${index}" class="px-2 py-0.5 rounded shrink-0 bg-slate-200 text-slate-700 font-sans font-semibold">Calc...</span>
                             </div>
                         </div>
+
+                        <!-- Botones de Acción Individual -->
                         <div class="flex justify-between items-center pt-3 border-t mt-auto gap-2 flex-wrap" style="border-color: var(--border-color);">
-                            <button data-index="${index}" class="delete-btn text-xs font-semibold text-red-600 hover:text-red-700 cursor-pointer">Eliminar</button>
+                            <button data-index="${index}" class="delete-btn text-xs font-semibold text-red-600 hover:text-red-700 cursor-pointer p-1">Eliminar</button>
                             <div class="flex items-center gap-2 flex-wrap justify-end">
-                                <span id="upload-status-${index}" class="text-xs px-2 py-1 rounded shrink-0 bg-slate-100 font-medium" style="color: var(--text-muted);">Pendiente</span>
-                                <button data-index="${index}" class="upload-btn font-bold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-blue-600 hover:bg-blue-700 text-white">Subir</button>
+                                <span id="upload-status-${index}" class="text-xs px-2.5 py-1 rounded shrink-0 bg-slate-100 font-semibold" style="color: var(--text-muted);">Pendiente</span>
+                                <button data-index="${index}" class="upload-btn font-bold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-blue-600 hover:bg-blue-700 text-white shadow-sm">Subir</button>
                                 <button data-index="${index}" class="download-single-btn font-bold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-slate-200 hover:bg-slate-300 text-slate-800">Descargar</button>
                             </div>
                         </div>
@@ -491,7 +484,7 @@
 
                 if (statusEl) {
                     statusEl.textContent = 'Subiendo…'; 
-                    statusEl.className = "text-xs px-2 py-1 rounded shrink-0 bg-blue-50 text-blue-600 font-medium";
+                    statusEl.className = "text-xs px-2.5 py-1 rounded shrink-0 bg-blue-50 text-blue-600 font-semibold";
                 }
 
                 try {
@@ -523,12 +516,12 @@
 
                     if (statusEl) {
                         statusEl.textContent = `✓ Éxito`; 
-                        statusEl.className = "text-xs px-2 py-1 rounded shrink-0 bg-emerald-50 text-emerald-700 font-medium";
+                        statusEl.className = "text-xs px-2.5 py-1 rounded shrink-0 bg-emerald-50 text-emerald-700 font-semibold";
                     }
                 } catch (err) {
                     if (statusEl) {
                         statusEl.textContent = 'Error ✕'; 
-                        statusEl.className = "text-xs px-2 py-1 rounded shrink-0 bg-red-50 text-red-600 font-medium";
+                        statusEl.className = "text-xs px-2.5 py-1 rounded shrink-0 bg-red-50 text-red-600 font-semibold";
                         statusEl.title = err.message;
                     }
                 }
