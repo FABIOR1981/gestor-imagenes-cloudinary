@@ -1,12 +1,12 @@
 :root {
-    --primary-color: #2563EB;     /* Azul corporativo */
+    --primary-color: #2563EB;     /* Azul corporativo brillante */
     --primary-hover: #1D4ED8;     /* Azul corporativo oscuro */
-    --bg-color: #0F172A;          /* Gris muy oscuro / Azulado de fondo (Slate 900) */
-    --card-bg: #1E293B;           /* Gris pizarra oscuro para tarjetas (Slate 800) */
-    --text-main: #F8FAFC;         /* Blanco/Gris muy claro para textos (Slate 50) */
-    --text-muted: #94A3B8;        /* Gris claro para subtítulos y textos secundarios (Slate 400) */
-    --border-color: #334155;      /* Borde sutil oscuro (Slate 700) */
-    --input-bg: #0F172A;          /* Fondo de los inputs interno */
+    --bg-color: #F1F5F9;         /* Gris muy suave y luminoso de fondo (Slate 100) */
+    --card-bg: #FFFFFF;           /* Blanco puro para tarjetas y contenedores */
+    --text-main: #0F172A;         /* Texto principal oscuro y de alto contraste (Slate 900) */
+    --text-muted: #64748B;        /* Gris medio para subtítulos (Slate 500) */
+    --border-color: #CBD5E1;      /* Borde claro y elegante (Slate 300) */
+    --input-bg: #FFFFFF;          /* Fondo blanco limpio para los inputs */
     --radius: 10px;
 }
 
@@ -39,7 +39,7 @@ body {
 .focus-ring:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 /* ==========================================
@@ -66,7 +66,7 @@ header p {
     background: var(--card-bg);
     padding: 28px;
     border-radius: var(--radius);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     border: 1px solid var(--border-color);
     margin-bottom: 20px;
 }
@@ -101,7 +101,7 @@ input:focus,
 textarea:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 button {
@@ -144,8 +144,8 @@ button {
 }
 
 .copy-wrapper input {
-    background-color: var(--input-bg);
-    color: var(--text-muted);
+    background-color: #F8FAFC;
+    color: var(--text-main);
     border: 1px solid var(--border-color);
     padding: 10px 12px;
     border-radius: var(--radius);
@@ -154,7 +154,7 @@ button {
 }
 
 .btn-secondary {
-    background-color: #334155;
+    background-color: #E2E8F0;
     color: var(--text-main);
     width: auto;
     padding: 0 20px;
@@ -162,13 +162,13 @@ button {
 }
 
 .btn-secondary:hover {
-    background-color: #475569;
+    background-color: #CBD5E1;
 }
 
 .status-msg {
     margin-top: 12px;
     font-size: 0.85rem;
-    color: #34D399;
+    color: #16A34A; /* Verde esmeralda claro para éxito */
     text-align: center;
     min-height: 20px;
     font-weight: 500;
