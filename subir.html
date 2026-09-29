@@ -147,7 +147,7 @@
                 }
 
                 PROYECTO_ACTUAL = payload.project;
-                BASE_FOLDER = `proyectos/${PROYECTO_ACTUAL}`; 
+                BASE_FOLDER = PROYECTO_ACTUAL; 
 
                 document.getElementById('displayProjectName').textContent = PROYECTO_ACTUAL;
                 document.getElementById('displayExpDate').textContent = new Date(payload.exp).toLocaleString('es-UY', { dateStyle: 'medium', timeStyle: 'short' });
