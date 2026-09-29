@@ -3,101 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subir Imágenes | Envío Seguro</title>
+    <title>Subir Archivos | Gestor de Imágenes</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="min-h-screen p-6">
+<body class="min-h-screen p-6 md:p-10">
 
-    <!-- Mensaje de Validación Inicial -->
-    <div id="loadingState" class="max-w-6xl mx-auto text-center py-20">
-        <p class="text-xl text-gray-600">Validando acceso seguro...</p>
-    </div>
-
-    <!-- Pantalla de Error (Oculta por defecto) -->
-    <div id="errorState" class="max-w-2xl mx-auto bg-white rounded-xl border p-8 mt-10 text-center shadow-sm hidden" style="border-top: 4px solid #D32F2F; border-color:#E7E3DC;">
-        <h1 class="text-3xl font-bold mb-4" style="color: #D32F2F;">Enlace no válido o caducado</h1>
-        <p id="errorMessage" style="color:var(--text-muted);">Por seguridad, los enlaces de subida tienen una fecha límite. Solicita uno nuevo.</p>
-    </div>
-
-    <!-- Interfaz Principal (Oculta hasta validar) -->
-    <div id="mainInterface" class="max-w-6xl mx-auto hidden">
-        <header class="mb-6 border-b pb-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4" style="border-color:#E7E3DC;">
-            <div>
-                <h1 class="text-3xl font-bold tracking-tight" style="color:var(--primary-dark);">Envío de Archivos</h1>
-                <p class="text-sm mt-1" style="color:var(--text-muted);">Proyecto: <strong id="displayProjectName" class="capitalize"></strong></p>
-                <p class="text-xs mt-1 text-red-600">Válido hasta: <span id="displayExpDate"></span></p>
-            </div>
-            <div class="flex flex-wrap items-end gap-4 bg-white p-3 rounded-xl border" style="border-color:#E7E3DC;">
-                <div>
-                    <label for="globalCategory" class="text-sm font-medium block mb-1" style="color:var(--text-muted);">Carpeta por defecto</label>
-                    <select id="globalCategory" class="border rounded px-2 py-1.5 text-sm focus-ring" style="border-color:#D8D3C8; color:var(--primary-dark);"></select>
-                </div>
-                <div>
-                    <label for="globalMaxWidth" class="text-sm font-medium block mb-1" style="color:var(--text-muted);">Ancho Máx. (px)</label>
-                    <select id="globalMaxWidth" class="border rounded px-2 py-1.5 text-sm focus-ring" style="border-color:#D8D3C8; color:var(--primary-dark);">
-                        <option value="800">800 px (Liviana)</option>
-                        <option value="1200" selected>1200 px (Estándar)</option>
-                        <option value="1600">1600 px (Intermedia)</option>
-                        <option value="1920">1920 px (Alta / HD)</option>
-                        <option value="0">Original (Sin redimensionar)</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="globalTitle" class="text-sm font-medium block mb-1" style="color:var(--text-muted);">Título global</label>
-                    <input type="text" id="globalTitle" placeholder="Ej.: Fiesta 2026" class="border rounded px-2 py-1.5 text-sm focus-ring" style="border-color:#D8D3C8; color:var(--primary-dark);">
-                </div>
-                <div class="flex items-center gap-2 border-l pl-4" style="border-color:#E7E3DC;">
-                    <input type="checkbox" id="globalKeepOriginal" checked class="w-4 h-4 cursor-pointer" style="accent-color:var(--accent);">
-                    <label for="globalKeepOriginal" class="text-sm cursor-pointer">Respetar nombre</label>
-                </div>
-                <div class="flex items-center gap-2 border-l pl-4" style="border-color:#E7E3DC;">
-                    <label for="globalQuality" class="text-sm">Calidad (<span id="qualityVal">80</span>%)</label>
-                    <input type="range" id="globalQuality" min="40" max="100" value="80" class="cursor-pointer w-24" style="accent-color:var(--accent);">
-                </div>
-            </div>
-        </header>
-
-        <p class="text-sm mb-8" style="color:var(--text-main);">
-            Ajusta los píxeles máximos y la barra de compresión según prefieras. Cada tarjeta calculará automáticamente el peso final resultante frente al original.
-        </p>
-
-        <!-- Zona de Carga -->
-        <div class="mb-8">
-            <label for="fileInput" class="border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group bg-white"
-                   style="border-color:#D8D3C8;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='#D8D3C8'">
-                <svg class="w-12 h-12 mb-3 transition-colors" style="color:var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                <span class="text-sm font-medium" style="color:var(--text-main);">Arrastra tus imágenes aquí o <span class="underline" style="color:var(--primary);">haz clic para buscar</span></span>
-                <span class="text-sm mt-1" style="color:var(--text-muted);">Soporta múltiples archivos PNG, JPG, WEBP</span>
-                <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
-            </label>
+    <div class="max-w-6xl mx-auto">
+        <!-- Mensaje de Validación Inicial -->
+        <div id="loadingState" class="text-center py-20">
+            <p class="text-lg text-slate-400">Validando acceso seguro...</p>
         </div>
 
-        <!-- Acciones Globales -->
-        <div id="batchActions" class="hidden mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-xl border" style="border-color:#E7E3DC;">
-            <span id="counterText" class="text-sm font-medium">0 imágenes cargadas</span>
-            <div class="flex gap-2">
-                <button id="uploadAllBtn" class="btn-primary font-bold px-5 py-2 rounded-lg text-sm transition-colors shadow-sm cursor-pointer">
-                    Subir todas a Cloudinary
-                </button>
-                <button id="downloadAllBtn" class="btn-accent font-bold px-5 py-2 rounded-lg text-sm transition-colors shadow-sm cursor-pointer">
-                    Descargar todas (.WebP)
-                </button>
-            </div>
+        <!-- Pantalla de Error (Oculta por defecto) -->
+        <div id="errorState" class="max-w-md mx-auto rounded-xl border p-8 text-center shadow-lg hidden bg-slate-800 border-slate-700" style="border-top: 4px solid #EF4444;">
+            <h1 class="text-2xl font-bold mb-3 text-red-400">Enlace no válido o caducado</h1>
+            <p id="errorMessage" class="text-slate-400 text-sm">Por seguridad, los enlaces de subida tienen una fecha límite. Solicita uno nuevo al administrador.</p>
         </div>
 
-        <!-- Contenedor de Tarjetas -->
-        <div id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        <!-- Interfaz Principal (Oculta hasta validar) -->
+        <div id="mainInterface" class="hidden">
+            
+            <!-- Encabezado corregido para evitar solapamientos -->
+            <header class="mb-6 border-b pb-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 border-slate-700">
+                <div>
+                    <h1 class="text-3xl font-bold tracking-tight text-white">Envío de Archivos</h1>
+                    <p class="text-sm mt-1 text-slate-400">Proyecto: <strong id="displayProjectName" class="capitalize text-white"></strong></p>
+                    <p class="text-xs mt-1 text-amber-400">Válido hasta: <span id="displayExpDate"></span></p>
+                </div>
+                
+                <!-- Controles Globales ordenados -->
+                <div class="flex flex-wrap items-center gap-4 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-sm w-full lg:w-auto">
+                    <div>
+                        <label for="globalCategory" class="text-xs font-medium block mb-1 text-slate-400">Carpeta destino</label>
+                        <select id="globalCategory" class="border border-slate-600 rounded px-2.5 py-1.5 text-xs focus-ring bg-slate-900 text-white"></select>
+                    </div>
+                    <div>
+                        <label for="globalMaxWidth" class="text-xs font-medium block mb-1 text-slate-400">Ancho Máx.</label>
+                        <select id="globalMaxWidth" class="border border-slate-600 rounded px-2.5 py-1.5 text-xs focus-ring bg-slate-900 text-white">
+                            <option value="800">800 px (Liviana)</option>
+                            <option value="1200" selected>1200 px (Estándar)</option>
+                            <option value="1600">1600 px (Intermedia)</option>
+                            <option value="1920">1920 px (Alta / HD)</option>
+                            <option value="0">Original</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="globalTitle" class="text-xs font-medium block mb-1 text-slate-400">Título global</label>
+                        <input type="text" id="globalTitle" placeholder="Ej.: Fiesta 2026" class="border border-slate-600 rounded px-2.5 py-1.5 text-xs focus-ring bg-slate-900 text-white w-32">
+                    </div>
+                    <div class="flex items-center gap-2 border-l border-slate-700 pl-4 h-8">
+                        <input type="checkbox" id="globalKeepOriginal" checked class="w-4 h-4 cursor-pointer accent-blue-600">
+                        <label for="globalKeepOriginal" class="text-xs cursor-pointer text-slate-300">Respetar nombre</label>
+                    </div>
+                    <div class="flex flex-col gap-1 border-l border-slate-700 pl-4">
+                        <label for="globalQuality" class="text-xs text-slate-300">Calidad (<span id="qualityVal">80</span>%)</label>
+                        <input type="range" id="globalQuality" min="40" max="100" value="80" class="cursor-pointer w-20 accent-blue-600">
+                    </div>
+                </div>
+            </header>
+
+            <p class="text-sm mb-6 text-slate-400">
+                Ajusta los píxeles máximos y la barra de compresión según prefieras. Cada tarjeta calculará automáticamente el peso final resultante frente al original.
+            </p>
+
+            <!-- Zona de Carga con contraste correcto -->
+            <div class="mb-8">
+                <label for="fileInput" class="border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group bg-slate-800 border-slate-600 hover:border-blue-500">
+                    <svg class="w-12 h-12 mb-3 text-slate-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <span class="text-sm font-medium text-slate-200">Arrastra tus imágenes aquí o <span class="text-blue-400 underline">haz clic para buscar</span></span>
+                    <span class="text-xs mt-1 text-slate-400">Soporta múltiples archivos PNG, JPG, WEBP</span>
+                    <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
+                </label>
+            </div>
+
+            <!-- Acciones Globales -->
+            <div id="batchActions" class="hidden mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-sm">
+                <span id="counterText" class="text-sm font-medium text-slate-300">0 imágenes cargadas</span>
+                <div class="flex gap-2">
+                    <button id="uploadAllBtn" class="font-bold px-5 py-2 rounded-lg text-sm transition-colors shadow-sm cursor-pointer bg-blue-600 hover:bg-blue-700 text-white">
+                        Subir todas a Cloudinary
+                    </button>
+                    <button id="downloadAllBtn" class="font-bold px-5 py-2 rounded-lg text-sm transition-colors shadow-sm cursor-pointer bg-slate-700 hover:bg-slate-600 text-white">
+                        Descargar todas (.WebP)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contenedor de Tarjetas -->
+            <div id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </div>
     </div>
 
     <script src="js/config.js"></script>
     <script>
-        // Variables globales inyectadas desde el Token
         let PROYECTO_ACTUAL = "";
         let BASE_FOLDER = "";
 
@@ -178,15 +182,13 @@
             }
 
             function saveFolders(list) {
-                try { localStorage.setItem(FOLDERS_KEY, JSON.stringify(list)); }
-                catch (e) { console.error('No se pudo guardar la lista de carpetas:', e); }
+                try { localStorage.setItem(FOLDERS_KEY, JSON.stringify(list)); } catch (e) {}
             }
 
             function getLastFolder() {
                 const last = localStorage.getItem(LAST_FOLDER_KEY);
                 const folders = loadFolders();
-                const defaultFolder = cfgCloudinary.CARPETA_DEFAULT || folders[0].value;
-                return (last && folders.find(f => f.value === last)) ? last : defaultFolder;
+                return (last && folders.find(f => f.value === last)) ? last : folders[0].value;
             }
 
             function setLastFolder(value) {
@@ -194,17 +196,12 @@
             }
 
             function slugifyFolder(name) {
-                return name.trim().toLowerCase()
-                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                    .replace(/[^a-z0-9]+/g, '_')
-                    .replace(/^_+|_+$/g, '');
+                return name.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
             }
 
             function buildFolderOptionsHtml(selectedValue) {
                 const folders = loadFolders();
-                const opts = folders.map(f =>
-                    `<option value="${f.value}" ${f.value === selectedValue ? 'selected' : ''}>${f.label}</option>`
-                ).join('');
+                const opts = folders.map(f => `<option value="${f.value}" ${f.value === selectedValue ? 'selected' : ''}>${f.label}</option>`).join('');
                 return opts + `<option value="${NEW_FOLDER_OPTION}">+ Crear nueva carpeta…</option>`;
             }
 
@@ -218,7 +215,7 @@
                     onResolved(selectEl.value);
                     return;
                 }
-                const raw = prompt('Nombre de la nueva carpeta (ej: "Eventos", "Equipo"):');
+                const raw = prompt('Nombre de la nueva carpeta:');
                 const slug = raw ? slugifyFolder(raw) : '';
                 if (!slug) {
                     selectEl.value = getLastFolder();
@@ -262,37 +259,40 @@
 
                 files.forEach(file => {
                     if (!file.type.startsWith('image/')) return;
-
                     const reader = new FileReader();
                     reader.onload = (event) => {
                         const img = new Image();
                         img.onload = () => {
-                            const randomStr = Math.random().toString(36);
                             const fileDate = file.lastModified ? new Date(file.lastModified) : new Date();
                             const rawName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-                            const keepOrig = globalKeepOriginal.checked;
+                            
+                            const yyyy = fileDate.getFullYear();
+                            const mm = String(fileDate.getMonth() + 1).padStart(2, '0');
+                            const dd = String(fileDate.getDate()).padStart(2, '0');
+                            const hh = String(fileDate.getHours()).padStart(2, '0');
+                            const min = String(fileDate.getMinutes()).padStart(2, '0');
+                            const ss = String(fileDate.getSeconds()).padStart(2, '0');
+                            const dateStr = `${yyyy}${mm}${dd}${hh}${min}${ss}`;
 
-                            const imgData = {
-                                id: randomStr.substring(2, 9),
+                            imageFiles.push({
                                 fileObj: file,
                                 imgElement: img,
                                 originalSize: file.size,
                                 timestamp: fileDate.getTime(),
-                                keepOriginal: keepOrig,
+                                keepOriginal: globalKeepOriginal.checked,
                                 originalName: rawName,
                                 customName: 'imagen',
                                 category: defaultFolder,
                                 customTitle: globalTitle.value.trim(),
                                 customDescription: '',
                                 maxWidth: parseInt(globalMaxWidth.value),
-                                dateStr: getFormattedDate(fileDate),
+                                dateStr: dateStr,
                                 quality: parseInt(globalQuality.value) / 100
-                            };
-                            imageFiles.push(imgData);
+                            });
+                            
                             processedCount++;
-
                             if (processedCount === files.filter(f => f.type.startsWith('image/')).length) {
-                                sortImages();
+                                imageFiles.sort((a, b) => b.timestamp - a.timestamp);
                                 renderCards();
                             }
                         };
@@ -309,36 +309,12 @@
                 renderCards();
             });
 
-            function getFormattedDate(dateObj) {
-                const yyyy = dateObj.getFullYear();
-                const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-                const dd = String(dateObj.getDate()).padStart(2, '0');
-                const hh = String(dateObj.getHours()).padStart(2, '0');
-                const min = String(dateObj.getMinutes()).padStart(2, '0');
-                const ss = String(dateObj.getSeconds()).padStart(2, '0');
-                return `${yyyy}${mm}${dd}${hh}${min}${ss}`;
-            }
-
-            function sortImages() {
-                imageFiles.sort((a, b) => b.timestamp - a.timestamp);
-            }
-
             function formatBytes(bytes) {
                 if (bytes === 0) return '0 Bytes';
                 const k = 1024, dm = 2;
                 const sizes = ['Bytes', 'KB', 'MB'];
                 const i = Math.floor(Math.log(bytes) / Math.log(k));
                 return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-            }
-
-            function escapeHtml(value) {
-                return String(value).replace(/[&<>'"]/g, character => ({
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    "'": '&#39;',
-                    '"': '&quot;'
-                }[character]));
             }
 
             function getFinalName(item) {
@@ -366,42 +342,33 @@
 
                 imageFiles.forEach((item, index) => {
                     const card = document.createElement('div');
-                    card.className = "bg-white rounded-xl border p-4 flex flex-col gap-3 shadow-sm";
-                    card.style.borderColor = '#E7E3DC';
-
+                    card.className = "rounded-xl border p-4 flex flex-col gap-3 shadow-sm bg-slate-800 border-slate-700";
                     const finalGeneratedName = `${getFinalName(item)}.webp`;
 
                     card.innerHTML = `
-                        <div class="relative rounded-lg overflow-hidden aspect-video flex items-center justify-center border" style="background:#F1EFEA; border-color:#E7E3DC;">
+                        <div class="relative rounded-lg overflow-hidden aspect-video flex items-center justify-center border bg-slate-900 border-slate-700">
                             <canvas id="canvas-${index}" class="preview-canvas object-contain w-full h-full"></canvas>
                         </div>
-                        <div class="flex flex-col gap-2 text-sm">
-                            <div class="flex justify-between items-center text-sm" style="color:var(--text-muted);">
-                                <span>Original: <strong style="color:var(--text-main);">${formatBytes(item.originalSize)}</strong></span>
+                        <div class="flex flex-col gap-2 text-xs">
+                            <div class="flex justify-between items-center text-slate-400">
+                                <span>Original: <strong class="text-white">${formatBytes(item.originalSize)}</strong></span>
                                 <div class="flex items-center gap-1.5">
-                                    <input type="checkbox" data-index="${index}" class="card-keep-original w-3.5 h-3.5 cursor-pointer" style="accent-color:var(--accent);" ${item.keepOriginal ? 'checked' : ''}>
+                                    <input type="checkbox" data-index="${index}" class="card-keep-original w-3.5 h-3.5 cursor-pointer accent-blue-600" ${item.keepOriginal ? 'checked' : ''}>
                                     <span class="cursor-pointer">Respetar nombre</span>
                                 </div>
                             </div>
-
-                            ${item.keepOriginal ? `
-                                <div class="w-full border rounded px-2 py-1.5 text-sm truncate" style="border-color:#E7E3DC; color:var(--text-muted); background:#F9F8F6;">
-                                    ${item.originalName}
-                                </div>
-                            ` : `
-                                <input type="text" value="${item.customName}" data-index="${index}" placeholder="Nombre corto..." class="custom-name-input w-full border rounded px-2 py-1 text-sm focus-ring" style="border-color:#D8D3C8;">
-                            `}
-
+                            ${item.keepOriginal ? `<div class="w-full border border-slate-700 rounded px-2 py-1.5 truncate bg-slate-900 text-slate-400">${item.originalName}</div>` : `<input type="text" value="${item.customName}" data-index="${index}" placeholder="Nombre..." class="custom-name-input w-full border border-slate-700 rounded px-2 py-1 focus-ring bg-slate-900 text-white">`}
+                            
                             <div class="grid grid-cols-2 gap-2 mt-1">
                                 <div>
-                                    <label class="text-sm" style="color:var(--text-muted);">Carpeta:</label>
-                                    <select data-index="${index}" class="category-select w-full border rounded px-2 py-1 text-sm focus-ring" style="border-color:#D8D3C8;">
+                                    <label class="text-slate-400">Carpeta:</label>
+                                    <select data-index="${index}" class="category-select w-full border border-slate-700 rounded px-2 py-1 focus-ring bg-slate-900 text-white">
                                         ${buildFolderOptionsHtml(item.category)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="text-sm" style="color:var(--text-muted);">Ancho máx. (px):</label>
-                                    <select data-index="${index}" class="card-maxwidth-select w-full border rounded px-2 py-1 text-sm focus-ring" style="border-color:#D8D3C8;">
+                                    <label class="text-slate-400">Ancho máx.:</label>
+                                    <select data-index="${index}" class="card-maxwidth-select w-full border border-slate-700 rounded px-2 py-1 focus-ring bg-slate-900 text-white">
                                         <option value="800" ${item.maxWidth === 800 ? 'selected' : ''}>800 px</option>
                                         <option value="1200" ${item.maxWidth === 1200 ? 'selected' : ''}>1200 px</option>
                                         <option value="1600" ${item.maxWidth === 1600 ? 'selected' : ''}>1600 px</option>
@@ -410,33 +377,32 @@
                                     </select>
                                 </div>
                                 <div class="col-span-2">
-                                    <label class="text-sm" style="color:var(--text-muted);">Título:</label>
-                                    <input type="text" value="${escapeHtml(item.customTitle)}" data-index="${index}" placeholder="Título de la actividad" class="title-input w-full border rounded px-2 py-1 text-sm focus-ring" style="border-color:#D8D3C8;">
+                                    <label class="text-slate-400">Título:</label>
+                                    <input type="text" value="${item.customTitle.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}" data-index="${index}" placeholder="Título opcional" class="title-input w-full border border-slate-700 rounded px-2 py-1 focus-ring bg-slate-900 text-white">
                                 </div>
                                 <div class="col-span-2">
-                                    <label class="text-sm" style="color:var(--text-muted);">Descripción:</label>
-                                    <textarea data-index="${index}" placeholder="Descripción (opcional)" class="description-input w-full border rounded px-2 py-1 text-sm focus-ring" rows="2" style="border-color:#D8D3C8;">${escapeHtml(item.customDescription)}</textarea>
+                                    <label class="text-slate-400">Descripción:</label>
+                                    <textarea data-index="${index}" placeholder="Descripción opcional" class="description-input w-full border border-slate-700 rounded px-2 py-1 focus-ring bg-slate-900 text-white" rows="2">${item.customDescription ? item.customDescription.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])) : ''}</textarea>
                                 </div>
                             </div>
-                            <div class="text-sm truncate mt-1 p-1.5 rounded border flex justify-between items-center" style="background:#F9F8F6; border-color:#E7E3DC; color:var(--primary-dark);">
-                                <span class="truncate"><span style="color:var(--text-muted);">${BASE_FOLDER}/${item.category}/</span>${finalGeneratedName}</span>
-                                <span id="size-badge-${index}" class="text-sm px-1.5 py-0.5 rounded shrink-0" style="background:#F1EFEA; color:var(--text-muted);">Calculando...</span>
+                            
+                            <div class="truncate mt-1 p-1.5 rounded border border-slate-700 flex justify-between items-center bg-slate-900 text-blue-300">
+                                <span class="truncate"><span class="text-slate-500">${BASE_FOLDER}/${item.category}/</span>${finalGeneratedName}</span>
+                                <span id="size-badge-${index}" class="px-1.5 py-0.5 rounded shrink-0 bg-slate-800 text-slate-300">Calc...</span>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center pt-2 border-t mt-auto gap-2 flex-wrap" style="border-color:#E7E3DC;">
-                            <button data-index="${index}" class="delete-btn text-sm font-medium cursor-pointer" style="color:#B85C5C;">Eliminar</button>
+                        <div class="flex justify-between items-center pt-2 border-t border-slate-700 mt-auto gap-2 flex-wrap">
+                            <button data-index="${index}" class="delete-btn text-xs font-medium text-red-400 hover:text-red-300 cursor-pointer">Eliminar</button>
                             <div class="flex items-center gap-2 flex-wrap justify-end">
-                                <span id="upload-status-${index}" class="text-sm px-1.5 py-0.5 rounded shrink-0" style="background:#F1EFEA; color:var(--text-muted);">Sin subir</span>
-                                <button data-index="${index}" class="upload-btn font-bold px-3 py-1.5 rounded text-sm transition-colors cursor-pointer" style="background:var(--primary); color:white;">Subir a Cloudinary</button>
-                                <button data-index="${index}" class="download-single-btn font-bold px-3 py-1.5 rounded text-sm transition-colors cursor-pointer" style="background:var(--accent); color:white;">Descargar WebP</button>
+                                <span id="upload-status-${index}" class="text-xs px-1.5 py-0.5 rounded shrink-0 bg-slate-900 text-slate-400">Pendiente</span>
+                                <button data-index="${index}" class="upload-btn font-bold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-blue-600 hover:bg-blue-700 text-white">Subir</button>
+                                <button data-index="${index}" class="download-single-btn font-bold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-slate-700 hover:bg-slate-600 text-white">Descargar</button>
                             </div>
                         </div>
                     `;
-
                     cardsContainer.appendChild(card);
                     drawPreviewAndMeasure(index);
                 });
-
                 attachEvents();
             }
 
@@ -445,13 +411,9 @@
                 const canvas = document.getElementById(`canvas-${index}`);
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
-
                 const { width, height } = getScaledDimensions(item.imgElement, item.maxWidth);
-                canvas.width = width;
-                canvas.height = height;
-
+                canvas.width = width; canvas.height = height;
                 ctx.drawImage(item.imgElement, 0, 0, width, height);
-
                 canvas.toBlob((blob) => {
                     const badge = document.getElementById(`size-badge-${index}`);
                     if (badge) {
@@ -459,8 +421,7 @@
                         const diff = newSize - item.originalSize;
                         const diffPercent = Math.round((diff / item.originalSize) * 100);
                         badge.textContent = `${formatBytes(newSize)} (${diffPercent > 0 ? '+' : ''}${diffPercent}%)`;
-                        badge.style.color = newSize < item.originalSize ? '#3F6B4F' : '#B08A4E';
-                        badge.style.background = newSize < item.originalSize ? '#E9F1EA' : '#F6EEE1';
+                        badge.style.color = newSize < item.originalSize ? '#4ADE80' : '#FBBF24';
                     }
                 }, 'image/webp', item.quality);
             }
@@ -470,129 +431,56 @@
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
                     const { width, height } = getScaledDimensions(item.imgElement, item.maxWidth);
-                    canvas.width = width;
-                    canvas.height = height;
+                    canvas.width = width; canvas.height = height;
                     ctx.drawImage(item.imgElement, 0, 0, width, height);
                     canvas.toBlob((blob) => resolve(blob), 'image/webp', item.quality);
                 });
             }
 
             function attachEvents() {
-                document.querySelectorAll('.custom-name-input').forEach(input => {
-                    input.addEventListener('input', (e) => {
-                        const idx = e.target.dataset.index;
-                        imageFiles[idx].customName = e.target.value;
-                    });
-                });
-
-                document.querySelectorAll('.card-keep-original').forEach(chk => {
-                    chk.addEventListener('change', (e) => {
-                        const idx = e.target.dataset.index;
-                        imageFiles[idx].keepOriginal = e.target.checked;
-                        renderCards();
-                    });
-                });
-
-                document.querySelectorAll('.title-input').forEach(input => {
-                    input.addEventListener('input', (e) => {
-                        const idx = e.target.dataset.index;
-                        imageFiles[idx].customTitle = e.target.value;
-                    });
-                });
-
-                document.querySelectorAll('.description-input').forEach(input => {
-                    input.addEventListener('input', (e) => {
-                        const idx = e.target.dataset.index;
-                        imageFiles[idx].customDescription = e.target.value;
-                    });
-                });
-
-                document.querySelectorAll('.card-maxwidth-select').forEach(sel => {
-                    sel.addEventListener('change', (e) => {
-                        const idx = e.target.dataset.index;
-                        imageFiles[idx].maxWidth = parseInt(e.target.value);
-                        drawPreviewAndMeasure(idx);
-                    });
-                });
-
-                document.querySelectorAll('.category-select').forEach(select => {
-                    select.addEventListener('change', (e) => {
-                        const idx = e.target.dataset.index;
-                        handleFolderSelectChange(select, (finalValue) => {
-                            imageFiles[idx].category = finalValue;
-                            renderCards();
-                        });
-                    });
-                });
-
-                document.querySelectorAll('.delete-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const idx = e.target.dataset.index;
-                        imageFiles.splice(idx, 1);
-                        renderCards();
-                    });
-                });
-
-                document.querySelectorAll('.download-single-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const idx = e.target.dataset.index;
-                        downloadItem(idx);
-                    });
-                });
-
-                document.querySelectorAll('.upload-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const idx = e.target.dataset.index;
-                        uploadToCloudinary(idx);
-                    });
-                });
-
-                downloadAllBtn.onclick = () => {
-                    imageFiles.forEach((_, idx) => {
-                        setTimeout(() => downloadItem(idx), idx * 250);
-                    });
-                };
-
-                uploadAllBtn.onclick = () => {
-                    imageFiles.forEach((_, idx) => {
-                        setTimeout(() => uploadToCloudinary(idx), idx * 400);
-                    });
-                };
-            }
-
-            async function downloadItem(index) {
-                const item = imageFiles[index];
-                const blob = await buildProcessedBlob(item);
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${getFinalName(item)}.webp`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+                document.querySelectorAll('.custom-name-input').forEach(i => i.addEventListener('input', e => imageFiles[e.target.dataset.index].customName = e.target.value));
+                document.querySelectorAll('.card-keep-original').forEach(c => c.addEventListener('change', e => { imageFiles[e.target.dataset.index].keepOriginal = e.target.checked; renderCards(); }));
+                document.querySelectorAll('.title-input').forEach(i => i.addEventListener('input', e => imageFiles[e.target.dataset.index].customTitle = e.target.value));
+                document.querySelectorAll('.description-input').forEach(i => i.addEventListener('input', e => imageFiles[e.target.dataset.index].customDescription = e.target.value));
+                document.querySelectorAll('.card-maxwidth-select').forEach(s => s.addEventListener('change', e => { imageFiles[e.target.dataset.index].maxWidth = parseInt(e.target.value); drawPreviewAndMeasure(e.target.dataset.index); }));
+                document.querySelectorAll('.category-select').forEach(s => s.addEventListener('change', e => handleFolderSelectChange(s, val => { imageFiles[e.target.dataset.index].category = val; renderCards(); })));
+                document.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', e => { imageFiles.splice(e.target.dataset.index, 1); renderCards(); }));
+                
+                document.querySelectorAll('.upload-btn').forEach(b => b.addEventListener('click', e => uploadToCloudinary(e.target.dataset.index)));
+                document.querySelectorAll('.download-single-btn').forEach(b => b.addEventListener('click', async e => {
+                    const item = imageFiles[e.target.dataset.index];
+                    const blob = await buildProcessedBlob(item);
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.href = url; a.download = `${getFinalName(item)}.webp`;
+                    a.click(); URL.revokeObjectURL(url);
+                }));
+                
+                uploadAllBtn.onclick = () => imageFiles.forEach((_, idx) => setTimeout(() => uploadToCloudinary(idx), idx * 400));
+                downloadAllBtn.onclick = () => imageFiles.forEach((_, idx) => setTimeout(async () => {
+                    const item = imageFiles[idx];
+                    const blob = await buildProcessedBlob(item);
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.href = url; a.download = `${getFinalName(item)}.webp`;
+                    a.click(); URL.revokeObjectURL(url);
+                }, idx * 250));
             }
 
             async function uploadToCloudinary(index) {
                 const item = imageFiles[index];
                 const statusEl = document.getElementById(`upload-status-${index}`);
-                const folderPath = `${BASE_FOLDER}/${item.category}`;
+                const folderPath = `${BASE_FOLDER}/${item.category}`; 
                 const tag = `${PROYECTO_ACTUAL}_${item.category}`;
 
                 if (statusEl) {
-                    statusEl.textContent = 'Subiendo…';
-                    statusEl.style.background = '#F1EFEA';
-                    statusEl.style.color = 'var(--text-muted)';
+                    statusEl.textContent = 'Subiendo…'; 
+                    statusEl.className = "text-xs px-1.5 py-0.5 rounded shrink-0 bg-slate-800 text-slate-300";
                 }
 
                 try {
-                    if (!CLOUD_NAME || !UPLOAD_PRESET || !BASE_FOLDER) {
-                        throw new Error('Falta configuración de Cloudinary en js/config.js.');
-                    }
                     const blob = await buildProcessedBlob(item);
                     const finalName = getFinalName(item);
-
                     const formData = new FormData();
+                    
                     formData.append('file', blob, `${finalName}.webp`);
                     formData.append('upload_preset', UPLOAD_PRESET);
                     formData.append('public_id', finalName);
@@ -605,31 +493,24 @@
                         title ? `caption=${title}` : '',
                         description ? `alt=${description}` : ''
                     ].filter(Boolean).join('|');
-                    
-                    if (context) {
-                        formData.append('context', context);
-                    }
+
+                    if (context) formData.append('context', context);
 
                     const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-                        method: 'POST',
-                        body: formData
+                        method: 'POST', body: formData
                     });
                     const data = await res.json();
 
-                    if (!res.ok) throw new Error((data.error && data.error.message) || 'Error desconocido de Cloudinary');
+                    if (!res.ok) throw new Error(data.error?.message || 'Error de Cloudinary');
 
                     if (statusEl) {
-                        statusEl.textContent = `✓ ${folderPath}/`;
-                        statusEl.style.background = '#E9F1EA';
-                        statusEl.style.color = '#3F6B4F';
-                        statusEl.title = data.secure_url;
+                        statusEl.textContent = `✓ Éxito`; 
+                        statusEl.className = "text-xs px-1.5 py-0.5 rounded shrink-0 bg-emerald-950 text-emerald-400";
                     }
                 } catch (err) {
-                    console.error('Error subiendo a Cloudinary:', err);
                     if (statusEl) {
-                        statusEl.textContent = 'Error ✕';
-                        statusEl.style.background = '#F5E7E7';
-                        statusEl.style.color = '#B85C5C';
+                        statusEl.textContent = 'Error ✕'; 
+                        statusEl.className = "text-xs px-1.5 py-0.5 rounded shrink-0 bg-red-950 text-red-400";
                         statusEl.title = err.message;
                     }
                 }
