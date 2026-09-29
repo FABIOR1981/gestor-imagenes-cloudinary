@@ -9,11 +9,12 @@
       ]
     },
     {
-      "id": "consAge",
-      "nombre": "Consultorio Agenda (consAge)",
+      "id": "enBlanco/residencial",
+      "nombre": "Marca Blanca - Residencial",
       "carpetas": [
-        { "value": "general", "label": "General" },
-        { "value": "pacientes", "label": "Pacientes" }
+        { "value": "galeria", "label": "Galería" },
+        { "value": "instalaciones", "label": "Instalaciones" },
+        { "value": "personal", "label": "Personal" }
       ]
     }
   ]
