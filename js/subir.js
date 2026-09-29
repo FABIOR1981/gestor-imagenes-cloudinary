@@ -301,14 +301,14 @@ function initApp(initialFolders) {
                 </div>
 
                 <!-- Botones de Acción Individual Uniformados -->
-                <div class="flex justify-between items-center pt-3 border-t mt-auto gap-2 flex-wrap" style="border-color: var(--border-color);">
-                    <button data-index="${index}" class="delete-btn text-xs font-semibold text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded transition-colors cursor-pointer">Eliminar</button>
-                    <div class="flex items-center gap-2 flex-wrap justify-end">
-                        <span id="upload-status-${index}" class="text-xs px-2.5 py-1.5 rounded shrink-0 bg-slate-100 font-medium" style="color: var(--text-muted);">Pendiente</span>
-                        <button data-index="${index}" class="upload-btn font-semibold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-blue-600 hover:bg-blue-700 text-white shadow-sm">Subir</button>
-                        <button data-index="${index}" class="download-single-btn font-semibold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-slate-200 hover:bg-slate-300 text-slate-700">Descargar</button>
+                    <div class="flex justify-between items-center pt-3 border-t mt-auto gap-2 flex-wrap" style="border-color: var(--border-color);">
+                        <button data-index="${index}" class="delete-btn btn-danger">Eliminar</button>
+                        <div class="flex items-center gap-2 flex-wrap justify-end">
+                            <span id="upload-status-${index}" class="text-xs px-2.5 py-1.5 rounded shrink-0 bg-slate-100 font-medium" style="color: var(--text-muted);">Pendiente</span>
+                            <button data-index="${index}" class="upload-btn btn-base btn-main">Subir</button>
+                            <button data-index="${index}" class="download-single-btn btn-base btn-sec">Descargar</button>
+                        </div>
                     </div>
-                </div>
             `;
             cardsContainer.appendChild(card);
             drawPreviewAndMeasure(index);
