@@ -1,0 +1,21 @@
+{
+  "proyectos": [
+    {
+      "id": "monarca",
+      "nombre": "Residencial Monarca",
+      "carpetas": [
+        { "value": "galeria", "label": "Galería" },
+        { "value": "instalaciones", "label": "Instalaciones" }
+      ]
+    },
+    {
+      "id": "enBlanco/residencial",
+      "nombre": "Marca Blanca - Residencial",
+      "carpetas": [
+        { "value": "galeria", "label": "Galería" },
+        { "value": "instalaciones", "label": "Instalaciones" },
+        { "value": "personal", "label": "Personal" }
+      ]
+    }
+  ]
+}
