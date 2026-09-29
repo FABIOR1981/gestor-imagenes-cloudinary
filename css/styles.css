@@ -20,18 +20,31 @@
 body {
     background-color: var(--bg-color);
     color: var(--text-main);
-    display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
-    padding: 20px;
 }
 
+/* ==========================================
+   ESTILOS GENERALES Y UTILIDADES
+   ========================================== */
 .dashboard-container {
     width: 100%;
     max-width: 520px;
+    margin: 0 auto;
 }
 
+.hidden {
+    display: none !important;
+}
+
+.focus-ring:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+/* ==========================================
+   ESTILOS DEL DASHBOARD (index.html)
+   ========================================== */
 header {
     margin-bottom: 24px;
     text-align: center;
@@ -58,10 +71,6 @@ header p {
     margin-bottom: 20px;
 }
 
-.hidden {
-    display: none;
-}
-
 .form-group {
     margin-bottom: 20px;
 }
@@ -75,29 +84,30 @@ label {
 }
 
 select,
-input[type="datetime-local"] {
+input[type="datetime-local"],
+input[type="text"],
+textarea {
     width: 100%;
-    padding: 12px;
+    padding: 10px 12px;
     background-color: var(--input-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: var(--text-main);
 }
 
 select:focus,
-input:focus {
+input:focus,
+textarea:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
 button {
-    width: 100%;
-    padding: 12px;
     border: none;
     border-radius: var(--radius);
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s, filter 0.2s;
@@ -106,6 +116,8 @@ button {
 .btn-primary {
     background-color: var(--primary-color);
     color: white;
+    width: 100%;
+    padding: 12px;
     margin-top: 5px;
 }
 
@@ -160,4 +172,12 @@ button {
     text-align: center;
     min-height: 20px;
     font-weight: 500;
+}
+
+/* ==========================================
+   ESTILOS DE LA INTERFAZ DE CLIENTE (subir.html)
+   ========================================== */
+.preview-canvas {
+    max-width: 100%;
+    height: auto;
 }
