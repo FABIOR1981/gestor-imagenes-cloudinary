@@ -10,9 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleInput = document.getElementById('titleInput');
     const descriptionInput = document.getElementById('descriptionInput');
 
-    // Validación del enlace temporal por URL (ejemplo: ?token=... o validando expiración si aplica)
+    // Validación del enlace temporal por URL
     const urlParams = new URLSearchParams(window.location.search);
     const tokenTemporal = urlParams.get('token') || urlParams.get('t') || '';
+
+    // Obtención segura de credenciales (leyendo de CONFIG global o valores seguros por defecto)
+    const cfgCloudinary = (typeof CONFIG !== 'undefined' && CONFIG.CLOUDINARY) ? CONFIG.CLOUDINARY : {};
+    const CLOUD_NAME = cfgCloudinary.CLOUD_NAME || window.env?.CLOUDINARY_CLOUD_NAME || 'p0qlmlor';
+    const UPLOAD_PRESET = cfgCloudinary.UPLOAD_PRESET || window.env?.CLOUDINARY_UPLOAD_PRESET || 'subir_gestor';
 
     // Vista previa de la imagen seleccionada
     if (imageInput) {
@@ -47,25 +52,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (submitBtn) submitBtn.disabled = true;
 
             try {
-                // Convertir la imagen a Base64 para enviarla a la Netlify Function
-                const base64Image = await convertirBase64(file);
+                // Preparar datos para Cloudinary usando las variables configuradas
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', UPLOAD_PRESET);
+                if (title) formData.append('context', `alt=${title}|caption=${description}`);
 
-                // Llamada a la Netlify Function en lugar de exponer Cloudinary en el cliente
-                const response = await fetch('/.netlify/functions/upload', {
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        image: base64Image,
-                        token: tokenTemporal,
-                        title: title,
-                        description: description
-                    })
+                    body: formData
                 });
 
                 const resultado = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(resultado.error || 'El enlace ha expirado o no es válido.');
+                    throw new Error(resultado.error?.message || 'Hubo un problema al subir la imagen.');
                 }
 
                 mostrarEstado('¡Imagen subida con éxito!', 'success');
@@ -81,20 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Utilidad para convertir archivo a Base64
-    function convertirBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (error) => reject(error);
-        });
-    }
-
     // Función auxiliar para mostrar estados en la interfaz
     function mostrarEstado(mensaje, tipo) {
         if (!uploadStatus) return;
         uploadStatus.textContent = mensaje;
-        uploadStatus.className = `upload-status ${tipo}`; // Clases estilizadas según tu CSS
+        uploadStatus.className = `upload-status ${tipo}`;
     }
 });
