@@ -1,21 +1,20 @@
 :root {
-    :root {
-    --primary-color: #2563EB; /* Azul tecnológico corporativo (ej. Tailwind Blue 600) */
-    --primary-hover: #1D4ED8;
-    --bg-color: #F8FAFC;     /* Gris muy claro y limpio (Slate 50) */
-    --card-bg: #FFFFFF;
-    --text-main: #0F172A;    /* Texto principal oscuro profundo (Slate 900) */
-    --text-muted: #64748B;   /* Gris medio para subtítulos (Slate 500) */
-    --border-color: #E2E8F0; /* Borde sutil (Slate 200) */
+    --primary-color: #2563EB;     /* Azul corporativo */
+    --primary-hover: #1D4ED8;     /* Azul corporativo oscuro */
+    --bg-color: #0F172A;          /* Gris muy oscuro / Azulado de fondo (Slate 900) */
+    --card-bg: #1E293B;           /* Gris pizarra oscuro para tarjetas (Slate 800) */
+    --text-main: #F8FAFC;         /* Blanco/Gris muy claro para textos (Slate 50) */
+    --text-muted: #94A3B8;        /* Gris claro para subtítulos y textos secundarios (Slate 400) */
+    --border-color: #334155;      /* Borde sutil oscuro (Slate 700) */
+    --input-bg: #0F172A;          /* Fondo de los inputs interno */
     --radius: 10px;
-}
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
 body {
@@ -30,7 +29,7 @@ body {
 
 .dashboard-container {
     width: 100%;
-    max-width: 500px;
+    max-width: 520px;
 }
 
 header {
@@ -39,8 +38,10 @@ header {
 }
 
 header h1 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     margin-bottom: 8px;
+    color: var(--text-main);
+    font-weight: 700;
 }
 
 header p {
@@ -50,9 +51,10 @@ header p {
 
 .card {
     background: var(--card-bg);
-    padding: 24px;
+    padding: 28px;
     border-radius: var(--radius);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
     margin-bottom: 20px;
 }
 
@@ -61,7 +63,7 @@ header p {
 }
 
 .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 label {
@@ -69,20 +71,25 @@ label {
     margin-bottom: 8px;
     font-weight: 600;
     font-size: 0.9rem;
+    color: var(--text-main);
 }
 
-input[type="text"],
+select,
 input[type="datetime-local"] {
     width: 100%;
-    padding: 10px 12px;
+    padding: 12px;
+    background-color: var(--input-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
     font-size: 1rem;
+    color: var(--text-main);
 }
 
+select:focus,
 input:focus {
     outline: none;
     border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
 button {
@@ -93,17 +100,29 @@ button {
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, filter 0.2s;
 }
 
 .btn-primary {
     background-color: var(--primary-color);
     color: white;
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
+}
+
+.result-card h2 {
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    color: var(--text-main);
+}
+
+.result-card p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 12px;
 }
 
 .copy-wrapper {
@@ -113,25 +132,32 @@ button {
 }
 
 .copy-wrapper input {
-    background-color: var(--bg-color);
+    background-color: var(--input-bg);
     color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    width: 100%;
+    font-size: 0.9rem;
 }
 
 .btn-secondary {
-    background-color: #E0E0E0;
+    background-color: #334155;
     color: var(--text-main);
     width: auto;
     padding: 0 20px;
+    font-size: 0.9rem;
 }
 
 .btn-secondary:hover {
-    background-color: #D6D6D6;
+    background-color: #475569;
 }
 
 .status-msg {
-    margin-top: 10px;
+    margin-top: 12px;
     font-size: 0.85rem;
-    color: #2E7D32;
+    color: #34D399;
     text-align: center;
     min-height: 20px;
+    font-weight: 500;
 }
