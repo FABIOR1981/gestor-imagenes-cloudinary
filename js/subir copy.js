@@ -74,8 +74,6 @@ function initApp(initialFolders) {
     const cardsContainer = document.getElementById('cardsContainer');
     const globalCategory = document.getElementById('globalCategory');
     const globalMaxWidth = document.getElementById('globalMaxWidth');
-    const globalQuality = document.getElementById('globalQuality');
-    const globalQualityVal = document.getElementById('globalQualityVal');
     const globalTitle = document.getElementById('globalTitle');
     const globalKeepOriginal = document.getElementById('globalKeepOriginal');
     const batchActions = document.getElementById('batchActions');
@@ -157,13 +155,6 @@ function initApp(initialFolders) {
         renderCards();
     });
 
-    globalQuality.addEventListener('input', () => {
-        const qVal = parseFloat(globalQuality.value);
-        globalQualityVal.textContent = Math.round(qVal * 100);
-        imageFiles.forEach(item => { item.quality = qVal; });
-        renderCards();
-    });
-
     fileInput.addEventListener('change', (e) => {
         const files = Array.from(e.target.files);
         let processedCount = 0;
@@ -199,7 +190,7 @@ function initApp(initialFolders) {
                         customDescription: '',
                         maxWidth: parseInt(globalMaxWidth.value),
                         dateStr: dateStr,
-                        quality: parseFloat(globalQuality.value)
+                        quality: 0.8
                     });
                     
                     processedCount++;
@@ -293,13 +284,6 @@ function initApp(initialFolders) {
                             </select>
                         </div>
                         <div class="col-span-2">
-                            <div class="flex justify-between items-center mb-1">
-                                <label class="font-semibold" style="color: var(--text-muted);">Calidad WebP:</label>
-                                <span id="quality-val-${index}" class="font-bold text-blue-600">${Math.round(item.quality * 100)}%</span>
-                            </div>
-                            <input type="range" data-index="${index}" min="0.1" max="1.0" step="0.05" value="${item.quality}" class="card-quality-range w-full accent-blue-600 cursor-pointer">
-                        </div>
-                        <div class="col-span-2">
                             <label class="font-semibold block mb-1" style="color: var(--text-muted);">Título descriptivo:</label>
                             <input type="text" value="${item.customTitle.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}" data-index="${index}" placeholder="Ej. Vista principal" class="title-input w-full border rounded px-2.5 py-1.5 focus-ring">
                         </div>
@@ -369,13 +353,6 @@ function initApp(initialFolders) {
         document.querySelectorAll('.title-input').forEach(i => i.addEventListener('input', e => imageFiles[e.target.dataset.index].customTitle = e.target.value));
         document.querySelectorAll('.description-input').forEach(i => i.addEventListener('input', e => imageFiles[e.target.dataset.index].customDescription = e.target.value));
         document.querySelectorAll('.card-maxwidth-select').forEach(s => s.addEventListener('change', e => { imageFiles[e.target.dataset.index].maxWidth = parseInt(e.target.value); drawPreviewAndMeasure(e.target.dataset.index); }));
-        document.querySelectorAll('.card-quality-range').forEach(r => r.addEventListener('input', e => {
-            const idx = e.target.dataset.index;
-            const val = parseFloat(e.target.value);
-            imageFiles[idx].quality = val;
-            document.getElementById(`quality-val-${idx}`).textContent = `${Math.round(val * 100)}%`;
-            drawPreviewAndMeasure(idx);
-        }));
         document.querySelectorAll('.category-select').forEach(s => s.addEventListener('change', e => handleFolderSelectChange(s, val => { imageFiles[e.target.dataset.index].category = val; renderCards(); })));
         document.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', e => { imageFiles.splice(e.target.dataset.index, 1); renderCards(); }));
         
