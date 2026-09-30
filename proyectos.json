@@ -16,6 +16,16 @@
         { "value": "instalaciones", "label": "Instalaciones" },
         { "value": "personal", "label": "Personal" }
       ]
+    },
+    {
+      "id": "patriciaBartoche",
+      "nombre": "patriciaBartoche",
+      "carpetas": [
+        { "value": "galeria", "label": "Galería" },
+        { "value": "instalaciones", "label": "Instalaciones" },
+        { "value": "imagenes", "label": "Imagenes" },
+        { "value": "personal", "label": "Personal" }
+      ]
     }
   ]
 }
