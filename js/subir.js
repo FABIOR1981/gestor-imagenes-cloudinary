@@ -157,12 +157,14 @@ function initApp(initialFolders) {
         renderCards();
     });
 
-    globalQuality.addEventListener('input', () => {
-        const qVal = parseFloat(globalQuality.value);
-        globalQualityVal.textContent = Math.round(qVal * 100);
-        imageFiles.forEach(item => { item.quality = qVal; });
-        renderCards();
-    });
+    if (globalQuality) {
+        globalQuality.addEventListener('input', () => {
+            const qVal = parseFloat(globalQuality.value);
+            if (globalQualityVal) globalQualityVal.textContent = Math.round(qVal * 100);
+            imageFiles.forEach(item => { item.quality = qVal; });
+            renderCards();
+        });
+    }
 
     fileInput.addEventListener('change', (e) => {
         const files = Array.from(e.target.files);
@@ -197,9 +199,10 @@ function initApp(initialFolders) {
                         category: defaultFolder,
                         customTitle: globalTitle.value.trim(),
                         customDescription: '',
+                        customMetadata: [], // <-- AQUÍ SE ALMACENAN LOS METADATOS MANUALES (Nombre y Valor)
                         maxWidth: parseInt(globalMaxWidth.value),
                         dateStr: dateStr,
-                        quality: parseFloat(globalQuality.value)
+                        quality: globalQuality ? parseFloat(globalQuality.value) : 0.8
                     });
                     
                     processedCount++;
@@ -307,6 +310,23 @@ function initApp(initialFolders) {
                             <label class="font-semibold block mb-1" style="color: var(--text-muted);">Descripción (Opcional):</label>
                             <textarea data-index="${index}" placeholder="Detalles de la toma..." class="description-input w-full border rounded px-2.5 py-1.5 focus-ring" rows="2">${item.customDescription ? item.customDescription.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])) : ''}</textarea>
                         </div>
+
+                        <!-- SECCIÓN DE METADATOS MANUALES (NOMBRE Y VALOR) -->
+                        <div class="col-span-2 border-t pt-3 mt-1">
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="font-semibold" style="color: var(--text-muted);">Metadatos personalizados:</label>
+                                <button type="button" data-index="${index}" class="add-meta-btn text-xs text-blue-600 font-semibold hover:underline bg-blue-50 px-2 py-1 rounded">+ Agregar campo</button>
+                            </div>
+                            <div class="flex flex-col gap-2" id="meta-container-${index}">
+                                ${item.customMetadata.map((meta, mIdx) => `
+                                    <div class="flex gap-1.5 items-center">
+                                        <input type="text" placeholder="Nombre (ej. autor)" value="${meta.name}" data-index="${index}" data-meta-index="${mIdx}" class="meta-name-input border rounded px-2 py-1 text-xs w-1/2 focus-ring bg-slate-50 font-mono">
+                                        <input type="text" placeholder="Valor (ej. Juan)" value="${meta.value}" data-index="${index}" data-meta-index="${mIdx}" class="meta-value-input border rounded px-2 py-1 text-xs w-1/2 focus-ring bg-white">
+                                        <button type="button" data-index="${index}" data-meta-index="${mIdx}" class="remove-meta-btn text-red-500 font-bold px-2 py-1 hover:bg-red-50 rounded text-sm">×</button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Ruta final resultante -->
@@ -369,15 +389,44 @@ function initApp(initialFolders) {
         document.querySelectorAll('.title-input').forEach(i => i.addEventListener('input', e => imageFiles[e.target.dataset.index].customTitle = e.target.value));
         document.querySelectorAll('.description-input').forEach(i => i.addEventListener('input', e => imageFiles[e.target.dataset.index].customDescription = e.target.value));
         document.querySelectorAll('.card-maxwidth-select').forEach(s => s.addEventListener('change', e => { imageFiles[e.target.dataset.index].maxWidth = parseInt(e.target.value); drawPreviewAndMeasure(e.target.dataset.index); }));
+        
         document.querySelectorAll('.card-quality-range').forEach(r => r.addEventListener('input', e => {
             const idx = e.target.dataset.index;
             const val = parseFloat(e.target.value);
             imageFiles[idx].quality = val;
-            document.getElementById(`quality-val-${idx}`).textContent = `${Math.round(val * 100)}%`;
+            const qValEl = document.getElementById(`quality-val-${idx}`);
+            if (qValEl) qValEl.textContent = `${Math.round(val * 100)}%`;
             drawPreviewAndMeasure(idx);
         }));
+
         document.querySelectorAll('.category-select').forEach(s => s.addEventListener('change', e => handleFolderSelectChange(s, val => { imageFiles[e.target.dataset.index].category = val; renderCards(); })));
         document.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', e => { imageFiles.splice(e.target.dataset.index, 1); renderCards(); }));
+
+        // Eventos para manejar los metadatos manuales (Nombre y Valor)
+        document.querySelectorAll('.add-meta-btn').forEach(b => b.addEventListener('click', e => {
+            const idx = e.target.dataset.index;
+            imageFiles[idx].customMetadata.push({ name: '', value: '' });
+            renderCards();
+        }));
+
+        document.querySelectorAll('.meta-name-input').forEach(i => i.addEventListener('input', e => {
+            const idx = e.target.dataset.index;
+            const mIdx = e.target.dataset.metaIndex;
+            imageFiles[idx].customMetadata[mIdx].name = e.target.value;
+        }));
+
+        document.querySelectorAll('.meta-value-input').forEach(i => i.addEventListener('input', e => {
+            const idx = e.target.dataset.index;
+            const mIdx = e.target.dataset.metaIndex;
+            imageFiles[idx].customMetadata[mIdx].value = e.target.value;
+        }));
+
+        document.querySelectorAll('.remove-meta-btn').forEach(b => b.addEventListener('click', e => {
+            const idx = e.target.dataset.index;
+            const mIdx = e.target.dataset.metaIndex;
+            imageFiles[idx].customMetadata.splice(mIdx, 1);
+            renderCards();
+        }));
         
         document.querySelectorAll('.upload-btn').forEach(b => b.addEventListener('click', e => uploadToCloudinary(e.target.dataset.index)));
         document.querySelectorAll('.download-single-btn').forEach(b => b.addEventListener('click', async e => {
@@ -422,11 +471,22 @@ function initApp(initialFolders) {
 
             const title = (item.customTitle || '').trim().replace(/[|]/g, ' ');
             const description = (item.customDescription || '').trim().replace(/[|]/g, ' ');
-            const context = [
-                title ? `caption=${title}` : '',
-                description ? `alt=${description}` : ''
-            ].filter(Boolean).join('|');
+            
+            // Construir los metadatos de contexto para Cloudinary
+            let contextParts = [];
+            if (title) contextParts.push(`caption=${title}`);
+            if (description) contextParts.push(`alt=${description}`);
 
+            // Agregar cada metadato manual definido por ti (nombre=valor)
+            item.customMetadata.forEach(m => {
+                const mName = m.name.trim().replace(/[|=]/g, '_');
+                const mVal = m.value.trim().replace(/[|=]/g, ' ');
+                if (mName && mVal) {
+                    contextParts.push(`${mName}=${mVal}`);
+                }
+            });
+
+            const context = contextParts.join('|');
             if (context) formData.append('context', context);
 
             const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
