@@ -19,20 +19,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        const decodedString = atob(token);
-        const payload = JSON.parse(decodedString);
-        
-        if (Date.now() > payload.exp) {
+        // Consultamos al servidor de Netlify si el token firmado es válido y no ha expirado
+        const res = await fetch('/.netlify/functions/verificar-token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.valid) {
             loadingState.classList.add('hidden');
             errorState.classList.remove('hidden');
             return;
         }
 
-        PROYECTO_ACTUAL = payload.project; 
+        PROYECTO_ACTUAL = data.project; 
         BASE_FOLDER = PROYECTO_ACTUAL; 
 
         document.getElementById('displayProjectName').textContent = PROYECTO_ACTUAL;
-        document.getElementById('displayExpDate').textContent = new Date(payload.exp).toLocaleString('es-UY', { dateStyle: 'medium', timeStyle: 'short' });
+        document.getElementById('displayExpDate').textContent = new Date(data.exp).toLocaleString('es-UY', { dateStyle: 'medium', timeStyle: 'short' });
 
         let projectFolders = [
             { value: 'galeria', label: 'Galería' },
@@ -42,8 +48,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const response = await fetch('proyectos.json');
             if (response.ok) {
-                const data = await response.json();
-                const foundProj = data.proyectos.find(p => p.id === PROYECTO_ACTUAL);
+                const projData = await response.json();
+                const foundProj = projData.proyectos.find(p => p.id === PROYECTO_ACTUAL);
                 if (foundProj && Array.isArray(foundProj.carpetas) && foundProj.carpetas.length > 0) {
                     projectFolders = foundProj.carpetas;
                 }
@@ -59,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         loadingState.classList.add('hidden');
         errorState.classList.remove('hidden');
-        document.getElementById('errorMessage').textContent = "El enlace está corrupto o mal formado.";
+        document.getElementById('errorMessage').textContent = "No se pudo validar el acceso con el servidor o el enlace no es válido.";
     }
 });
 
@@ -199,7 +205,7 @@ function initApp(initialFolders) {
                         category: defaultFolder,
                         customTitle: globalTitle.value.trim(),
                         customDescription: '',
-                        customMetadata: [], // <-- AQUÍ SE ALMACENAN LOS METADATOS MANUALES (Nombre y Valor)
+                        customMetadata: [], 
                         maxWidth: parseInt(globalMaxWidth.value),
                         dateStr: dateStr,
                         quality: globalQuality ? parseFloat(globalQuality.value) : 0.8
@@ -311,7 +317,7 @@ function initApp(initialFolders) {
                             <textarea data-index="${index}" placeholder="Detalles de la toma..." class="description-input w-full border rounded px-2.5 py-1.5 focus-ring" rows="2">${item.customDescription ? item.customDescription.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])) : ''}</textarea>
                         </div>
 
-                        <!-- SECCIÓN DE METADATOS MANUALES (NOMBRE Y VALOR) -->
+                        <!-- SECCIÓN DE METADATOS MANUALES -->
                         <div class="col-span-2 border-t pt-3 mt-1">
                             <div class="flex justify-between items-center mb-2">
                                 <label class="font-semibold" style="color: var(--text-muted);">Metadatos personalizados:</label>
@@ -402,7 +408,6 @@ function initApp(initialFolders) {
         document.querySelectorAll('.category-select').forEach(s => s.addEventListener('change', e => handleFolderSelectChange(s, val => { imageFiles[e.target.dataset.index].category = val; renderCards(); })));
         document.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', e => { imageFiles.splice(e.target.dataset.index, 1); renderCards(); }));
 
-        // Eventos para manejar los metadatos manuales (Nombre y Valor)
         document.querySelectorAll('.add-meta-btn').forEach(b => b.addEventListener('click', e => {
             const idx = e.target.dataset.index;
             imageFiles[idx].customMetadata.push({ name: '', value: '' });
@@ -472,12 +477,10 @@ function initApp(initialFolders) {
             const title = (item.customTitle || '').trim().replace(/[|]/g, ' ');
             const description = (item.customDescription || '').trim().replace(/[|]/g, ' ');
             
-            // Construir los metadatos de contexto para Cloudinary
             let contextParts = [];
             if (title) contextParts.push(`caption=${title}`);
             if (description) contextParts.push(`alt=${description}`);
 
-            // Agregar cada metadato manual definido por ti (nombre=valor)
             item.customMetadata.forEach(m => {
                 const mName = m.name.trim().replace(/[|=]/g, '_');
                 const mVal = m.value.trim().replace(/[|=]/g, ' ');

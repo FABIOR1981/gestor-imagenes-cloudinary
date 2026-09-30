@@ -8,14 +8,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let proyectosData = [];
 
-    // 1. Cargar el JSON de proyectos o usar un respaldo integrado
     try {
         const response = await fetch('proyectos.json');
         if (!response.ok) throw new Error('No se pudo cargar proyectos.json');
         const data = await response.json();
         proyectosData = data.proyectos;
     } catch (error) {
-        console.warn('No se pudo cargar el JSON externo, cargando proyectos por defecto:', error);
+        console.warn('Usando proyectos por defecto:', error);
         proyectosData = [
             {
                 id: "monarca",
@@ -24,19 +23,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     { value: "galeria", label: "Galería" },
                     { value: "instalaciones", label: "Instalaciones" }
                 ]
-            },
-            {
-                id: "consAge",
-                nombre: "Consultorio Agenda (consAge)",
-                carpetas: [
-                    { value: "general", label: "General" },
-                    { value: "pacientes", label: "Pacientes" }
-                ]
             }
         ];
     }
 
-    // Llenar el selector de proyectos
     projectSelect.innerHTML = '<option value="">-- Selecciona un proyecto --</option>';
     proyectosData.forEach(proj => {
         const opt = document.createElement('option');
@@ -45,10 +35,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         projectSelect.appendChild(opt);
     });
 
-    // 2. Configurar la fecha mínima y predeterminarla a 24 horas a partir de ahora
     const now = new Date();
     const in24Hours = new Date(now.getTime() + (24 * 60 * 60 * 1000));
-
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     in24Hours.setMinutes(in24Hours.getMinutes() - in24Hours.getTimezoneOffset());
 
@@ -56,8 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     expirationInput.min = now.toISOString().slice(0, 16);
     expirationInput.value = in24Hours.toISOString().slice(0, 16);
 
-    // 3. Generar el link al enviar el formulario
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const selectedProjectId = projectSelect.value;
@@ -67,33 +54,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const expirationTimestamp = new Date(expirationDate).getTime();
 
-        // Empaquetar los datos del token
-        const payload = {
-            project: selectedProjectId,
-            exp: expirationTimestamp
-        };
+        try {
+            // Llamamos a la función segura de Netlify en lugar de armar el token en el cliente
+            const res = await fetch('/.netlify/functions/generar-token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ project: selectedProjectId, exp: expirationTimestamp })
+            });
 
-        // Codificar a Base64
-        const token = btoa(JSON.stringify(payload));
-        const baseUrl = window.location.origin; 
-        const finalUrl = `${baseUrl}/subir.html?token=${token}`;
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Error al generar el enlace');
 
-        // Mostrar el resultado en pantalla
-        generatedLinkInput.value = finalUrl;
-        resultContainer.classList.remove('hidden');
-        copyStatus.textContent = '';
+            const baseUrl = window.location.origin;
+            const finalUrl = `${baseUrl}/subir.html?token=${data.token}`;
+
+            generatedLinkInput.value = finalUrl;
+            resultContainer.classList.remove('hidden');
+            copyStatus.textContent = '';
+        } catch (err) {
+            alert('Hubo un error al generar el enlace seguro: ' + err.message);
+        }
     });
 
-    // 4. Funcionalidad para copiar el link al portapapeles
     copyBtn.addEventListener('click', async () => {
         try {
             await navigator.clipboard.writeText(generatedLinkInput.value);
             copyStatus.textContent = '¡Enlace copiado al portapapeles!';
-            setTimeout(() => {
-                copyStatus.textContent = '';
-            }, 3000);
+            setTimeout(() => { copyStatus.textContent = ''; }, 3000);
         } catch (err) {
-            copyStatus.textContent = 'Error al copiar. Selecciona y copia manualmente.';
+            copyStatus.textContent = 'Error al copiar.';
         }
     });
 });
