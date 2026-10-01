@@ -390,6 +390,21 @@ function initApp(initialFolders) {
         return values.map(value => `<option value="${escapeAttribute(value)}"></option>`).join('');
     }
 
+    function buildMetadataNameOptions(item, metadataIndex) {
+        const currentName = item.customMetadata[metadataIndex].name;
+        const usedNames = new Set(item.customMetadata
+            .filter((metadata, index) => index !== metadataIndex)
+            .map(metadata => metadata.name)
+            .filter(Boolean));
+        const isExistingName = metadataFields.some(field => field.name === currentName);
+        const options = metadataFields.map(field => {
+            const isSelected = field.name === currentName;
+            const isUsed = usedNames.has(field.name);
+            return `<option value="${escapeAttribute(field.name)}" ${isSelected ? 'selected' : ''} ${isUsed ? 'disabled' : ''}>${escapeAttribute(field.name)}</option>`;
+        }).join('');
+        return `<option value="__new__" ${!isExistingName ? 'selected' : ''}>Nueva etiqueta...</option>${options}`;
+    }
+
     function getSuggestedMetadataValue(name) {
         const values = getMetadataValues(name).map(value => String(value).trim());
         if (!values.length || values.some(value => !/^\d+(?:\.\d+)?$/.test(value))) return '';
@@ -472,8 +487,8 @@ function initApp(initialFolders) {
                             <div class="flex flex-col gap-2" id="meta-container-${index}">
                                 ${item.customMetadata.map((meta, mIdx) => `
                                     <div class="flex gap-1.5 items-center">
-                                        <input type="text" list="meta-names-${index}-${mIdx}" placeholder="Etiqueta existente o nueva" value="${escapeAttribute(meta.name)}" data-index="${index}" data-meta-index="${mIdx}" class="meta-name-input border rounded px-2 py-1 text-xs w-1/2 focus-ring bg-slate-50 font-mono">
-                                        <datalist id="meta-names-${index}-${mIdx}">${buildMetadataOptions(metadataFields.map(field => field.name))}</datalist>
+                                        <select data-index="${index}" data-meta-index="${mIdx}" class="meta-name-select border rounded px-2 py-1 text-xs w-1/2 focus-ring bg-slate-50 font-mono">${buildMetadataNameOptions(item, mIdx)}</select>
+                                        <input type="text" placeholder="Nombre de etiqueta nueva" value="${metadataFields.some(field => field.name === meta.name) ? '' : escapeAttribute(meta.name)}" data-index="${index}" data-meta-index="${mIdx}" class="meta-new-name-input border rounded px-2 py-1 text-xs w-1/2 focus-ring bg-slate-50 font-mono" ${metadataFields.some(field => field.name === meta.name) ? 'hidden' : ''}>
                                         <input type="text" list="meta-values-${index}-${mIdx}" placeholder="Valor existente o nuevo" value="${escapeAttribute(meta.value)}" data-index="${index}" data-meta-index="${mIdx}" class="meta-value-input border rounded px-2 py-1 text-xs w-1/2 focus-ring bg-white">
                                         <datalist id="meta-values-${index}-${mIdx}">${buildMetadataOptions(getMetadataValues(meta.name))}</datalist>
                                         <button type="button" data-index="${index}" data-meta-index="${mIdx}" class="remove-meta-btn text-red-500 font-bold px-2 py-1 hover:bg-red-50 rounded text-sm">×</button>
