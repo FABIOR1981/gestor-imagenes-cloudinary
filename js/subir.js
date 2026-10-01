@@ -351,10 +351,10 @@ function initApp(initialFolders) {
                 <div class="flex flex-col gap-2.5 text-xs">
                     <div class="flex justify-between items-center pb-1 border-b border-slate-100">
                         <span style="color: var(--text-muted);">Original: <strong style="color: var(--text-main);">${formatBytes(item.originalSize)}</strong></span>
-                        ${IS_CLIENT_MODE ? '' : `<div class="flex items-center gap-1.5">
+                        <div class="flex items-center gap-1.5">
                             <input type="checkbox" data-index="${index}" class="card-keep-original w-3.5 h-3.5 cursor-pointer accent-blue-600" ${item.keepOriginal ? 'checked' : ''}>
                             <span class="cursor-pointer font-medium" style="color: var(--text-main);">Respetar nombre</span>
-                        </div>`}
+                        </div>
                     </div>
 
                     ${item.keepOriginal ? `<div class="w-full border rounded px-2.5 py-1.5 truncate bg-slate-50 font-mono text-xs" style="border-color: var(--border-color); color: var(--text-muted);">${item.originalName}</div>` : `<input type="text" value="${item.customName}" data-index="${index}" placeholder="Nombre corto..." class="custom-name-input w-full border rounded px-2.5 py-1.5 focus-ring font-mono text-xs">`}
