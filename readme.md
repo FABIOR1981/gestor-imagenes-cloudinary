@@ -1,246 +1,88 @@
-# Gestor de imagenes con Cloudinary
+# Gestor de imágenes con Cloudinary
 
-## Proposito
+Aplicación web estática (HTML, CSS y JS, sin build) con funciones de Netlify. El administrador gestiona las imágenes de cada proyecto (alta, baja y modificación) y genera enlaces temporales para que terceros suban o gestionen imágenes con los permisos que él decida.
 
-Aplicacion web estatica para generar enlaces temporales de carga de imagenes y recibir archivos directamente en Cloudinary.
+## Principios de seguridad
 
-El administrador elige un proyecto, un modo de uso y una fecha de vencimiento. La aplicacion genera un enlace firmado. La persona que recibe el enlace puede cargar imagenes sin conocer credenciales de Cloudinary.
-
-El proyecto prioriza tres cosas:
-
-- No exponer secretos de Cloudinary en el navegador.
-- Separar la experiencia completa de Administrador de la experiencia simplificada de Cliente.
-- Guardar cada imagen con nombre, carpeta, titulo, descripcion y metadatos reutilizables.
+- El navegador **nunca** tiene `CLOUDINARY_API_SECRET`. Todo lo que modifica Cloudinary pasa por funciones de Netlify.
+- La autorización la decide el servidor: el token del enlace lleva `proyecto`, `permisos` y `exp`, firmados con HMAC-SHA256. El parámetro `modo` de la URL es solo de presentación.
+- La carpeta de destino se valida y se firma en el servidor. No existe preset unsigned: las subidas son firmadas y no pueden pisar imágenes existentes (`overwrite=false`).
+- Un enlace solo puede actuar sobre su proyecto (`public_id` debe empezar por `proyecto/`).
+- Sin `TOKEN_SECRET` (mínimo 32 caracteres) las funciones fallan; no hay clave de respaldo.
 
 ## Estructura
 
 ```text
-index.html                         Dashboard para administradores
-subir.html                         Portal completo, modo Admin
-subir-cliente.html                 Portal reducido, modo Cliente
-proyectos.json                     Proyectos y carpetas permitidas
-css/styles.css                     Estilos compartidos y responsive
-js/dashboard.js                    Carga proyectos y genera enlaces
-js/subir.js                        Validacion, tarjetas, metadatos y subida
-netlify/functions/generar-token.js Firma enlaces temporales
-netlify/functions/verificar-token.js Valida firma, vencimiento y password
-netlify/functions/consultar-metadatos.js Consulta sugerencias en Cloudinary
+index.html                              Login de admin y generador de enlaces
+admin.html + js/admin.js                Panel ABM: miniaturas, editar, mover, eliminar, subir
+subir.html / subir-cliente.html         Portal de carga (pantalla completa / simplificada)
+js/subir.js                             Portal: validación del enlace, tarjetas, metadatos, subida firmada
+js/dashboard.js                         Login y generación de enlaces
+proyectos.json                          Proyectos, carpetas y permisos por defecto
+herramientas/generar-hash-admin.js      Genera ADMIN_PASSWORD_HASH (se corre en la PC)
+herramientas/probar-*.ps1               Pruebas contra el sitio desde Windows
+netlify/functions/
+  iniciar-sesion-admin.js               Contraseña de admin -> sesión de 2 horas
+  generar-enlace.js                     (admin) crea el token del enlace
+  verificar-enlace.js                   Valida enlace (+ contraseña si es largo)
+  firmar-subida.js                      Permiso "alta": firma la subida a Cloudinary
+  listar-imagenes.js                    Permiso "listar" (o "alta" con sugerencias:true)
+  modificar-imagen.js                   Permiso "modificar": título, metadatos, nombre, carpeta
+  eliminar-imagen.js                    Permiso "eliminar": hasta 50 por llamada
+  utilidades/                           tokens, autorizacion, cloudinary, imagenes (compartidas)
 ```
 
-No hay framework ni build step. Las paginas cargan JavaScript y CSS directamente. Tailwind Browser se usa desde CDN en las paginas de subida.
+## Autorización
 
-## Flujo principal
+Cada función acepta una de dos credenciales:
 
-1. El administrador abre `index.html`.
-2. `dashboard.js` carga `proyectos.json` y muestra los proyectos.
-3. El administrador selecciona proyecto, modo y vencimiento.
-4. `generar-token.js` crea un token HMAC con el proyecto y la fecha de expiracion.
-5. El enlace apunta a una de estas paginas:
-	 - `subir.html?token=...&modo=admin`
-	 - `subir-cliente.html?token=...&modo=cliente`
-6. `subir.js` envia el token a `verificar-token.js` antes de mostrar la interfaz.
-7. Una vez validado el acceso, el portal carga las carpetas del proyecto.
-8. El usuario selecciona una carpeta y agrega una o varias imagenes.
-9. Cada imagen se procesa en el navegador y se sube a Cloudinary con un `upload_preset` unsigned.
+- **Admin**: header `Authorization: Bearer <sesion>` (sesión de `iniciar-sesion-admin`) y `proyecto` en el cuerpo. Puede todo.
+- **Enlace**: `token` (y `clave` si es de larga duración) en el cuerpo. Solo su proyecto y solo los permisos del token: `alta`, `listar`, `modificar`, `eliminar`.
 
-El parametro `modo` decide la pagina que se genera y tambien permite que `subir.js` oculte controles avanzados en Cliente. El token es la autorizacion real; `modo` no debe considerarse una medida de seguridad.
+Los enlaces con más de 6 meses de vigencia piden una contraseña: el valor de la variable `TOKEN_SECRET_{PROYECTO}_LARGO` (el proyecto sin caracteres especiales y en mayúsculas, p. ej. `TOKEN_SECRET_ENBLANCO_RESIDENCIAL_LARGO`). Cambiar esa variable deja sin acceso a los enlaces largos de ese proyecto.
 
-## Modos de uso
-
-### Admin
-
-`subir.html` muestra todas las opciones:
-
-- Carpeta por imagen y carpeta global.
-- Ancho maximo y calidad WebP.
-- Titulo global y nombre original.
-- Titulo descriptivo, descripcion y metadatos personalizados.
-- Descargar WebP individual o en lote.
-- Subir individualmente o subir todas.
-- Ruta final y estimacion de tamano.
-
-### Cliente
-
-`subir-cliente.html` mantiene el mismo flujo seguro, pero reduce la interfaz:
-
-- Proyecto, vencimiento y carpeta destino.
-- Seleccion de imagenes.
-- Titulo, descripcion y metadatos por imagen.
-- Checkbox `Respetar nombre` independiente por imagen.
-- Subida individual o por lote.
-- Vista previa compacta que se amplia temporalmente al hacer clic.
-
-No se deben agregar controles de Admin a Cliente sin una razon funcional clara. La tarjeta inicial de Cliente esta disenada para concentrar carpeta, seleccion y accion de subida; las tarjetas individuales aparecen despues.
-
-## Datos de una imagen
-
-Cada elemento de `imageFiles` en `js/subir.js` contiene, entre otros:
+## Variables de entorno (Netlify)
 
 ```text
-fileObj          Archivo original
-imgElement       Imagen decodificada para canvas
-originalName     Nombre sin extension
-keepOriginal     Si conserva el nombre original
-customName       Nombre usado cuando no conserva el original
-category         Carpeta destino
-customTitle      Se guarda como context caption
-customDescription Se guarda como context alt
-customMetadata   Lista de { name, value }
-maxWidth         Ancho de procesamiento
-quality          Calidad WebP
-dateStr          AAAAMMDDHHMMSS usado en nombres generados
-```
-
-Si `keepOriginal` es falso, el nombre se genera como:
-
-```text
-AAAAMMDDHHMMSS_nombre.webp
-```
-
-El usuario puede editar el nombre generado. El codigo evita duplicar el prefijo de fecha al editarlo.
-
-## Metadatos
-
-Los metadatos se envian a Cloudinary dentro del parametro `context`:
-
-```text
-caption=Titulo|alt=Descripcion|etiqueta=valor
-```
-
-`caption` y `alt` son campos reservados para titulo y descripcion. Por eso `consultar-metadatos.js` los excluye de las sugerencias de metadatos personalizados.
-
-Cuando cambia la carpeta destino, `subir.js` consulta:
-
-```text
-POST /.netlify/functions/consultar-metadatos
-{ token, password, category }
-```
-
-La funcion consulta los recursos de Cloudinary bajo `proyecto/carpeta`, recoge `context.custom` y `metadata`, y devuelve:
-
-```json
-{
-	"fields": [
-		{ "name": "area", "values": ["habitacion", "cocina"] }
-	]
-}
-```
-
-La interfaz permite elegir una etiqueta existente, crear una nueva, elegir un valor sugerido o escribir uno nuevo.
-
-Reglas de repeticion:
-
-- Los valores de texto pueden repetirse entre imagenes. Ejemplo: `area=habitacion` en varias fotos.
-- Los valores numericos de una etiqueta no pueden repetirse entre imagenes ni contra los valores ya existentes en la carpeta. Ejemplo: `orden=4` solo una vez.
-- Si los valores existentes de una etiqueta son numericos, se sugiere automaticamente `maximo + 1`.
-- Una misma tupla exacta `etiqueta + valor` tampoco se permite dos veces dentro de una imagen.
-
-La validacion ocurre al editar y nuevamente antes de subir. Esta segunda validacion es necesaria porque el usuario puede escribir y subir sin perder el foco del campo.
-
-## Subida a Cloudinary
-
-`js/subir.js` procesa la imagen con un canvas, la convierte a WebP y llama a:
-
-```text
-https://api.cloudinary.com/v1_1/{cloud_name}/image/upload
-```
-
-Los datos principales enviados son:
-
-- `upload_preset`: preset unsigned existente.
-- `folder`: `proyecto/carpeta`.
-- `public_id`: nombre sin extension.
-- `tags`: proyecto y carpeta.
-- `context`: titulo, descripcion y metadatos.
-
-En subida multiple cada imagen se procesa de manera independiente. Un error no detiene las demas. Los errores se resumen en un modal indicando archivo y motivo; la tarjeta conserva tambien un estado breve.
-
-## Seguridad y tokens
-
-`generar-token.js` crea un payload con:
-
-```json
-{ "project": "...", "exp": 0, "longTerm": false }
-```
-
-El payload se codifica en Base64URL y se firma con HMAC-SHA256. `verificar-token.js` comprueba firma y vencimiento antes de autorizar el portal.
-
-Los enlaces de larga duracion requieren una variable especifica por proyecto y una password. Revisar siempre el flujo de larga duracion antes de cambiarlo: la generacion y la verificacion deben usar exactamente el mismo secreto.
-
-El parametro `modo` es solo de presentacion. No concede permisos adicionales.
-
-## Variables de entorno de Netlify
-
-Variables necesarias para los tokens:
-
-```text
-TOKEN_SECRET
-```
-
-Variables necesarias para consultar metadatos:
-
-```text
-CLOUDINARY_CLOUD_NAME
+TOKEN_SECRET                 mínimo 32 caracteres
+ADMIN_PASSWORD_HASH          scrypt$sal$hash (node herramientas/generar-hash-admin.js "clave")
 CLOUDINARY_API_KEY
 CLOUDINARY_API_SECRET
+CLOUDINARY_CLOUD_NAME        (opcional si usa CLOUDINARY_URL)
+TOKEN_SECRET_*_LARGO         una por proyecto con enlaces largos
 ```
 
-Como alternativa, la funcion acepta:
+Tras cambiar variables hay que volver a desplegar.
 
-```text
-CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME
-```
-
-`CLOUDINARY_API_SECRET` nunca debe estar en HTML, JavaScript del navegador, `proyectos.json` ni en el repositorio.
-
-Para enlaces largos se requiere, ademas, una variable con este patron:
-
-```text
-TOKEN_SECRET_{PROYECTO_SANITIZADO}_LARGO
-```
-
-Ejemplo para `enBlanco/residencial`:
-
-```text
-TOKEN_SECRET_ENBLANCO_RESIDENCIAL_LARGO
-```
-
-Despues de modificar variables en Netlify hay que ejecutar un nuevo deploy.
-
-## Configurar un proyecto
-
-Editar `proyectos.json` y agregar un objeto:
+## proyectos.json
 
 ```json
 {
-	"id": "mi-proyecto",
-	"nombre": "Nombre visible",
-	"carpetas": [
-		{ "value": "galeria", "label": "Galeria" }
-	]
+  "id": "monarca",
+  "nombre": "Residencial Monarca",
+  "permisosCliente": ["alta"],
+  "soloCarpetasDefinidas": false,
+  "carpetas": [{ "value": "galeria", "label": "Galería" }]
 }
 ```
 
-`id` se usa como prefijo de carpeta en Cloudinary y debe coincidir con la estructura real. `value` es el segmento de carpeta y debe ser estable; `label` solo es el texto visible.
+`id` es el prefijo de carpeta en Cloudinary. `permisosCliente` preselecciona los permisos al generar un enlace. Con `soloCarpetasDefinidas: true` solo valen las carpetas listadas; por defecto se pueden crear carpetas nuevas dentro del proyecto (hasta 3 niveles, caracteres seguros).
 
-El usuario puede crear subcarpetas desde el selector. Se guardan en `localStorage` por proyecto y navegador; no se escriben en `proyectos.json`.
+## Datos de cada imagen
 
-## Guia para futuras modificaciones
+- Carpeta Cloudinary: `proyecto/carpeta`. Tag: `proyecto_carpeta` (con `/` reemplazado por `_`); los sitios que leen por tag dependen de esto, al mover de carpeta el tag se actualiza.
+- `context`: `caption` = título, `alt` = descripción, el resto son metadatos personalizados (`etiqueta=valor`). `caption` y `alt` son nombres reservados.
+- Nombre generado: `AAAAMMDDHHMMSS_nombre` (editable). Si ya existe una imagen con ese nombre, la subida se rechaza.
+- Reglas de metadatos (portal de carga): los textos pueden repetirse; los valores numéricos de una etiqueta no pueden repetirse en la carpeta. El panel de administración avisa pero permite continuar.
+- `modificar-imagen`: si se envía `titulo`, `descripcion` o `metadatos`, el context completo se reemplaza; el cliente debe enviar los tres.
 
-- Mantener la validacion de token antes de mostrar la interfaz.
-- Nunca trasladar `API_SECRET` al cliente.
-- Respetar la diferencia entre `caption`/`alt` y metadatos personalizados.
-- Cuando se agregue un campo a una tarjeta, actualizar los listeners de `attachEvents()` y la construccion de `context`.
-- Si se cambia la estructura de una tarjeta, conservar los `data-index` y `data-meta-index`.
-- Cualquier cambio de nombres o carpetas debe considerar recursos ya existentes en Cloudinary.
-- No asumir que `modo=cliente` es seguridad; el token es la autorizacion.
-- Probar tanto subida individual como subida por lote, incluyendo un archivo que falle entre varios correctos.
-- Probar carpetas sin metadatos, carpetas con textos, carpetas con numeros y carpetas con muchos recursos/paginacion.
+## Cómo probar
 
-## Limitaciones conocidas
+- `herramientas/probar-generar-enlace.ps1`: login y generación de enlace.
+- `herramientas/probar-imagenes.ps1`: ciclo completo (subir, listar, modificar, eliminar) en el proyecto `pruebas`.
 
-- La consulta de metadatos depende de credenciales de Cloudinary configuradas en Netlify.
-- La consulta usa recursos de imagenes `upload` y recorre paginacion mediante `next_cursor`.
-- Los nombres de metadatos personalizados se almacenan en `context`; no son necesariamente campos estructurados definidos en el esquema de metadata de Cloudinary.
-- No hay pruebas automatizadas ni build local configurado; la validacion disponible es la comprobacion de errores del editor y las pruebas manuales en Netlify.
-- El preset unsigned permite subir desde el navegador; sus restricciones deben mantenerse configuradas en Cloudinary.
+## Limitaciones
+
+- No hay pruebas automatizadas ni build; se prueba contra Netlify.
+- No hay bloqueo por intentos fallidos de login (solo una espera de 0,8 s). Si hiciera falta, usar Netlify Blobs.
+- Los enlaces no se pueden revocar individualmente; vencen o se invalidan cambiando `TOKEN_SECRET` (todos) o la variable `_LARGO` (largos de un proyecto).
