@@ -3,31 +3,77 @@
     {
       "id": "monarca",
       "nombre": "Residencial Monarca",
-      "permisosCliente": ["alta"],
+      "permisosCliente": [
+        "alta"
+      ],
       "carpetas": [
-        { "value": "galeria", "label": "Galería" },
-        { "value": "instalaciones", "label": "Instalaciones" }
+        {
+          "value": "galeria",
+          "label": "Galería"
+        },
+        {
+          "value": "instalaciones",
+          "label": "Instalaciones"
+        }
       ]
     },
     {
       "id": "enBlanco/residencial",
       "nombre": "Marca Blanca - Residencial",
-      "permisosCliente": ["alta"],
+      "permisosCliente": [
+        "alta"
+      ],
       "carpetas": [
-        { "value": "galeria", "label": "Galería" },
-        { "value": "instalaciones", "label": "Instalaciones" },
-        { "value": "personal", "label": "Personal" }
+        {
+          "value": "galeria",
+          "label": "Galería"
+        },
+        {
+          "value": "instalaciones",
+          "label": "Instalaciones"
+        },
+        {
+          "value": "personal",
+          "label": "Personal"
+        }
       ]
     },
     {
       "id": "patriciaBertoche",
       "nombre": "patriciaBertoche",
-      "permisosCliente": ["alta"],
+      "permisosCliente": [
+        "alta"
+      ],
       "carpetas": [
-        { "value": "galeria", "label": "Galería" },
-        { "value": "instalaciones", "label": "Instalaciones" },
-        { "value": "imagenes", "label": "Imagenes" },
-        { "value": "personal", "label": "Personal" }
+        {
+          "value": "galeria",
+          "label": "Galería"
+        },
+        {
+          "value": "instalaciones",
+          "label": "Instalaciones"
+        },
+        {
+          "value": "imagenes",
+          "label": "Imagenes"
+        },
+        {
+          "value": "personal",
+          "label": "Personal"
+        }
+      ]
+    },
+    {
+      "id": "pruebas",
+      "nombre": "Pruebas (borrar luego)",
+      "permisosCliente": [
+        "alta"
+      ],
+      "carpetas": [
+        {
+          "value": "ensayos",
+          "label": "Ensayos"
+        }
       ]
     }
   ]
