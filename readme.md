@@ -15,16 +15,18 @@ Aplicación web estática (HTML, CSS y JS, sin build) con funciones de Netlify. 
 ```text
 index.html                              Login de admin y generador de enlaces
 admin.html + js/admin.js                Panel ABM: miniaturas, editar, mover, eliminar, subir
+seguridad.html + js/seguridad.js        Genera los valores de las variables de Netlify (contraseña de admin, TOKEN_SECRET, claves largas)
 galeria.html + js/galeria.js            Galería para quien entra con enlace: ver/editar/eliminar/subir según permisos
 subir.html / subir-cliente.html         Portal de carga (pantalla completa / simplificada); requiere permiso "alta"
 js/subir.js                             Portal: validación del enlace, tarjetas, metadatos, subida firmada
 js/acceso.js                            Pantalla de contraseña y sesión de admin, COMPARTIDAS por todas las páginas
 js/dashboard.js                         Login y generación de enlaces
 proyectos.json                          Proyectos, carpetas y permisos por defecto
-herramientas/generar-hash-admin.js      Genera ADMIN_PASSWORD_HASH (se corre en la PC)
+herramientas/generar-hash-admin.js      Genera ADMIN_PASSWORD_HASH desde la PC: solo para la instalación inicial o si se pierde el acceso
 herramientas/probar-*.ps1               Pruebas contra el sitio desde Windows
 netlify/functions/
   iniciar-sesion-admin.js               Contraseña de admin -> sesión de 2 horas
+  generar-hash-clave.js                 (admin) convierte una contraseña nueva en el valor de ADMIN_PASSWORD_HASH
   generar-enlace.js                     (admin) crea el token del enlace
   verificar-enlace.js                   Valida enlace (+ contraseña si es largo)
   firmar-subida.js                      Permiso "alta": firma la subida a Cloudinary
@@ -47,7 +49,7 @@ Los enlaces con más de 6 meses de vigencia piden una contraseña: el valor de l
 
 ```text
 TOKEN_SECRET                 mínimo 32 caracteres
-ADMIN_PASSWORD_HASH          scrypt$sal$hash (node herramientas/generar-hash-admin.js "clave")
+ADMIN_PASSWORD_HASH          scrypt$sal$hash (se genera en seguridad.html)
 CLOUDINARY_API_KEY
 CLOUDINARY_API_SECRET
 CLOUDINARY_CLOUD_NAME        (opcional si usa CLOUDINARY_URL)
@@ -86,6 +88,7 @@ Tras cambiar variables hay que volver a desplegar.
 | --- | --- | --- |
 | `index.html` | Administrador | Ingresar con la contraseña de admin y generar enlaces |
 | `admin.html` | Administrador | ABM completo: ver, subir, editar, mover y eliminar imágenes de cualquier proyecto |
+| `seguridad.html` | Administrador | Generar los valores de `ADMIN_PASSWORD_HASH`, `TOKEN_SECRET` y `TOKEN_SECRET_*_LARGO` |
 | `galeria.html` | Quien tiene un enlace | Ver, editar y eliminar imágenes de su proyecto, según los permisos del enlace; botón para subir si tiene `alta` |
 | `subir.html` | Quien tiene un enlace con `alta` | Carga con todas las opciones |
 | `subir-cliente.html` | Quien tiene un enlace con `alta` | Carga simplificada |
@@ -148,7 +151,12 @@ Por defecto cualquier enlace puede crear carpetas nuevas dentro de su proyecto. 
 
 ### Mantenimiento
 
-- **Cambiar la contraseña de admin:** `node herramientas/generar-hash-admin.js "nueva clave"`, pegar el resultado en `ADMIN_PASSWORD_HASH` en Netlify y volver a desplegar.
+- **Cambiar claves:** entrar a `seguridad.html` (botón "Claves" de `index.html`). Genera el valor de cada variable, pero **no la cambia en Netlify**: hay que copiarlo en Netlify → Site configuration → Environment variables y volver a desplegar.
+  - `ADMIN_PASSWORD_HASH`: se escribe la contraseña nueva y se obtiene el valor cifrado. La contraseña actual sigue valiendo hasta cambiar la variable y redesplegar.
+  - `TOKEN_SECRET`: clave aleatoria de 64 caracteres. Al cambiarla se invalidan todos los enlaces y sesiones.
+  - `TOKEN_SECRET_{PROYECTO}_LARGO`: se elige el proyecto, se escribe o se genera la contraseña y se copian el nombre de la variable y su valor. Al cambiarla dejan de funcionar los enlaces largos de ese proyecto.
+  - Nada de lo que se genera se guarda. La página no puede modificar Netlify por sí sola a propósito: para eso la aplicación necesitaría un token de Netlify con permisos sobre todo el sitio.
+- **Instalación inicial o acceso perdido:** `seguridad.html` exige entrar como admin, así que la primera vez (o si se pierde la contraseña) el valor de `ADMIN_PASSWORD_HASH` hay que generarlo con `node herramientas/generar-hash-admin.js "clave"` y pegarlo en Netlify. Por eso conviene conservar ese archivo.
 - **Cortar enlaces en una emergencia:** cambiar `TOKEN_SECRET` invalida todos los enlaces y sesiones; cambiar la variable `_LARGO` de un proyecto invalida solo sus enlaces largos. No hay revocación individual.
 - **Después de cambiar variables de entorno** siempre hay que volver a desplegar.
 - **Pantalla de contraseña:** las cinco páginas que piden contraseña (`index`, `admin`, `galeria`, `subir`, `subir-cliente`) usan la misma tarjeta, definida en `js/acceso.js`. Para cambiar su aspecto o sus textos se edita solo ese archivo. La contraseña de un enlace largo se escribe una vez por pestaña (se guarda en `sessionStorage` y se reutiliza al pasar de la galería a la carga).

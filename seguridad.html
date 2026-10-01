@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claves y seguridad | Upload Hub</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <div id="app" class="hidden max-w-2xl mx-auto space-y-4">
+        <header class="flex flex-wrap items-center gap-3">
+            <h1 class="text-xl font-bold mr-auto">🔑 Claves y seguridad</h1>
+            <a href="index.html" class="text-sm underline">Generador de enlaces</a>
+            <a href="admin.html" class="text-sm underline">Administrar imágenes</a>
+        </header>
+
+        <p class="text-sm bg-blue-50 text-blue-900 rounded-lg p-3">
+            Esta página <b>genera</b> los valores, pero no cambia nada sola: copiá cada valor en
+            Netlify → Site configuration → Environment variables y después volvé a desplegar
+            (Deploys → Trigger deploy). Nada de lo que se genera acá se guarda.
+        </p>
+
+        <!-- ADMIN_PASSWORD_HASH -->
+        <section class="bg-white rounded-xl shadow p-5 space-y-3">
+            <h2 class="font-bold">Contraseña de administrador</h2>
+            <p class="text-sm text-slate-500">Variable: <code>ADMIN_PASSWORD_HASH</code>. Escribí la contraseña nueva (mínimo 12 caracteres) y se genera el valor cifrado para pegar en Netlify. Hasta que lo cambies y redespliegues, sigue valiendo la contraseña actual.</p>
+            <input type="password" id="claveNueva" placeholder="Contraseña nueva" autocomplete="new-password" class="border rounded px-3 py-2 w-full">
+            <input type="password" id="claveRepetida" placeholder="Repetí la contraseña nueva" autocomplete="new-password" class="border rounded px-3 py-2 w-full">
+            <p id="errorHash" class="text-sm text-red-600"></p>
+            <button type="button" id="btnHash" class="btn-primary">Generar valor</button>
+            <div id="resultadoHash" class="hidden space-y-2">
+                <textarea id="valorHash" rows="3" readonly class="border rounded px-3 py-2 w-full font-mono text-xs"></textarea>
+                <button type="button" id="btnCopiarHash" class="btn-secondary py-2">📋 Copiar</button>
+            </div>
+        </section>
+
+        <!-- TOKEN_SECRET -->
+        <section class="bg-white rounded-xl shadow p-5 space-y-3">
+            <h2 class="font-bold">Clave de firma de enlaces y sesiones</h2>
+            <p class="text-sm text-slate-500">Variable: <code>TOKEN_SECRET</code>. Genera una clave aleatoria de 64 caracteres. <b>Al cambiarla se invalidan todos los enlaces ya entregados y tu sesión actual.</b></p>
+            <button type="button" id="btnSecreto" class="btn-primary">Generar clave aleatoria</button>
+            <div id="resultadoSecreto" class="hidden space-y-2">
+                <textarea id="valorSecreto" rows="2" readonly class="border rounded px-3 py-2 w-full font-mono text-xs"></textarea>
+                <button type="button" id="btnCopiarSecreto" class="btn-secondary py-2">📋 Copiar</button>
+            </div>
+        </section>
+
+        <!-- TOKEN_SECRET_*_LARGO -->
+        <section class="bg-white rounded-xl shadow p-5 space-y-3">
+            <h2 class="font-bold">Contraseña de enlaces largos de un proyecto</h2>
+            <p class="text-sm text-slate-500">Es la contraseña que tendrá que escribir quien abra un enlace de más de 6 meses. <b>Al cambiarla dejan de funcionar los enlaces largos de ese proyecto.</b> Se la pasás al cliente por otro medio.</p>
+            <label class="text-sm block">Proyecto
+                <select id="selProyecto" class="border rounded px-3 py-2 w-full"></select>
+            </label>
+            <label class="text-sm block">Nombre de la variable en Netlify
+                <div class="flex gap-2">
+                    <input type="text" id="nombreVariable" readonly class="border rounded px-3 py-2 w-full font-mono text-xs">
+                    <button type="button" id="btnCopiarNombre" class="btn-secondary py-2">📋</button>
+                </div>
+            </label>
+            <label class="text-sm block">Contraseña (escribila vos o generá una)
+                <div class="flex gap-2">
+                    <input type="text" id="claveLarga" autocomplete="off" class="border rounded px-3 py-2 w-full font-mono text-sm">
+                    <button type="button" id="btnAleatoria" class="btn-secondary py-2 whitespace-nowrap">🎲 Generar</button>
+                    <button type="button" id="btnCopiarClaveLarga" class="btn-secondary py-2">📋</button>
+                </div>
+            </label>
+        </section>
+    </div>
+
+    <script src="js/acceso.js"></script>
+    <script src="js/seguridad.js"></script>
+</body>
+</html>
