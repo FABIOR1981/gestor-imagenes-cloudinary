@@ -4,7 +4,11 @@
       "id": "monarca",
       "nombre": "Residencial Monarca",
       "permisosCliente": [
-        "alta"
+        "alta",
+        "listar", 
+        "modificar", 
+        "eliminar"
+        
       ],
       "carpetas": [
         {
