@@ -166,6 +166,33 @@ function initApp(initialFolders) {
     const uploadAllBtn = document.getElementById('uploadAllBtn');
 
     let imageFiles = [];
+    let previewOverlay = null;
+    let previewTimeout = null;
+
+    function showExpandedPreview(imgElement) {
+        if (previewOverlay) previewOverlay.remove();
+        if (previewTimeout) clearTimeout(previewTimeout);
+
+        previewOverlay = document.createElement('div');
+        previewOverlay.className = 'preview-lightbox';
+        previewOverlay.setAttribute('role', 'dialog');
+        previewOverlay.setAttribute('aria-label', 'Vista ampliada de la imagen');
+
+        const expandedImage = document.createElement('img');
+        expandedImage.src = imgElement.src;
+        expandedImage.alt = 'Vista ampliada';
+        previewOverlay.appendChild(expandedImage);
+        document.body.appendChild(previewOverlay);
+
+        const closePreview = () => {
+            if (previewOverlay) previewOverlay.remove();
+            previewOverlay = null;
+            previewTimeout = null;
+        };
+
+        previewOverlay.addEventListener('click', closePreview);
+        previewTimeout = setTimeout(closePreview, 4000);
+    }
 
     function loadFolders() {
         try {
@@ -431,6 +458,7 @@ function initApp(initialFolders) {
                 </div>
             `;
             cardsContainer.appendChild(card);
+            card.querySelector('.preview-canvas').addEventListener('click', () => showExpandedPreview(item.imgElement));
             drawPreviewAndMeasure(index);
         });
         attachEvents();
