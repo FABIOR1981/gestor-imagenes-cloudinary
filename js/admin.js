@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const FUNCIONES = '/.netlify/functions';
-    const CLAVE_SESION = 'gestor_sesion_admin'; // la misma que usa index.html
 
     const $ = id => document.getElementById(id);
-    const panelLogin = $('panelLogin'), app = $('app');
+    const app = $('app');
     const selProyecto = $('selProyecto'), selCarpeta = $('selCarpeta');
     const grilla = $('grilla'), estado = $('estado');
     const btnMas = $('btnMas'), btnBorrarSel = $('btnBorrarSel'), contSel = $('contSel');
@@ -23,42 +22,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const miniatura = url => url.replace('/upload/', '/upload/c_fill,w_360,h_270,f_auto,q_auto/');
     const mensaje = (t, error = false) => { estado.textContent = t; estado.className = `text-sm mb-3 ${error ? 'text-red-600' : 'text-slate-500'}`; };
 
-    // ---------- Sesión ----------
-    function leerSesion() {
-        try {
-            const s = JSON.parse(sessionStorage.getItem(CLAVE_SESION));
-            if (s && s.exp > Date.now()) return s;
-        } catch {}
-        sessionStorage.removeItem(CLAVE_SESION);
-        return null;
-    }
+    // ---------- Sesión (pantalla de contraseña compartida: js/acceso.js) ----------
+    const login = Acceso.loginAdmin(() => iniciar());
+    const leerSesion = Acceso.sesionAdmin.leer;
     function mostrar(logueado) {
-        panelLogin.classList.toggle('hidden', logueado);
         app.classList.toggle('hidden', !logueado);
+        if (logueado) login.ocultar(); else login.mostrar();
     }
     function cerrarSesion(aviso) {
-        sessionStorage.removeItem(CLAVE_SESION);
-        mostrar(false);
-        $('errorLogin').textContent = aviso || '';
+        Acceso.sesionAdmin.borrar();
+        app.classList.add('hidden');
+        login.mostrar(aviso);
     }
-
-    $('formLogin').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        $('errorLogin').textContent = '';
-        try {
-            const res = await fetch(`${FUNCIONES}/iniciar-sesion-admin`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ clave: $('adminClave').value })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'No se pudo iniciar sesión');
-            sessionStorage.setItem(CLAVE_SESION, JSON.stringify({ sesion: data.sesion, exp: data.exp }));
-            $('adminClave').value = '';
-            await iniciar();
-        } catch (err) {
-            $('errorLogin').textContent = err.message;
-        }
-    });
     $('btnSalir').addEventListener('click', () => cerrarSesion());
 
     async function api(funcion, cuerpo) {

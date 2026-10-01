@@ -18,6 +18,7 @@ admin.html + js/admin.js                Panel ABM: miniaturas, editar, mover, el
 galeria.html + js/galeria.js            Galería para quien entra con enlace: ver/editar/eliminar/subir según permisos
 subir.html / subir-cliente.html         Portal de carga (pantalla completa / simplificada); requiere permiso "alta"
 js/subir.js                             Portal: validación del enlace, tarjetas, metadatos, subida firmada
+js/acceso.js                            Pantalla de contraseña y sesión de admin, COMPARTIDAS por todas las páginas
 js/dashboard.js                         Login y generación de enlaces
 proyectos.json                          Proyectos, carpetas y permisos por defecto
 herramientas/generar-hash-admin.js      Genera ADMIN_PASSWORD_HASH (se corre en la PC)
@@ -150,6 +151,7 @@ Por defecto cualquier enlace puede crear carpetas nuevas dentro de su proyecto. 
 - **Cambiar la contraseña de admin:** `node herramientas/generar-hash-admin.js "nueva clave"`, pegar el resultado en `ADMIN_PASSWORD_HASH` en Netlify y volver a desplegar.
 - **Cortar enlaces en una emergencia:** cambiar `TOKEN_SECRET` invalida todos los enlaces y sesiones; cambiar la variable `_LARGO` de un proyecto invalida solo sus enlaces largos. No hay revocación individual.
 - **Después de cambiar variables de entorno** siempre hay que volver a desplegar.
+- **Pantalla de contraseña:** las cinco páginas que piden contraseña (`index`, `admin`, `galeria`, `subir`, `subir-cliente`) usan la misma tarjeta, definida en `js/acceso.js`. Para cambiar su aspecto o sus textos se edita solo ese archivo. La contraseña de un enlace largo se escribe una vez por pestaña (se guarda en `sessionStorage` y se reutiliza al pasar de la galería a la carga).
 
 ### Lista de verificación de seguridad
 

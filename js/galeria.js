@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mensaje = (t, error = false) => { estado.textContent = t; estado.className = `text-sm mb-3 ${error ? 'text-red-600' : 'text-slate-500'}`; };
 
     function verSolo(id) {
-        ['estadoCarga', 'estadoError', 'estadoClave', 'app'].forEach(x => $(x).classList.toggle('hidden', x !== id));
+        ['estadoCarga', 'estadoError', 'app'].forEach(x => $(x).classList.toggle('hidden', x !== id));
     }
     function mostrarError(texto) {
         $('mensajeError').textContent = texto;
@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ---------- Acceso ----------
+    // Devuelve 'ok', 'clave' (hay que pedir la contraseña) o { error }
     async function verificar(clave) {
         const res = await fetch(`${FUNCIONES}/verificar-enlace`, {
             method: 'POST',
@@ -46,27 +47,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         const data = await res.json().catch(() => ({}));
 
-        if (res.status === 401 && data.requiereClave) { verSolo('estadoClave'); return; }
-        if (!res.ok || !data.valida) {
-            if (clave) { // contraseña mal escrita: se vuelve a pedir
-                verSolo('estadoClave');
-                $('errorClave').textContent = data.error || 'Contraseña incorrecta.';
-                return;
-            }
-            mostrarError(data.error || 'Enlace inválido o vencido.');
-            return;
-        }
+        if (res.status === 401 && (data.requiereClave || (clave && data.error === 'Contraseña incorrecta'))) return 'clave';
+        if (!res.ok || !data.valida) return { error: data.error || 'Enlace inválido o vencido.' };
+
         CLAVE = clave || '';
         PROYECTO = data.proyecto;
         PERMISOS = data.permisos || [];
         await iniciar(data.exp);
+        return 'ok';
     }
 
-    $('formClave').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        $('errorClave').textContent = '';
-        try { await verificar($('claveAcceso').value.trim()); }
-        catch { $('errorClave').textContent = 'Error al verificar la contraseña.'; }
+    // Pantalla de contraseña compartida (js/acceso.js)
+    const tarjetaClave = Acceso.tarjeta({
+        titulo: 'Acceso protegido',
+        texto: 'Ingresá la contraseña proporcionada por el administrador.',
+        placeholder: 'Contraseña',
+        boton: '🔓 Desbloquear acceso',
+        recortar: true,
+        alEnviar: async (valor) => {
+            const r = await verificar(valor);
+            if (r === 'clave') throw new Error('Contraseña incorrecta.');
+            if (r !== 'ok') throw new Error(r.error);
+            Acceso.guardarClave(TOKEN, valor);
+            tarjetaClave.ocultar();
+        }
     });
 
     async function api(funcion, cuerpo) {
@@ -268,6 +272,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ---------- Arranque ----------
     if (!TOKEN) { mostrarError('Falta el enlace de acceso.'); return; }
-    try { await verificar(); }
-    catch { mostrarError('No se pudo validar el acceso con el servidor.'); }
+    try {
+        const r = await verificar(Acceso.leerClave(TOKEN) || undefined); // usa la contraseña ya escrita en esta pestaña
+        if (r === 'clave') { verSolo(null); tarjetaClave.mostrar(); }
+        else if (r !== 'ok') mostrarError(r.error);
+    } catch {
+        mostrarError('No se pudo validar el acceso con el servidor.');
+    }
 });

@@ -14,18 +14,6 @@
             <p>Crea links de subida temporales para tus clientes.</p>
         </header>
 
-        <!-- Acceso de administrador -->
-        <section id="loginCard" class="card">
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="adminClave">Contraseña de administrador</label>
-                    <input type="password" id="adminClave" autocomplete="current-password" required>
-                </div>
-                <p id="loginError" class="status-msg"></p>
-                <button type="submit" class="btn-primary">🔐 Ingresar</button>
-            </form>
-        </section>
-
         <!-- Generador (visible solo con sesión de administrador) -->
         <div id="panelGenerador" class="hidden">
             <section class="card">
@@ -82,6 +70,7 @@
         </div>
     </main>
 
+    <script src="js/acceso.js"></script>
     <script src="js/dashboard.js"></script>
 </body>
 </html>

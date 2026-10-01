@@ -9,8 +9,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = urlParams.get('token');
     const loadingState = document.getElementById('loadingState');
     const errorState = document.getElementById('errorState');
-    const passwordState = document.getElementById('passwordState');
-    const mainInterface = document.getElementById('mainInterface');
 
     if (!token) {
         loadingState.classList.add('hidden');
@@ -20,25 +18,43 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     TOKEN_ACTUAL = token;
 
-    try {
-        // Consultamos al servidor de Netlify si el token es válido
+    // Consulta al servidor de Netlify si el enlace es válido (y si hace falta contraseña)
+    async function verificarEnlace(clave) {
         const res = await fetch('/.netlify/functions/verificar-enlace', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token })
+            body: JSON.stringify({ token, clave })
         });
+        const data = await res.json().catch(() => ({}));
+        return { res, data };
+    }
 
-        const data = await res.json();
+    // Pantalla de contraseña compartida (js/acceso.js), para enlaces de larga duración
+    const tarjetaClave = Acceso.tarjeta({
+        titulo: 'Acceso protegido',
+        texto: 'Ingresá la contraseña proporcionada por el administrador.',
+        placeholder: 'Contraseña',
+        boton: '🔓 Desbloquear acceso',
+        recortar: true,
+        alEnviar: async (password) => {
+            const { res, data } = await verificarEnlace(password);
+            if (!res.ok || !data.valida) throw new Error(data.error || 'Contraseña incorrecta.');
+            TOKEN_PASSWORD = password;
+            Acceso.guardarClave(token, password);
+            tarjetaClave.ocultar();
+            await cargarInterfazProyecto(data.proyecto, data.exp);
+        }
+    });
 
-        // Si el servidor indica que es de larga duración y requiere contraseña, mostramos el modal
-        if (res.status === 401 && data.requiereClave) {
+    try {
+        const claveGuardada = Acceso.leerClave(token); // contraseña ya escrita en esta pestaña (p. ej. en la galería)
+        const { res, data } = await verificarEnlace(claveGuardada || undefined);
+
+        // Enlace largo sin contraseña (o con la guardada ya inválida): se pide la contraseña
+        const claveInvalida = res.status === 401 && claveGuardada && data.error === 'Contraseña incorrecta';
+        if (res.status === 401 && (data.requiereClave || claveInvalida)) {
             loadingState.classList.add('hidden');
-            if (passwordState) {
-                passwordState.classList.remove('hidden');
-                initPasswordProtection();
-            } else {
-                errorState.classList.remove('hidden');
-            }
+            tarjetaClave.mostrar();
             return;
         }
 
@@ -48,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Si el token es válido y no requiere contraseña adicional, cargamos la aplicación
+        TOKEN_PASSWORD = claveGuardada || '';
         await cargarInterfazProyecto(data.proyecto, data.exp);
 
     } catch (error) {
@@ -57,56 +73,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('errorMessage').textContent = "No se pudo validar el acceso con el servidor o el enlace no es válido.";
     }
 });
-
-// Función para manejar el formulario de contraseña en pantalla
-function initPasswordProtection() {
-    const passwordForm = document.getElementById('passwordForm');
-    const accessPasswordInput = document.getElementById('accessPassword');
-    const passwordError = document.getElementById('passwordError');
-    const passwordState = document.getElementById('passwordState');
-    const loadingState = document.getElementById('loadingState');
-
-    if (!passwordForm) return;
-
-    passwordForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const password = accessPasswordInput.value.trim();
-        passwordError.classList.add('hidden');
-
-        try {
-            passwordState.classList.add('hidden');
-            loadingState.classList.remove('hidden');
-
-            // Re-enviamos el token junto con la contraseña ingresada para que el servidor la valide
-            const res = await fetch('/.netlify/functions/verificar-enlace', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: TOKEN_ACTUAL, clave: password })
-            });
-
-            const data = await res.json();
-
-            if (!res.ok || !data.valida) {
-                loadingState.classList.add('hidden');
-                passwordState.classList.remove('hidden');
-                passwordError.textContent = data.error || 'Contraseña incorrecta.';
-                passwordError.classList.remove('hidden');
-                return;
-            }
-
-            // Contraseña correcta: ocultamos el modal y cargamos la app del proyecto
-            TOKEN_PASSWORD = password;
-            passwordState.classList.add('hidden');
-            await cargarInterfazProyecto(data.proyecto, data.exp);
-
-        } catch (err) {
-            loadingState.classList.add('hidden');
-            passwordState.classList.remove('hidden');
-            passwordError.textContent = 'Error al verificar la contraseña.';
-            passwordError.classList.remove('hidden');
-        }
-    };
-}
 
 // Función auxiliar para inicializar la app una vez validado el acceso y permisos
 async function cargarInterfazProyecto(projectName, expDate) {

@@ -1,14 +1,8 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const FUNCIONES = '/.netlify/functions';
-    const CLAVE_SESION = 'gestor_sesion_admin';
 
-    const loginCard = document.getElementById('loginCard');
-    const loginForm = document.getElementById('loginForm');
-    const adminClave = document.getElementById('adminClave');
-    const loginError = document.getElementById('loginError');
     const panel = document.getElementById('panelGenerador');
     const logoutBtn = document.getElementById('logoutBtn');
-
     const form = document.getElementById('linkGeneratorForm');
     const projectSelect = document.getElementById('projectSelect');
     const modeSelect = document.getElementById('modeSelect');
@@ -22,43 +16,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let proyectosData = [];
 
-    // --- Sesión de administrador (dura 2 horas; vive solo en esta pestaña) ---
-    function leerSesion() {
-        try {
-            const s = JSON.parse(sessionStorage.getItem(CLAVE_SESION));
-            if (s && s.exp > Date.now()) return s;
-        } catch {}
-        sessionStorage.removeItem(CLAVE_SESION);
-        return null;
-    }
-
-    function mostrarPanel(si) {
-        loginCard.classList.toggle('hidden', si);
-        panel.classList.toggle('hidden', !si);
-        if (!si) adminClave.value = '';
-    }
-
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        loginError.textContent = '';
-        try {
-            const res = await fetch(`${FUNCIONES}/iniciar-sesion-admin`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ clave: adminClave.value })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'No se pudo iniciar sesión');
-            sessionStorage.setItem(CLAVE_SESION, JSON.stringify({ sesion: data.sesion, exp: data.exp }));
-            mostrarPanel(true);
-            await cargarProyectos();
-        } catch (err) {
-            loginError.textContent = err.message;
-        }
+    // --- Sesión de administrador (pantalla de contraseña compartida: js/acceso.js) ---
+    const login = Acceso.loginAdmin(async () => {
+        mostrarPanel(true);
+        await cargarProyectos();
     });
 
+    function mostrarPanel(si) {
+        panel.classList.toggle('hidden', !si);
+        if (si) login.ocultar(); else login.mostrar();
+    }
+
+    function sesionVencida() {
+        Acceso.sesionAdmin.borrar();
+        panel.classList.add('hidden');
+        login.mostrar('La sesión venció. Ingresá de nuevo.');
+    }
+
     logoutBtn.addEventListener('click', () => {
-        sessionStorage.removeItem(CLAVE_SESION);
+        Acceso.sesionAdmin.borrar();
         resultContainer.classList.add('hidden');
         mostrarPanel(false);
     });
@@ -107,12 +83,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Generar enlace ---
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const sesion = leerSesion();
-        if (!sesion) {
-            mostrarPanel(false);
-            loginError.textContent = 'La sesión venció. Ingresá de nuevo.';
-            return;
-        }
+        const sesion = Acceso.sesionAdmin.leer();
+        if (!sesion) { sesionVencida(); return; }
 
         const proyecto = projectSelect.value;
         if (!proyecto) return;
@@ -128,12 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 body: JSON.stringify({ proyecto, permisos, exp: new Date(expirationInput.value).getTime() })
             });
             const data = await res.json();
-            if (res.status === 401) {
-                sessionStorage.removeItem(CLAVE_SESION);
-                mostrarPanel(false);
-                loginError.textContent = 'La sesión venció. Ingresá de nuevo.';
-                return;
-            }
+            if (res.status === 401) { sesionVencida(); return; }
             if (!res.ok) throw new Error(data.error || 'Error al generar el enlace');
 
             const paginas = { admin: 'subir.html', cliente: 'subir-cliente.html', galeria: 'galeria.html' };
@@ -162,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // --- Arranque ---
-    if (leerSesion()) {
+    if (Acceso.sesionAdmin.leer()) {
         mostrarPanel(true);
         await cargarProyectos();
     } else {
