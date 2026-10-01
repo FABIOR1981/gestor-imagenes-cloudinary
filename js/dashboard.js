@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const form = document.getElementById('linkGeneratorForm');
     const projectSelect = document.getElementById('projectSelect');
+    const modeSelect = document.getElementById('modeSelect');
     const resultContainer = document.getElementById('resultContainer');
     const generatedLinkInput = document.getElementById('generatedLink');
     const copyBtn = document.getElementById('copyBtn');
@@ -48,6 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         e.preventDefault();
 
         const selectedProjectId = projectSelect.value;
+        const selectedMode = modeSelect.value;
         const expirationDate = expirationInput.value;
 
         if (!selectedProjectId) return;
@@ -66,7 +68,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!res.ok) throw new Error(data.error || 'Error al generar el enlace');
 
             const baseUrl = window.location.origin;
-            const finalUrl = `${baseUrl}/subir.html?token=${data.token}`;
+            const uploadPage = selectedMode === 'cliente' ? 'subir-cliente.html' : 'subir.html';
+            const finalUrl = `${baseUrl}/${uploadPage}?token=${encodeURIComponent(data.token)}&modo=${encodeURIComponent(selectedMode)}`;
 
             generatedLinkInput.value = finalUrl;
             resultContainer.classList.remove('hidden');

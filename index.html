@@ -24,7 +24,15 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="expirationDate"><span class="numero-paso">2</span> ¿Hasta cuándo estará activo?</label>
+                    <label for="modeSelect"><span class="numero-paso">2</span> ¿Quién usará el enlace?</label>
+                    <select id="modeSelect" name="modeSelect" required>
+                        <option value="admin">Admin - todas las opciones</option>
+                        <option value="cliente">Cliente - carga simplificada</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="expirationDate"><span class="numero-paso">3</span> ¿Hasta cuándo estará activo?</label>
                     <input type="datetime-local" id="expirationDate" name="expirationDate" required>
                     <p class="ayuda">Por defecto el enlace dura 24 horas. Puedes cambiarlo.</p>
                 </div>

@@ -1,6 +1,7 @@
 let PROYECTO_ACTUAL = "";
 let BASE_FOLDER = "";
 let TOKEN_ACTUAL = "";
+const IS_CLIENT_MODE = new URLSearchParams(window.location.search).get('modo') === 'cliente';
 
 const cfgCloudinary = (typeof CONFIG !== 'undefined' && CONFIG.CLOUDINARY) ? CONFIG.CLOUDINARY : {};
 const CLOUD_NAME = cfgCloudinary.CLOUD_NAME || 'p0qlmlor';
@@ -222,7 +223,7 @@ function initApp(initialFolders) {
         onResolved(slug);
     }
 
-    globalCategory.addEventListener('change', () => {
+    if (globalCategory) globalCategory.addEventListener('change', () => {
         handleFolderSelectChange(globalCategory, (finalValue) => {
             populateGlobalCategory(finalValue);
             setLastFolder(finalValue);
@@ -231,7 +232,7 @@ function initApp(initialFolders) {
         });
     });
 
-    globalMaxWidth.addEventListener('change', () => {
+    if (globalMaxWidth) globalMaxWidth.addEventListener('change', () => {
         const maxWidthVal = parseInt(globalMaxWidth.value);
         imageFiles.forEach(item => { item.maxWidth = maxWidthVal; });
         renderCards();
@@ -273,14 +274,14 @@ function initApp(initialFolders) {
                         imgElement: img,
                         originalSize: file.size,
                         timestamp: fileDate.getTime(),
-                        keepOriginal: globalKeepOriginal.checked,
+                        keepOriginal: globalKeepOriginal ? globalKeepOriginal.checked : true,
                         originalName: rawName,
                         customName: 'imagen',
                         category: defaultFolder,
-                        customTitle: globalTitle.value.trim(),
+                        customTitle: globalTitle ? globalTitle.value.trim() : '',
                         customDescription: '',
                         customMetadata: [], 
-                        maxWidth: parseInt(globalMaxWidth.value),
+                        maxWidth: globalMaxWidth ? parseInt(globalMaxWidth.value) : 1200,
                         dateStr: dateStr,
                         quality: globalQuality ? parseFloat(globalQuality.value) : 0.8
                     });
@@ -298,7 +299,7 @@ function initApp(initialFolders) {
         fileInput.value = '';
     });
 
-    globalKeepOriginal.addEventListener('change', () => {
+    if (globalKeepOriginal) globalKeepOriginal.addEventListener('change', () => {
         const val = globalKeepOriginal.checked;
         imageFiles.forEach(item => { item.keepOriginal = val; });
         renderCards();
@@ -350,22 +351,22 @@ function initApp(initialFolders) {
                 <div class="flex flex-col gap-2.5 text-xs">
                     <div class="flex justify-between items-center pb-1 border-b border-slate-100">
                         <span style="color: var(--text-muted);">Original: <strong style="color: var(--text-main);">${formatBytes(item.originalSize)}</strong></span>
-                        <div class="flex items-center gap-1.5">
+                        ${IS_CLIENT_MODE ? '' : `<div class="flex items-center gap-1.5">
                             <input type="checkbox" data-index="${index}" class="card-keep-original w-3.5 h-3.5 cursor-pointer accent-blue-600" ${item.keepOriginal ? 'checked' : ''}>
                             <span class="cursor-pointer font-medium" style="color: var(--text-main);">Respetar nombre</span>
-                        </div>
+                        </div>`}
                     </div>
 
-                    ${item.keepOriginal ? `<div class="w-full border rounded px-2.5 py-1.5 truncate bg-slate-50 font-mono text-xs" style="border-color: var(--border-color); color: var(--text-muted);">${item.originalName}</div>` : `<input type="text" value="${item.customName}" data-index="${index}" placeholder="Nombre corto..." class="custom-name-input w-full border rounded px-2.5 py-1.5 focus-ring font-mono text-xs">`}
+                    ${IS_CLIENT_MODE || item.keepOriginal ? `<div class="w-full border rounded px-2.5 py-1.5 truncate bg-slate-50 font-mono text-xs" style="border-color: var(--border-color); color: var(--text-muted);">${item.originalName}</div>` : `<input type="text" value="${item.customName}" data-index="${index}" placeholder="Nombre corto..." class="custom-name-input w-full border rounded px-2.5 py-1.5 focus-ring font-mono text-xs">`}
                     
                     <div class="grid grid-cols-2 gap-2">
-                        <div>
+                        ${IS_CLIENT_MODE ? '' : `<div>
                             <label class="font-semibold block mb-1" style="color: var(--text-muted);">Carpeta:</label>
                             <select data-index="${index}" class="category-select w-full border rounded px-2 py-1.5 focus-ring bg-white">
                                 ${buildFolderOptionsHtml(item.category)}
                             </select>
-                        </div>
-                        <div>
+                        </div>`}
+                        ${IS_CLIENT_MODE ? '' : `<div>
                             <label class="font-semibold block mb-1" style="color: var(--text-muted);">Ancho máx.:</label>
                             <select data-index="${index}" class="card-maxwidth-select w-full border rounded px-2 py-1.5 focus-ring bg-white">
                                 <option value="800" ${item.maxWidth === 800 ? 'selected' : ''}>800 px</option>
@@ -374,25 +375,25 @@ function initApp(initialFolders) {
                                 <option value="1920" ${item.maxWidth === 1920 ? 'selected' : ''}>1920 px</option>
                                 <option value="0" ${item.maxWidth === 0 ? 'selected' : ''}>Original</option>
                             </select>
-                        </div>
-                        <div class="col-span-2">
+                        </div>`}
+                        ${IS_CLIENT_MODE ? '' : `<div class="col-span-2">
                             <div class="flex justify-between items-center mb-1">
                                 <label class="font-semibold" style="color: var(--text-muted);">Calidad WebP:</label>
                                 <span id="quality-val-${index}" class="font-bold text-blue-600">${Math.round(item.quality * 100)}%</span>
                             </div>
                             <input type="range" data-index="${index}" min="0.1" max="1.0" step="0.05" value="${item.quality}" class="card-quality-range w-full accent-blue-600 cursor-pointer">
-                        </div>
-                        <div class="col-span-2">
+                        </div>`}
+                        ${IS_CLIENT_MODE ? '' : `<div class="col-span-2">
                             <label class="font-semibold block mb-1" style="color: var(--text-muted);">Título descriptivo:</label>
                             <input type="text" value="${item.customTitle.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}" data-index="${index}" placeholder="Ej. Vista principal" class="title-input w-full border rounded px-2.5 py-1.5 focus-ring">
-                        </div>
-                        <div class="col-span-2">
+                        </div>`}
+                        ${IS_CLIENT_MODE ? '' : `<div class="col-span-2">
                             <label class="font-semibold block mb-1" style="color: var(--text-muted);">Descripción (Opcional):</label>
                             <textarea data-index="${index}" placeholder="Detalles de la toma..." class="description-input w-full border rounded px-2.5 py-1.5 focus-ring" rows="2">${item.customDescription ? item.customDescription.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])) : ''}</textarea>
-                        </div>
+                        </div>`}
 
                         <!-- SECCIÓN DE METADATOS MANUALES -->
-                        <div class="col-span-2 border-t pt-3 mt-1">
+                        ${IS_CLIENT_MODE ? '' : `<div class="col-span-2 border-t pt-3 mt-1">
                             <div class="flex justify-between items-center mb-2">
                                 <label class="font-semibold" style="color: var(--text-muted);">Metadatos personalizados:</label>
                                 <button type="button" data-index="${index}" class="add-meta-btn text-xs text-blue-600 font-semibold hover:underline bg-blue-50 px-2 py-1 rounded">+ Agregar campo</button>
@@ -406,7 +407,7 @@ function initApp(initialFolders) {
                                     </div>
                                 `).join('')}
                             </div>
-                        </div>
+                        </div>`}
                     </div>
                     
                     <!-- Ruta final resultante -->
@@ -422,7 +423,7 @@ function initApp(initialFolders) {
                     <div class="flex items-center gap-2 flex-wrap justify-end">
                         <span id="upload-status-${index}" class="text-xs px-2.5 py-1.5 rounded shrink-0 bg-slate-100 font-medium" style="color: var(--text-muted);">Pendiente</span>
                         <button data-index="${index}" class="upload-btn font-semibold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-blue-600 hover:bg-blue-700 text-white shadow-sm">Subir</button>
-                        <button data-index="${index}" class="download-single-btn font-semibold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-slate-200 hover:bg-slate-300 text-slate-700">Descargar</button>
+                        ${IS_CLIENT_MODE ? '' : `<button data-index="${index}" class="download-single-btn font-semibold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-slate-200 hover:bg-slate-300 text-slate-700">Descargar</button>`}
                     </div>
                 </div>
             `;
@@ -516,8 +517,8 @@ function initApp(initialFolders) {
             a.click(); URL.revokeObjectURL(url);
         }));
         
-        uploadAllBtn.onclick = () => imageFiles.forEach((_, idx) => setTimeout(() => uploadToCloudinary(idx), idx * 400));
-        downloadAllBtn.onclick = () => imageFiles.forEach((_, idx) => setTimeout(async () => {
+        if (uploadAllBtn) uploadAllBtn.onclick = () => imageFiles.forEach((_, idx) => setTimeout(() => uploadToCloudinary(idx), idx * 400));
+        if (downloadAllBtn) downloadAllBtn.onclick = () => imageFiles.forEach((_, idx) => setTimeout(async () => {
             const item = imageFiles[idx];
             const blob = await buildProcessedBlob(item);
             const url = URL.createObjectURL(blob);
