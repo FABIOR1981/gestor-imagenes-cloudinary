@@ -197,6 +197,49 @@ function initApp(initialFolders) {
         previewTimeout = setTimeout(closePreview, 4000);
     }
 
+    function showUploadErrors(errors) {
+        const previousModal = document.getElementById('uploadErrorModal');
+        if (previousModal) previousModal.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'uploadErrorModal';
+        modal.className = 'upload-error-modal';
+        modal.setAttribute('role', 'alertdialog');
+        modal.setAttribute('aria-modal', 'true');
+
+        const panel = document.createElement('section');
+        panel.className = 'upload-error-panel';
+        panel.innerHTML = '<div class="upload-error-heading"><span class="icono-estado">⚠️</span><div><h2>No se pudieron subir algunas imágenes</h2><p>Las demás imágenes se procesaron normalmente.</p></div></div>';
+
+        const list = document.createElement('ul');
+        list.className = 'upload-error-list';
+        errors.forEach(error => {
+            const item = document.createElement('li');
+            const name = document.createElement('strong');
+            name.textContent = error.name;
+            const reason = document.createElement('span');
+            reason.textContent = error.reason;
+            item.append(name, reason);
+            list.appendChild(item);
+        });
+        panel.appendChild(list);
+
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.className = 'btn-primary upload-error-close';
+        closeButton.textContent = 'Cerrar';
+        closeButton.addEventListener('click', () => modal.remove());
+        panel.appendChild(closeButton);
+        modal.appendChild(panel);
+        document.body.appendChild(modal);
+    }
+
+    function reportUploadError(index, reason, errorCollector) {
+        const error = { name: `${getFinalName(imageFiles[index])}.webp`, reason };
+        if (errorCollector) errorCollector.push(error);
+        else showUploadErrors([error]);
+    }
+
     function loadFolders() {
         try {
             const stored = JSON.parse(localStorage.getItem(FOLDERS_KEY));
@@ -392,17 +435,36 @@ function initApp(initialFolders) {
 
     function buildMetadataNameOptions(item, metadataIndex) {
         const currentName = item.customMetadata[metadataIndex].name;
-        const usedNames = new Set(item.customMetadata
-            .filter((metadata, index) => index !== metadataIndex)
-            .map(metadata => metadata.name)
-            .filter(Boolean));
         const isExistingName = metadataFields.some(field => field.name === currentName);
         const options = metadataFields.map(field => {
             const isSelected = field.name === currentName;
-            const isUsed = usedNames.has(field.name);
-            return `<option value="${escapeAttribute(field.name)}" ${isSelected ? 'selected' : ''} ${isUsed ? 'disabled' : ''}>${escapeAttribute(field.name)}</option>`;
+            return `<option value="${escapeAttribute(field.name)}" ${isSelected ? 'selected' : ''}>${escapeAttribute(field.name)}</option>`;
         }).join('');
         return `<option value="__new__" ${!isExistingName ? 'selected' : ''}>Nueva etiqueta...</option>${options}`;
+    }
+
+    function hasDuplicateMetadataPair(item, metadataIndex, name, value) {
+        if (!name || !value) return false;
+        return item.customMetadata.some((metadata, index) => index !== metadataIndex && metadata.name.trim() === name.trim() && metadata.value.trim() === value.trim());
+    }
+
+    function isNumericMetadata(name, value) {
+        const normalizedValue = String(value || '').trim();
+        if (!normalizedValue) return false;
+        if (/^-?\d+(?:\.\d+)?$/.test(normalizedValue)) return true;
+        const knownValues = getMetadataValues(name).map(item => String(item).trim());
+        return knownValues.length > 0 && knownValues.every(item => /^-?\d+(?:\.\d+)?$/.test(item));
+    }
+
+    function hasNumericMetadataConflict(itemIndex, name, value) {
+        if (!isNumericMetadata(name, value)) return false;
+        const normalizedName = name.trim();
+        const normalizedValue = String(value).trim();
+        if (getMetadataValues(normalizedName).some(item => String(item).trim() === normalizedValue)) return true;
+
+        return imageFiles.some((item, index) => index !== itemIndex && item.customMetadata.some(metadata =>
+            metadata.name.trim() === normalizedName && metadata.value.trim() === normalizedValue
+        ));
     }
 
     function getSuggestedMetadataValue(name) {
@@ -597,15 +659,12 @@ function initApp(initialFolders) {
                 return;
             }
 
-            const duplicate = imageFiles[idx].customMetadata.some((item, index) => index !== Number(mIdx) && item.name === selectedName);
-            if (duplicate) {
-                alert('Esta etiqueta ya existe en esta imagen.');
-                renderCards();
-                return;
-            }
-
             metadata.name = selectedName;
             if (!metadata.value) metadata.value = getSuggestedMetadataValue(selectedName);
+            if (hasNumericMetadataConflict(Number(idx), metadata.name, metadata.value) || hasDuplicateMetadataPair(imageFiles[idx], Number(mIdx), metadata.name, metadata.value)) {
+                alert('Esta combinación de etiqueta y valor ya existe en esta imagen.');
+                metadata.value = '';
+            }
             renderCards();
         }));
 
@@ -619,20 +678,32 @@ function initApp(initialFolders) {
                 const idx = e.target.dataset.index;
                 const mIdx = e.target.dataset.metaIndex;
                 const name = e.target.value.trim();
-                const duplicate = imageFiles[idx].customMetadata.some((item, index) => index !== Number(mIdx) && item.name.trim() === name);
-                if (name && duplicate) {
-                    alert('Esta etiqueta ya existe en esta imagen.');
+                const metadata = imageFiles[idx].customMetadata[mIdx];
+                if (name && (hasNumericMetadataConflict(Number(idx), name, metadata.value) || hasDuplicateMetadataPair(imageFiles[idx], Number(mIdx), name, metadata.value))) {
+                    alert('Esta combinación de etiqueta y valor ya existe en esta imagen.');
                     imageFiles[idx].customMetadata[mIdx].name = '';
                     renderCards();
                 }
             });
         });
 
-        document.querySelectorAll('.meta-value-input').forEach(i => i.addEventListener('input', e => {
-            const idx = e.target.dataset.index;
-            const mIdx = e.target.dataset.metaIndex;
-            imageFiles[idx].customMetadata[mIdx].value = e.target.value;
-        }));
+        document.querySelectorAll('.meta-value-input').forEach(i => {
+            i.addEventListener('input', e => {
+                const idx = e.target.dataset.index;
+                const mIdx = e.target.dataset.metaIndex;
+                imageFiles[idx].customMetadata[mIdx].value = e.target.value;
+            });
+            i.addEventListener('change', e => {
+                const idx = e.target.dataset.index;
+                const mIdx = e.target.dataset.metaIndex;
+                const metadata = imageFiles[idx].customMetadata[mIdx];
+                if (hasNumericMetadataConflict(Number(idx), metadata.name, metadata.value) || hasDuplicateMetadataPair(imageFiles[idx], Number(mIdx), metadata.name, metadata.value)) {
+                    alert('Esta combinación de etiqueta y valor ya existe en esta imagen.');
+                    metadata.value = '';
+                    renderCards();
+                }
+            });
+        });
 
         document.querySelectorAll('.remove-meta-btn').forEach(b => b.addEventListener('click', e => {
             const idx = e.target.dataset.index;
@@ -650,7 +721,12 @@ function initApp(initialFolders) {
             a.click(); URL.revokeObjectURL(url);
         }));
         
-        if (uploadAllBtn) uploadAllBtn.onclick = () => imageFiles.forEach((_, idx) => setTimeout(() => uploadToCloudinary(idx), idx * 400));
+        if (uploadAllBtn) uploadAllBtn.onclick = async () => {
+            const errors = [];
+            const indexes = imageFiles.map((_, index) => index);
+            for (const index of indexes) await uploadToCloudinary(index, errors);
+            if (errors.length) showUploadErrors(errors);
+        };
         if (downloadAllBtn) downloadAllBtn.onclick = () => imageFiles.forEach((_, idx) => setTimeout(async () => {
             const item = imageFiles[idx];
             const blob = await buildProcessedBlob(item);
@@ -660,20 +736,37 @@ function initApp(initialFolders) {
         }, idx * 250));
     }
 
-    async function uploadToCloudinary(index) {
+    async function uploadToCloudinary(index, errorCollector = null) {
         const item = imageFiles[index];
         const statusEl = document.getElementById(`upload-status-${index}`);
         const folderPath = `${BASE_FOLDER}/${item.category}`; 
         const tag = `${PROYECTO_ACTUAL.replace(/\//g, '_')}_${item.category}`;
-        const metadataNames = item.customMetadata.map(metadata => metadata.name.trim()).filter(Boolean);
-        const hasDuplicateMetadata = new Set(metadataNames).size !== metadataNames.length;
+        const metadataPairs = item.customMetadata
+            .map(metadata => `${metadata.name.trim()}\u0000${metadata.value.trim()}`)
+            .filter(pair => pair !== '\u0000');
+        const hasDuplicateMetadata = new Set(metadataPairs).size !== metadataPairs.length;
+        const usedNumericPairs = new Set();
+        metadataFields.forEach(field => {
+            const values = field.values.map(value => String(value).trim());
+            if (values.length && values.every(value => /^-?\d+(?:\.\d+)?$/.test(value))) {
+                values.forEach(value => usedNumericPairs.add(`${field.name.trim()}\u0000${value}`));
+            }
+        });
+        let hasNumericConflict = false;
+        imageFiles.forEach(batchItem => batchItem.customMetadata.forEach(metadata => {
+            if (!isNumericMetadata(metadata.name, metadata.value)) return;
+            const pair = `${metadata.name.trim()}\u0000${metadata.value.trim()}`;
+            if (usedNumericPairs.has(pair)) hasNumericConflict = true;
+            usedNumericPairs.add(pair);
+        }));
 
-        if (hasDuplicateMetadata) {
+        if (hasDuplicateMetadata || hasNumericConflict) {
             if (statusEl) {
-                statusEl.textContent = 'Revisa etiquetas repetidas';
+                statusEl.textContent = 'Error ✕';
                 statusEl.className = "text-xs px-2 py-1 rounded shrink-0 bg-red-50 text-red-600 font-semibold";
             }
-            return;
+            reportUploadError(index, 'Hay etiquetas o valores numéricos repetidos.', errorCollector);
+            return false;
         }
 
         if (statusEl) {
@@ -721,12 +814,15 @@ function initApp(initialFolders) {
                 statusEl.textContent = `✓ Éxito`; 
                 statusEl.className = "text-xs px-2.5 py-1.5 rounded shrink-0 bg-emerald-50 text-emerald-700 font-semibold";
             }
+            return true;
         } catch (err) {
             if (statusEl) {
                 statusEl.textContent = 'Error ✕'; 
                 statusEl.className = "text-xs px-2 py-1 rounded shrink-0 bg-red-50 text-red-600 font-semibold";
                 statusEl.title = err.message;
             }
+            reportUploadError(index, err.message || 'Error desconocido al subir a Cloudinary.', errorCollector);
+            return false;
         }
     }
 }

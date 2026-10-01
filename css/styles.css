@@ -286,6 +286,40 @@ label[for="fileInput"] > div:first-child {
     border-radius: 14px;
     box-shadow: 0 24px 60px rgba(15, 23, 42, .45);
 }
+
+.upload-error-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 110;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, .58);
+}
+.upload-error-panel {
+    width: min(100%, 520px);
+    max-height: min(80vh, 620px);
+    overflow: auto;
+    padding: 24px;
+    border: 1px solid #FECACA;
+    border-radius: 20px;
+    background: #FFFFFF;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, .3);
+}
+.upload-error-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+.upload-error-heading .icono-estado { margin: 0; font-size: 30px; }
+.upload-error-heading h2 { margin: 0 0 4px; font-size: 1.1rem; color: #991B1B; }
+.upload-error-heading p { margin: 0; color: var(--text-muted); font-size: .85rem; }
+.upload-error-list { display: flex; flex-direction: column; gap: 10px; margin: 0 0 20px; padding: 0; list-style: none; }
+.upload-error-list li { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border-radius: 10px; background: #FEF2F2; color: #7F1D1D; font-size: .82rem; }
+.upload-error-list strong { overflow-wrap: anywhere; }
+.upload-error-list span { color: #991B1B; }
+.upload-error-close { width: auto; padding: 10px 24px; font-size: .85rem; }
 #cardsContainer select,
 #cardsContainer input[type="text"],
 #cardsContainer textarea {
