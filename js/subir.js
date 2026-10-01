@@ -4,10 +4,6 @@ let TOKEN_ACTUAL = "";
 let TOKEN_PASSWORD = "";
 const IS_CLIENT_MODE = new URLSearchParams(window.location.search).get('modo') === 'cliente';
 
-const cfgCloudinary = (typeof CONFIG !== 'undefined' && CONFIG.CLOUDINARY) ? CONFIG.CLOUDINARY : {};
-const CLOUD_NAME = cfgCloudinary.CLOUD_NAME || 'p0qlmlor';
-const UPLOAD_PRESET = cfgCloudinary.UPLOAD_PRESET || 'subir_gestor';
-
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
@@ -26,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         // Consultamos al servidor de Netlify si el token es válido
-        const res = await fetch('/.netlify/functions/verificar-token', {
+        const res = await fetch('/.netlify/functions/verificar-enlace', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token })
@@ -35,7 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const data = await res.json();
 
         // Si el servidor indica que es de larga duración y requiere contraseña, mostramos el modal
-        if (res.status === 401 && data.requiresPassword) {
+        if (res.status === 401 && data.requiereClave) {
             loadingState.classList.add('hidden');
             if (passwordState) {
                 passwordState.classList.remove('hidden');
@@ -46,14 +42,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        if (!res.ok || !data.valid) {
+        if (!res.ok || !data.valida) {
             loadingState.classList.add('hidden');
             errorState.classList.remove('hidden');
             return;
         }
 
         // Si el token es válido y no requiere contraseña adicional, cargamos la aplicación
-        await cargarInterfazProyecto(data.project, data.exp);
+        await cargarInterfazProyecto(data.proyecto, data.exp);
 
     } catch (error) {
         loadingState.classList.add('hidden');
@@ -82,15 +78,15 @@ function initPasswordProtection() {
             loadingState.classList.remove('hidden');
 
             // Re-enviamos el token junto con la contraseña ingresada para que el servidor la valide
-            const res = await fetch('/.netlify/functions/verificar-token', {
+            const res = await fetch('/.netlify/functions/verificar-enlace', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: TOKEN_ACTUAL, password })
+                body: JSON.stringify({ token: TOKEN_ACTUAL, clave: password })
             });
 
             const data = await res.json();
 
-            if (!res.ok || !data.valid) {
+            if (!res.ok || !data.valida) {
                 loadingState.classList.add('hidden');
                 passwordState.classList.remove('hidden');
                 passwordError.textContent = data.error || 'Contraseña incorrecta.';
@@ -101,7 +97,7 @@ function initPasswordProtection() {
             // Contraseña correcta: ocultamos el modal y cargamos la app del proyecto
             TOKEN_PASSWORD = password;
             passwordState.classList.add('hidden');
-            await cargarInterfazProyecto(data.project, data.exp);
+            await cargarInterfazProyecto(data.proyecto, data.exp);
 
         } catch (err) {
             loadingState.classList.add('hidden');
@@ -279,10 +275,10 @@ function initApp(initialFolders) {
 
     async function loadMetadataFields(category) {
         try {
-            const response = await fetch('/.netlify/functions/consultar-metadatos', {
+            const response = await fetch('/.netlify/functions/listar-imagenes', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: TOKEN_ACTUAL, password: TOKEN_PASSWORD, category })
+                body: JSON.stringify({ token: TOKEN_ACTUAL, clave: TOKEN_PASSWORD, carpeta: category, sugerencias: true })
             });
             const data = await response.json();
             metadataFields = response.ok && Array.isArray(data.fields) ? data.fields : [];
@@ -739,8 +735,6 @@ function initApp(initialFolders) {
     async function uploadToCloudinary(index, errorCollector = null) {
         const item = imageFiles[index];
         const statusEl = document.getElementById(`upload-status-${index}`);
-        const folderPath = `${BASE_FOLDER}/${item.category}`; 
-        const tag = `${PROYECTO_ACTUAL.replace(/\//g, '_')}_${item.category}`;
         const metadataPairs = item.customMetadata
             .map(metadata => `${metadata.name.trim()}\u0000${metadata.value.trim()}`)
             .filter(pair => pair !== '\u0000');
@@ -777,38 +771,36 @@ function initApp(initialFolders) {
         try {
             const blob = await buildProcessedBlob(item);
             const finalName = getFinalName(item);
-            const formData = new FormData();
-            
-            formData.append('file', blob, `${finalName}.webp`);
-            formData.append('upload_preset', UPLOAD_PRESET);
-            formData.append('public_id', finalName);
-            formData.append('folder', folderPath);
-            formData.append('tags', tag);
-
-            const title = (item.customTitle || '').trim().replace(/[|]/g, ' ');
-            const description = (item.customDescription || '').trim().replace(/[|]/g, ' ');
-            
-            let contextParts = [];
-            if (title) contextParts.push(`caption=${title}`);
-            if (description) contextParts.push(`alt=${description}`);
-
-            item.customMetadata.forEach(m => {
-                const mName = m.name.trim().replace(/[|=]/g, '_');
-                const mVal = m.value.trim().replace(/[|=]/g, ' ');
-                if (mName && mVal) {
-                    contextParts.push(`${mName}=${mVal}`);
-                }
+            // El servidor valida el enlace y firma carpeta, nombre, tags y metadatos
+            const resFirma = await fetch('/.netlify/functions/firmar-subida', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token: TOKEN_ACTUAL,
+                    clave: TOKEN_PASSWORD,
+                    carpeta: item.category,
+                    nombre: finalName,
+                    titulo: item.customTitle || '',
+                    descripcion: item.customDescription || '',
+                    metadatos: item.customMetadata
+                })
             });
+            const firma = await resFirma.json();
+            if (!resFirma.ok) throw new Error(firma.error || 'No se pudo autorizar la subida');
 
-            const context = contextParts.join('|');
-            if (context) formData.append('context', context);
+            const formData = new FormData();
+            formData.append('file', blob, `${finalName}.webp`);
+            Object.entries(firma.parametros).forEach(([clave, valor]) => formData.append(clave, valor));
+            formData.append('api_key', firma.apiKey);
+            formData.append('signature', firma.firma);
 
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${firma.cloudName}/image/upload`, {
                 method: 'POST', body: formData
             });
             const data = await res.json();
 
             if (!res.ok) throw new Error(data.error?.message || 'Error de Cloudinary');
+            if (data.existing) throw new Error('Ya existe una imagen con ese nombre en la carpeta');
 
             if (statusEl) {
                 statusEl.textContent = `✓ Éxito`; 

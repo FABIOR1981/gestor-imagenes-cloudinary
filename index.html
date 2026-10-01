@@ -14,43 +14,71 @@
             <p>Crea links de subida temporales para tus clientes.</p>
         </header>
 
-        <section class="card">
-            <form id="linkGeneratorForm">
+        <!-- Acceso de administrador -->
+        <section id="loginCard" class="card">
+            <form id="loginForm">
                 <div class="form-group">
-                    <label for="projectSelect"><span class="numero-paso">1</span> ¿Para qué proyecto es?</label>
-                    <select id="projectSelect" name="projectSelect" class="border rounded px-3 py-2 w-full" required>
-                        <option value="">Cargando proyectos...</option>
-                    </select>
+                    <label for="adminClave">Contraseña de administrador</label>
+                    <input type="password" id="adminClave" autocomplete="current-password" required>
                 </div>
-
-                <div class="form-group">
-                    <label for="modeSelect"><span class="numero-paso">2</span> ¿Quién usará el enlace?</label>
-                    <select id="modeSelect" name="modeSelect" required>
-                        <option value="admin">Admin - todas las opciones</option>
-                        <option value="cliente">Cliente - carga simplificada</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="expirationDate"><span class="numero-paso">3</span> ¿Hasta cuándo estará activo?</label>
-                    <input type="datetime-local" id="expirationDate" name="expirationDate" required>
-                    <p class="ayuda">Por defecto el enlace dura 24 horas. Puedes cambiarlo.</p>
-                </div>
-
-                <button type="submit" class="btn-primary">✨ Generar enlace</button>
+                <p id="loginError" class="status-msg"></p>
+                <button type="submit" class="btn-primary">🔐 Ingresar</button>
             </form>
         </section>
 
-        <!-- Contenedor oculto hasta que se genera el link -->
-        <section id="resultContainer" class="card result-card hidden">
-            <h2>✅ ¡Enlace listo!</h2>
-            <p>Copia este link y envíaselo al cliente:</p>
-            <div class="copy-wrapper">
-                <input type="text" id="generatedLink" readonly>
-                <button type="button" id="copyBtn" class="btn-secondary">📋 Copiar</button>
-            </div>
-            <p id="copyStatus" class="status-msg"></p>
-        </section>
+        <!-- Generador (visible solo con sesión de administrador) -->
+        <div id="panelGenerador" class="hidden">
+            <section class="card">
+                <form id="linkGeneratorForm">
+                    <div class="form-group">
+                        <label for="projectSelect"><span class="numero-paso">1</span> ¿Para qué proyecto es?</label>
+                        <select id="projectSelect" name="projectSelect" class="border rounded px-3 py-2 w-full" required>
+                            <option value="">Cargando proyectos...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modeSelect"><span class="numero-paso">2</span> ¿Qué pantalla verá quien use el enlace?</label>
+                        <select id="modeSelect" name="modeSelect" required>
+                            <option value="admin">Completa - todas las opciones de carga</option>
+                            <option value="cliente">Simplificada - carga reducida</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><span class="numero-paso">3</span> ¿Qué podrá hacer con el enlace?</label>
+                        <div id="permisosGrupo">
+                            <label><input type="checkbox" name="permisos" value="alta"> Subir imágenes</label><br>
+                            <label><input type="checkbox" name="permisos" value="listar"> Ver imágenes</label><br>
+                            <label><input type="checkbox" name="permisos" value="modificar"> Modificar imágenes</label><br>
+                            <label><input type="checkbox" name="permisos" value="eliminar"> Eliminar imágenes</label>
+                        </div>
+                        <p class="ayuda">Los permisos los valida el servidor. Por proyecto se preseleccionan los de proyectos.json.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="expirationDate"><span class="numero-paso">4</span> ¿Hasta cuándo estará activo?</label>
+                        <input type="datetime-local" id="expirationDate" name="expirationDate" required>
+                        <p class="ayuda">Por defecto dura 24 horas. Si supera los 6 meses, quien lo abra deberá ingresar la contraseña larga del proyecto.</p>
+                    </div>
+
+                    <button type="submit" class="btn-primary">✨ Generar enlace</button>
+                </form>
+            </section>
+
+            <section id="resultContainer" class="card result-card hidden">
+                <h2>✅ ¡Enlace listo!</h2>
+                <p>Copia este link y envíaselo al cliente:</p>
+                <div class="copy-wrapper">
+                    <input type="text" id="generatedLink" readonly>
+                    <button type="button" id="copyBtn" class="btn-secondary">📋 Copiar</button>
+                </div>
+                <p id="copyStatus" class="status-msg"></p>
+                <p id="avisoLargo" class="ayuda hidden"></p>
+            </section>
+
+            <p><button type="button" id="logoutBtn" class="btn-secondary">Cerrar sesión</button></p>
+        </div>
     </main>
 
     <script src="js/dashboard.js"></script>

@@ -10,14 +10,16 @@ function leerCuerpo(event) {
     }
 }
 
-// La carpeta debe empezar por una carpeta definida en proyectos.json; se permiten hasta 2 subcarpetas
+// Valida la carpeta (hasta 3 niveles, solo caracteres seguros). Por defecto se pueden crear carpetas nuevas
+// dentro del proyecto, como hace el selector "+ Nueva carpeta"; si un proyecto tiene
+// "soloCarpetasDefinidas": true en proyectos.json, solo valen las carpetas listadas allí.
 function normalizarCarpeta(carpeta, definicion) {
     const limpia = String(carpeta || '').trim().replace(/^\/+|\/+$/g, '');
     if (!limpia) return null;
     const segmentos = limpia.split('/');
     if (segmentos.length > 3) return null;
     if (!segmentos.every(s => PATRON_SEGMENTO.test(s))) return null;
-    if (!(definicion.carpetas || []).some(c => c.value === segmentos[0])) return null;
+    if (definicion.soloCarpetasDefinidas === true && !(definicion.carpetas || []).some(c => c.value === segmentos[0])) return null;
     return limpia;
 }
 
