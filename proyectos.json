@@ -3,6 +3,7 @@
     {
       "id": "monarca",
       "nombre": "Residencial Monarca",
+      "permisosCliente": ["alta"],
       "carpetas": [
         { "value": "galeria", "label": "Galería" },
         { "value": "instalaciones", "label": "Instalaciones" }
@@ -11,6 +12,7 @@
     {
       "id": "enBlanco/residencial",
       "nombre": "Marca Blanca - Residencial",
+      "permisosCliente": ["alta"],
       "carpetas": [
         { "value": "galeria", "label": "Galería" },
         { "value": "instalaciones", "label": "Instalaciones" },
@@ -20,6 +22,7 @@
     {
       "id": "patriciaBertoche",
       "nombre": "patriciaBertoche",
+      "permisosCliente": ["alta"],
       "carpetas": [
         { "value": "galeria", "label": "Galería" },
         { "value": "instalaciones", "label": "Instalaciones" },
