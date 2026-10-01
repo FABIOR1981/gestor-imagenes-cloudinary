@@ -200,21 +200,22 @@ label[for="fileInput"] > div:first-child {
 
 .cliente-header {
     display: grid;
-    grid-template-columns: minmax(0, .85fr) minmax(320px, 1.15fr);
-    gap: 28px;
+    grid-template-columns: minmax(0, .85fr) minmax(360px, 1.15fr);
+    gap: 24px;
     align-items: center;
+    padding: 20px 24px;
 }
 .cliente-upload-panel { min-width: 0; }
-.cliente-upload-panel .paso-titulo { margin-bottom: 10px; }
+.cliente-upload-panel .paso-titulo { margin: 0 0 8px; }
 .cliente-file-picker {
-    min-height: 128px;
-    padding: 16px;
+    min-height: 104px;
+    padding: 12px 16px;
     border-radius: 20px;
 }
 .cliente-file-picker > div:first-child {
-    width: 48px;
-    height: 48px;
-    margin-bottom: 8px;
+    width: 42px;
+    height: 42px;
+    margin-bottom: 6px;
 }
 .cliente-page #batchActions {
     position: static;
