@@ -161,6 +161,7 @@ function initApp(initialFolders) {
     const globalKeepOriginal = document.getElementById('globalKeepOriginal');
     const batchActions = document.getElementById('batchActions');
     const counterText = document.getElementById('counterText');
+    const cardsStepTitle = document.getElementById('cardsStepTitle');
     const downloadAllBtn = document.getElementById('downloadAllBtn');
     const uploadAllBtn = document.getElementById('uploadAllBtn');
 
@@ -331,9 +332,11 @@ function initApp(initialFolders) {
         cardsContainer.innerHTML = '';
         if (imageFiles.length > 0) {
             batchActions.classList.remove('hidden');
+            if (cardsStepTitle) cardsStepTitle.classList.remove('hidden');
             counterText.textContent = `${imageFiles.length} ${imageFiles.length === 1 ? 'imagen cargada' : 'imágenes cargadas'}`;
         } else {
             batchActions.classList.add('hidden');
+            if (cardsStepTitle) cardsStepTitle.classList.add('hidden');
         }
 
         imageFiles.forEach((item, index) => {
