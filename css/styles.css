@@ -190,6 +190,14 @@ label[for="fileInput"] > div:first-child {
     width: 72px; height: 72px; background: #DBEAFE;
 }
 
+.cliente-page label[for="fileInput"] {
+    min-height: 150px;
+    padding: 24px 20px;
+}
+.cliente-page label[for="fileInput"] > div:first-child {
+    width: 56px; height: 56px; margin-bottom: 8px;
+}
+
 /* Barra de acciones (queda visible al bajar) */
 #batchActions {
     position: sticky; top: 12px; z-index: 30;
