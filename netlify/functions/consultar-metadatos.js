@@ -42,6 +42,7 @@ function verifyToken(token, password) {
 function addMetadataValues(target, source) {
     if (!source || typeof source !== 'object') return;
     Object.entries(source).forEach(([name, value]) => {
+        if (['alt', 'caption'].includes(name.toLowerCase())) return;
         if (!name || value === null || value === undefined || value === '') return;
         const values = Array.isArray(value) ? value : [value];
         if (!target[name]) target[name] = new Set();
