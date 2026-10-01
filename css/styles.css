@@ -225,21 +225,6 @@ label[for="fileInput"] > div:first-child {
     backdrop-filter: none;
 }
 
-@media (min-width: 900px) {
-    .cliente-page #cardsContainer > .card {
-        display: grid;
-        grid-template-columns: minmax(150px, .72fr) minmax(0, 1.28fr);
-        gap: 16px;
-        align-items: start;
-    }
-    .cliente-page #cardsContainer > .card > div:nth-child(2) {
-        min-width: 0;
-    }
-    .cliente-page #cardsContainer > .card > div:nth-child(3) {
-        grid-column: 1 / -1;
-    }
-}
-
 @media (max-width: 760px) {
     .cliente-header { grid-template-columns: 1fr; gap: 22px; }
     .cliente-info .max-w-xs { max-width: none; }
