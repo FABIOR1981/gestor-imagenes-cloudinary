@@ -77,6 +77,89 @@ Tras cambiar variables hay que volver a desplegar.
 - Reglas de metadatos (portal de carga): los textos pueden repetirse; los valores numéricos de una etiqueta no pueden repetirse en la carpeta. El panel de administración avisa pero permite continuar.
 - `modificar-imagen`: si se envía `titulo`, `descripcion` o `metadatos`, el context completo se reemplaza; el cliente debe enviar los tres.
 
+## Guía de uso
+
+### Pantallas
+
+| Página | Quién la usa | Para qué |
+| --- | --- | --- |
+| `index.html` | Administrador | Ingresar con la contraseña de admin y generar enlaces |
+| `admin.html` | Administrador | ABM completo: ver, subir, editar, mover y eliminar imágenes de cualquier proyecto |
+| `galeria.html` | Quien tiene un enlace | Ver, editar y eliminar imágenes de su proyecto, según los permisos del enlace; botón para subir si tiene `alta` |
+| `subir.html` | Quien tiene un enlace con `alta` | Carga con todas las opciones |
+| `subir-cliente.html` | Quien tiene un enlace con `alta` | Carga simplificada |
+
+### Permisos de un enlace
+
+| Permiso | Qué permite |
+| --- | --- |
+| `alta` | Subir imágenes (y ver las sugerencias de metadatos al subir) |
+| `listar` | Ver las imágenes del proyecto (necesario para la galería) |
+| `modificar` | Cambiar título, descripción, metadatos, nombre y carpeta |
+| `eliminar` | Borrar imágenes |
+
+El administrador (sesión de `index.html`) no necesita permisos: puede todo en cualquier proyecto.
+
+### Ejemplo: darle a un cliente (Monarca) enlace para ver, editar, modificar y subir
+
+En `index.html`, con la sesión de admin iniciada:
+
+1. **¿Para qué proyecto es?** Residencial Monarca.
+2. **¿Qué pantalla verá?** Galería - ver, editar y eliminar (según permisos).
+3. **¿Qué podrá hacer?** Marcar las cuatro casillas: subir, ver, modificar y eliminar.
+4. **¿Hasta cuándo estará activo?**
+   - Corto (recomendado, por ejemplo 30 días): no pide contraseña.
+   - Largo (más de 6 meses): el cliente debe ingresar la contraseña, que es el valor de la variable `TOKEN_SECRET_MONARCA_LARGO` en Netlify. La variable debe existir antes de generar el enlace; la contraseña se le pasa al cliente por otro medio.
+5. **Generar enlace**, copiarlo y enviarlo.
+
+El cliente verá las miniaturas de Monarca con los botones Editar y Eliminar, selección múltiple para borrar y un botón **Subir imágenes** que lo lleva a la pantalla de carga con el mismo enlace.
+
+Editar y eliminar actúan sobre las imágenes reales, que son las que leen los sitios por tag.
+
+Para que las cuatro casillas aparezcan marcadas por defecto en Monarca, usar `permisosCliente` en `proyectos.json` (ver el ejemplo siguiente).
+
+### Ejemplo: restringir un proyecto a sus carpetas (`soloCarpetasDefinidas`)
+
+Por defecto cualquier enlace puede crear carpetas nuevas dentro de su proyecto. Para que Monarca acepte solo `galeria` e `instalaciones`:
+
+```json
+{
+  "id": "monarca",
+  "nombre": "Residencial Monarca",
+  "permisosCliente": ["alta", "listar", "modificar", "eliminar"],
+  "soloCarpetasDefinidas": true,
+  "carpetas": [
+    { "value": "galeria", "label": "Galería" },
+    { "value": "instalaciones", "label": "Instalaciones" }
+  ]
+}
+```
+
+- El servidor rechaza cualquier otra carpeta con "Carpeta destino inválida para este proyecto".
+- Los proyectos sin `soloCarpetasDefinidas` siguen aceptando carpetas nuevas.
+- La opción "+ Nueva carpeta" de la pantalla de carga y el campo de carpeta de la galería siguen visibles, pero con la restricción activa el servidor las rechaza.
+- Para sumar una carpeta, agregarla a la lista `carpetas`.
+
+### Agregar un proyecto nuevo
+
+1. Agregarlo a `proyectos.json` con `id` (prefijo de carpeta en Cloudinary), `nombre`, `permisosCliente` y `carpetas`.
+2. Si va a tener enlaces largos, crear en Netlify la variable `TOKEN_SECRET_{ID}_LARGO` (el id sin caracteres especiales y en mayúsculas; `enBlanco/residencial` pasa a `ENBLANCO_RESIDENCIAL`) con la contraseña elegida, y volver a desplegar.
+
+### Mantenimiento
+
+- **Cambiar la contraseña de admin:** `node herramientas/generar-hash-admin.js "nueva clave"`, pegar el resultado en `ADMIN_PASSWORD_HASH` en Netlify y volver a desplegar.
+- **Cortar enlaces en una emergencia:** cambiar `TOKEN_SECRET` invalida todos los enlaces y sesiones; cambiar la variable `_LARGO` de un proyecto invalida solo sus enlaces largos. No hay revocación individual.
+- **Después de cambiar variables de entorno** siempre hay que volver a desplegar.
+
+### Lista de verificación de seguridad
+
+- [ ] `TOKEN_SECRET` cargado (32 caracteres o más) y `ADMIN_PASSWORD_HASH` generado.
+- [ ] Credenciales de Cloudinary cargadas (`CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`).
+- [ ] Eliminados del repo `generar-token.js`, `verificar-token.js` y `consultar-metadatos.js` (versión anterior, sin autenticación).
+- [ ] Preset `subir_gestor` de Cloudinary en modo **Signed** o eliminado (si sigue unsigned, cualquiera puede subir sin enlace).
+- [ ] Contraseña de admin que no haya sido compartida en ningún chat o documento.
+- [ ] Enlaces nuevos con vencimientos cortos siempre que sea posible.
+
 ## Cómo probar
 
 - `herramientas/probar-generar-enlace.ps1`: login y generación de enlace.
