@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis imágenes | Upload Hub</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <p id="estadoCarga" class="text-center text-slate-500 mt-24">Validando acceso…</p>
+
+    <div id="estadoError" class="hidden max-w-md mx-auto mt-24 bg-white p-6 rounded-xl shadow text-center">
+        <p class="text-3xl mb-2">⛔</p>
+        <p id="mensajeError" class="text-slate-700">Enlace inválido o vencido.</p>
+    </div>
+
+    <div id="estadoClave" class="hidden max-w-sm mx-auto mt-24 bg-white p-6 rounded-xl shadow">
+        <h1 class="text-lg font-bold mb-1">🔒 Acceso protegido</h1>
+        <p class="text-sm text-slate-500 mb-4">Este enlace requiere una contraseña.</p>
+        <form id="formClave" class="space-y-3">
+            <input type="password" id="claveAcceso" placeholder="Contraseña" required class="border rounded px-3 py-2 w-full">
+            <p id="errorClave" class="text-sm text-red-600"></p>
+            <button type="submit" class="bg-slate-900 text-white rounded px-4 py-2 w-full">Entrar</button>
+        </form>
+    </div>
+
+    <div id="app" class="hidden max-w-6xl mx-auto p-4">
+        <header class="flex flex-wrap items-center gap-3 mb-4">
+            <div class="mr-auto">
+                <h1 class="text-xl font-bold">🖼️ <span id="nombreProyecto"></span></h1>
+                <p class="text-xs text-slate-500">Enlace activo hasta <span id="fechaVence"></span></p>
+            </div>
+            <a id="enlaceSubir" href="#" class="hidden rounded px-3 py-2 bg-emerald-600 text-white text-sm">⬆ Subir imágenes</a>
+        </header>
+
+        <p id="avisoSinPermiso" class="hidden bg-amber-50 text-amber-800 rounded-lg p-3 text-sm mb-4">Este enlace no permite ver las imágenes.</p>
+
+        <section id="barraControles" class="bg-white rounded-xl shadow p-4 mb-4 flex flex-wrap gap-3 items-end">
+            <label class="text-sm">Carpeta<br>
+                <select id="selCarpeta" class="border rounded px-3 py-2 min-w-40"></select>
+            </label>
+            <button id="btnRecargar" type="button" class="border rounded px-3 py-2 bg-white">↻ Recargar</button>
+            <button id="btnBorrarSel" type="button" class="hidden rounded px-3 py-2 bg-red-600 text-white">🗑 Eliminar seleccionadas (<span id="contSel">0</span>)</button>
+        </section>
+
+        <p id="estado" class="text-sm text-slate-500 mb-3"></p>
+        <section id="grilla" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></section>
+        <div class="text-center mt-5"><button id="btnMas" type="button" class="hidden border rounded px-4 py-2 bg-white">Cargar más</button></div>
+    </div>
+
+    <!-- Edición -->
+    <div id="modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        <form id="formEditar" class="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-5 space-y-3">
+            <h2 class="text-lg font-bold">Editar imagen</h2>
+            <img id="editVista" alt="" class="w-full h-44 object-contain bg-slate-100 rounded">
+            <div class="grid grid-cols-2 gap-3">
+                <label class="text-sm">Nombre (sin extensión)
+                    <input id="editNombre" class="border rounded px-3 py-2 w-full" required maxlength="100">
+                </label>
+                <label class="text-sm">Carpeta
+                    <input id="editCarpeta" list="listaCarpetas" class="border rounded px-3 py-2 w-full" required>
+                    <datalist id="listaCarpetas"></datalist>
+                </label>
+            </div>
+            <label class="text-sm block">Título
+                <input id="editTitulo" class="border rounded px-3 py-2 w-full" maxlength="300">
+            </label>
+            <label class="text-sm block">Descripción
+                <textarea id="editDescripcion" rows="2" class="border rounded px-3 py-2 w-full" maxlength="1000"></textarea>
+            </label>
+            <div>
+                <p class="text-sm font-semibold mb-1">Metadatos</p>
+                <div id="editMetadatos" class="space-y-2"></div>
+                <button id="btnAgregarMeta" type="button" class="text-sm mt-2 underline">＋ Agregar metadato</button>
+            </div>
+            <p id="errorEditar" class="text-sm text-red-600"></p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button id="btnCancelar" type="button" class="border rounded px-4 py-2">Cancelar</button>
+                <button id="btnGuardar" type="submit" class="rounded px-4 py-2 bg-slate-900 text-white">Guardar</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="js/galeria.js"></script>
+</body>
+</html>

@@ -15,7 +15,8 @@ Aplicación web estática (HTML, CSS y JS, sin build) con funciones de Netlify. 
 ```text
 index.html                              Login de admin y generador de enlaces
 admin.html + js/admin.js                Panel ABM: miniaturas, editar, mover, eliminar, subir
-subir.html / subir-cliente.html         Portal de carga (pantalla completa / simplificada)
+galeria.html + js/galeria.js            Galería para quien entra con enlace: ver/editar/eliminar/subir según permisos
+subir.html / subir-cliente.html         Portal de carga (pantalla completa / simplificada); requiere permiso "alta"
 js/subir.js                             Portal: validación del enlace, tarjetas, metadatos, subida firmada
 js/dashboard.js                         Login y generación de enlaces
 proyectos.json                          Proyectos, carpetas y permisos por defecto
@@ -84,5 +85,6 @@ Tras cambiar variables hay que volver a desplegar.
 ## Limitaciones
 
 - No hay pruebas automatizadas ni build; se prueba contra Netlify.
-- No hay bloqueo por intentos fallidos de login (solo una espera de 0,8 s). Si hiciera falta, usar Netlify Blobs.
-- Los enlaces no se pueden revocar individualmente; vencen o se invalidan cambiando `TOKEN_SECRET` (todos) o la variable `_LARGO` (largos de un proyecto).
+- No hay bloqueo por intentos fallidos de login (solo una espera de 0,8 s).
+- Los enlaces no se pueden revocar uno por uno: vencen, o se invalidan cambiando `TOKEN_SECRET` (todos) o la variable `_LARGO` (los largos de un proyecto). Por eso conviene usar vencimientos cortos.
+- Las funciones no usan almacenamiento externo: todo el estado está en los tokens firmados.

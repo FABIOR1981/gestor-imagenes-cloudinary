@@ -90,6 +90,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     projectSelect.addEventListener('change', aplicarPermisosPorDefecto);
 
+    // Al elegir "Galería" se marca "Ver imágenes", que necesita para funcionar
+    modeSelect.addEventListener('change', () => {
+        if (modeSelect.value !== 'galeria') return;
+        checks.forEach(c => { if (c.value === 'listar') c.checked = true; });
+    });
+
     // --- Vencimiento por defecto: 24 horas ---
     const ahora = new Date();
     const en24h = new Date(ahora.getTime() + 24 * 60 * 60 * 1000);
@@ -112,6 +118,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!proyecto) return;
         const permisos = checks.filter(c => c.checked).map(c => c.value);
         if (!permisos.length) { alert('Elegí al menos un permiso.'); return; }
+        if (modeSelect.value === 'galeria' && !permisos.includes('listar')) { alert('La galería necesita el permiso "Ver imágenes".'); return; }
+        if (modeSelect.value !== 'galeria' && !permisos.includes('alta')) { alert('Esa pantalla de carga necesita el permiso "Subir imágenes".'); return; }
 
         try {
             const res = await fetch(`${FUNCIONES}/generar-enlace`, {
@@ -128,8 +136,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             if (!res.ok) throw new Error(data.error || 'Error al generar el enlace');
 
-            const pagina = modeSelect.value === 'cliente' ? 'subir-cliente.html' : 'subir.html';
-            const url = `${window.location.origin}/${pagina}?token=${encodeURIComponent(data.token)}&modo=${encodeURIComponent(modeSelect.value)}`;
+            const paginas = { admin: 'subir.html', cliente: 'subir-cliente.html', galeria: 'galeria.html' };
+            const pagina = paginas[modeSelect.value];
+            const modo = modeSelect.value === 'galeria' ? 'cliente' : modeSelect.value;
+            const url = `${window.location.origin}/${pagina}?token=${encodeURIComponent(data.token)}&modo=${encodeURIComponent(modo)}`;
 
             generatedLinkInput.value = url;
             resultContainer.classList.remove('hidden');

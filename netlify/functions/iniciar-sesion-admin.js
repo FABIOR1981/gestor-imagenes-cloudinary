@@ -18,7 +18,13 @@ exports.handler = async (event) => {
     if (event.httpMethod !== 'POST') return responder(405, { error: 'Método no permitido' });
 
     try {
-        const { clave } = JSON.parse(event.body || '{}');
+        let cuerpo;
+        try {
+            cuerpo = JSON.parse(event.body || '{}');
+        } catch {
+            return responder(400, { error: 'El cuerpo debe ser JSON válido' });
+        }
+        const { clave } = cuerpo;
         if (typeof clave !== 'string' || !clave || clave.length > 200) {
             return responder(400, { error: 'Falta la contraseña' });
         }
@@ -32,6 +38,8 @@ exports.handler = async (event) => {
         const sesion = crearToken({ t: 'admin', exp });
         return responder(200, { sesion, exp });
     } catch (err) {
+        // El motivo real queda en Netlify > Logs > Functions (no se muestra al público)
+        console.error('iniciar-sesion-admin:', err.message);
         return responder(500, { error: 'Error interno al iniciar sesión' });
     }
 };
