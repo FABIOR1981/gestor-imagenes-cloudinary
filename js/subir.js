@@ -1,6 +1,7 @@
 let PROYECTO_ACTUAL = "";
 let BASE_FOLDER = "";
 let TOKEN_ACTUAL = "";
+let TOKEN_PASSWORD = "";
 const IS_CLIENT_MODE = new URLSearchParams(window.location.search).get('modo') === 'cliente';
 
 const cfgCloudinary = (typeof CONFIG !== 'undefined' && CONFIG.CLOUDINARY) ? CONFIG.CLOUDINARY : {};
@@ -98,6 +99,7 @@ function initPasswordProtection() {
             }
 
             // Contraseña correcta: ocultamos el modal y cargamos la app del proyecto
+            TOKEN_PASSWORD = password;
             passwordState.classList.add('hidden');
             await cargarInterfazProyecto(data.project, data.exp);
 
@@ -166,6 +168,7 @@ function initApp(initialFolders) {
     const uploadAllBtn = document.getElementById('uploadAllBtn');
 
     let imageFiles = [];
+    let metadataFields = [];
     let previewOverlay = null;
     let previewTimeout = null;
 
@@ -231,6 +234,22 @@ function initApp(initialFolders) {
     }
     populateGlobalCategory(getLastFolder());
 
+    async function loadMetadataFields(category) {
+        try {
+            const response = await fetch('/.netlify/functions/consultar-metadatos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: TOKEN_ACTUAL, password: TOKEN_PASSWORD, category })
+            });
+            const data = await response.json();
+            metadataFields = response.ok && Array.isArray(data.fields) ? data.fields : [];
+        } catch (error) {
+            metadataFields = [];
+        }
+        renderCards();
+    }
+    loadMetadataFields(getLastFolder());
+
     function handleFolderSelectChange(selectEl, onResolved) {
         if (selectEl.value !== NEW_FOLDER_OPTION) {
             onResolved(selectEl.value);
@@ -256,6 +275,7 @@ function initApp(initialFolders) {
             populateGlobalCategory(finalValue);
             setLastFolder(finalValue);
             imageFiles.forEach(item => { item.category = finalValue; });
+            loadMetadataFields(finalValue);
             renderCards();
         });
     });
@@ -355,6 +375,27 @@ function initApp(initialFolders) {
         return { width, height };
     }
 
+    function escapeAttribute(value) {
+        return String(value || '').replace(/[&<>'"]/g, character => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+        }[character]));
+    }
+
+    function getMetadataValues(name) {
+        const field = metadataFields.find(item => item.name === name);
+        return field ? field.values : [];
+    }
+
+    function buildMetadataOptions(values) {
+        return values.map(value => `<option value="${escapeAttribute(value)}"></option>`).join('');
+    }
+
+    function getSuggestedMetadataValue(name) {
+        const values = getMetadataValues(name).map(value => String(value).trim());
+        if (!values.length || values.some(value => !/^\d+(?:\.\d+)?$/.test(value))) return '';
+        return String(Math.max(...values.map(Number)) + 1);
+    }
+
     function renderCards() {
         cardsContainer.innerHTML = '';
         if (imageFiles.length > 0) {
@@ -431,8 +472,10 @@ function initApp(initialFolders) {
                             <div class="flex flex-col gap-2" id="meta-container-${index}">
                                 ${item.customMetadata.map((meta, mIdx) => `
                                     <div class="flex gap-1.5 items-center">
-                                        <input type="text" placeholder="Nombre (ej. autor)" value="${meta.name}" data-index="${index}" data-meta-index="${mIdx}" class="meta-name-input border rounded px-2 py-1 text-xs w-1/2 focus-ring bg-slate-50 font-mono">
-                                        <input type="text" placeholder="Valor (ej. Juan)" value="${meta.value}" data-index="${index}" data-meta-index="${mIdx}" class="meta-value-input border rounded px-2 py-1 text-xs w-1/2 focus-ring bg-white">
+                                        <input type="text" list="meta-names-${index}-${mIdx}" placeholder="Etiqueta existente o nueva" value="${escapeAttribute(meta.name)}" data-index="${index}" data-meta-index="${mIdx}" class="meta-name-input border rounded px-2 py-1 text-xs w-1/2 focus-ring bg-slate-50 font-mono">
+                                        <datalist id="meta-names-${index}-${mIdx}">${buildMetadataOptions(metadataFields.map(field => field.name))}</datalist>
+                                        <input type="text" list="meta-values-${index}-${mIdx}" placeholder="Valor existente o nuevo" value="${escapeAttribute(meta.value)}" data-index="${index}" data-meta-index="${mIdx}" class="meta-value-input border rounded px-2 py-1 text-xs w-1/2 focus-ring bg-white">
+                                        <datalist id="meta-values-${index}-${mIdx}">${buildMetadataOptions(getMetadataValues(meta.name))}</datalist>
                                         <button type="button" data-index="${index}" data-meta-index="${mIdx}" class="remove-meta-btn text-red-500 font-bold px-2 py-1 hover:bg-red-50 rounded text-sm">×</button>
                                     </div>
                                 `).join('')}
@@ -526,11 +569,21 @@ function initApp(initialFolders) {
             renderCards();
         }));
 
-        document.querySelectorAll('.meta-name-input').forEach(i => i.addEventListener('input', e => {
-            const idx = e.target.dataset.index;
-            const mIdx = e.target.dataset.metaIndex;
-            imageFiles[idx].customMetadata[mIdx].name = e.target.value;
-        }));
+        document.querySelectorAll('.meta-name-input').forEach(i => {
+            i.addEventListener('input', e => {
+                const idx = e.target.dataset.index;
+                const mIdx = e.target.dataset.metaIndex;
+                imageFiles[idx].customMetadata[mIdx].name = e.target.value;
+            });
+            i.addEventListener('change', e => {
+                const idx = e.target.dataset.index;
+                const mIdx = e.target.dataset.metaIndex;
+                const metadata = imageFiles[idx].customMetadata[mIdx];
+                metadata.name = e.target.value;
+                if (!metadata.value) metadata.value = getSuggestedMetadataValue(metadata.name);
+                renderCards();
+            });
+        });
 
         document.querySelectorAll('.meta-value-input').forEach(i => i.addEventListener('input', e => {
             const idx = e.target.dataset.index;
