@@ -383,17 +383,17 @@ function initApp(initialFolders) {
                             </div>
                             <input type="range" data-index="${index}" min="0.1" max="1.0" step="0.05" value="${item.quality}" class="card-quality-range w-full accent-blue-600 cursor-pointer">
                         </div>`}
-                        ${IS_CLIENT_MODE ? '' : `<div class="col-span-2">
+                        <div class="col-span-2">
                             <label class="font-semibold block mb-1" style="color: var(--text-muted);">Título descriptivo:</label>
                             <input type="text" value="${item.customTitle.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}" data-index="${index}" placeholder="Ej. Vista principal" class="title-input w-full border rounded px-2.5 py-1.5 focus-ring">
-                        </div>`}
-                        ${IS_CLIENT_MODE ? '' : `<div class="col-span-2">
+                        </div>
+                        <div class="col-span-2">
                             <label class="font-semibold block mb-1" style="color: var(--text-muted);">Descripción (Opcional):</label>
                             <textarea data-index="${index}" placeholder="Detalles de la toma..." class="description-input w-full border rounded px-2.5 py-1.5 focus-ring" rows="2">${item.customDescription ? item.customDescription.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])) : ''}</textarea>
-                        </div>`}
+                        </div>
 
                         <!-- SECCIÓN DE METADATOS MANUALES -->
-                        ${IS_CLIENT_MODE ? '' : `<div class="col-span-2 border-t pt-3 mt-1">
+                        <div class="col-span-2 border-t pt-3 mt-1">
                             <div class="flex justify-between items-center mb-2">
                                 <label class="font-semibold" style="color: var(--text-muted);">Metadatos personalizados:</label>
                                 <button type="button" data-index="${index}" class="add-meta-btn text-xs text-blue-600 font-semibold hover:underline bg-blue-50 px-2 py-1 rounded">+ Agregar campo</button>
@@ -407,14 +407,14 @@ function initApp(initialFolders) {
                                     </div>
                                 `).join('')}
                             </div>
-                        </div>`}
+                        </div>
                     </div>
                     
-                    <!-- Ruta final resultante -->
+                    ${IS_CLIENT_MODE ? '' : `<!-- Ruta final resultante -->
                     <div class="truncate mt-1 p-2 rounded border flex justify-between items-center bg-slate-50 font-mono text-[11px] text-blue-700 font-medium" style="border-color: var(--border-color);">
                         <span class="truncate"><span style="color: var(--text-muted);">${BASE_FOLDER}/${item.category}/</span>${finalGeneratedName}</span>
                         <span id="size-badge-${index}" class="px-2 py-0.5 rounded shrink-0 bg-slate-200 text-slate-700 font-sans font-semibold">Calc...</span>
-                    </div>
+                    </div>`}
                 </div>
 
                 <!-- Botones de Acción Individual Uniformados -->
