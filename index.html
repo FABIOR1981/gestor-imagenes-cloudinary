@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | Upload Hub</title>
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Las cuatro casillas de permisos en una sola fila (pasan a la siguiente solo si no entran) */
+        .grupo-permisos { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+        .form-group .grupo-permisos label { margin: 0; font-size: .92rem; font-weight: 500; cursor: pointer; }
+        .grupo-permisos input[type="checkbox"] { width: 17px; height: 17px; margin: 0; cursor: pointer; }
+    </style>
 </head>
 <body>
     <main class="dashboard-container">
@@ -36,11 +42,11 @@
 
                     <div class="form-group">
                         <label><span class="numero-paso">3</span> ¿Qué podrá hacer con el enlace?</label>
-                        <div id="permisosGrupo">
-                            <label><input type="checkbox" name="permisos" value="alta"> Subir imágenes</label><br>
-                            <label><input type="checkbox" name="permisos" value="listar"> Ver imágenes</label><br>
-                            <label><input type="checkbox" name="permisos" value="modificar"> Modificar imágenes</label><br>
-                            <label><input type="checkbox" name="permisos" value="eliminar"> Eliminar imágenes</label>
+                        <div id="permisosGrupo" class="grupo-permisos">
+                            <label><input type="checkbox" name="permisos" value="alta"> Subir</label>
+                            <label><input type="checkbox" name="permisos" value="listar"> Ver</label>
+                            <label><input type="checkbox" name="permisos" value="modificar"> Modificar</label>
+                            <label><input type="checkbox" name="permisos" value="eliminar"> Eliminar</label>
                         </div>
                         <p class="ayuda">Los permisos los valida el servidor. Por proyecto se preseleccionan los de proyectos.json.</p>
                     </div>
