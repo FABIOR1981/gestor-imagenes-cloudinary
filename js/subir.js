@@ -357,7 +357,7 @@ function initApp(initialFolders) {
                         </div>
                     </div>
 
-                    ${item.keepOriginal ? `<div class="w-full border rounded px-2.5 py-1.5 truncate bg-slate-50 font-mono text-xs" style="border-color: var(--border-color); color: var(--text-muted);">${item.originalName}</div>` : `<input type="text" value="${item.customName}" data-index="${index}" placeholder="Nombre corto..." class="custom-name-input w-full border rounded px-2.5 py-1.5 focus-ring font-mono text-xs">`}
+                    ${item.keepOriginal ? `<div class="w-full border rounded px-2.5 py-1.5 truncate bg-slate-50 font-mono text-xs" style="border-color: var(--border-color); color: var(--text-muted);">${item.originalName}</div>` : `<input type="text" value="${finalGeneratedName}" data-index="${index}" placeholder="Nombre del archivo..." class="custom-name-input w-full border rounded px-2.5 py-1.5 focus-ring font-mono text-xs">`}
                     
                     <div class="grid grid-cols-2 gap-2">
                         ${IS_CLIENT_MODE ? '' : `<div>
@@ -465,7 +465,13 @@ function initApp(initialFolders) {
     }
 
     function attachEvents() {
-        document.querySelectorAll('.custom-name-input').forEach(i => i.addEventListener('input', e => imageFiles[e.target.dataset.index].customName = e.target.value));
+        document.querySelectorAll('.custom-name-input').forEach(i => i.addEventListener('input', e => {
+            const item = imageFiles[e.target.dataset.index];
+            let value = e.target.value.replace(/\.webp$/i, '');
+            const generatedPrefix = `${item.dateStr}_`;
+            if (value.startsWith(generatedPrefix)) value = value.slice(generatedPrefix.length);
+            item.customName = value;
+        }));
         document.querySelectorAll('.card-keep-original').forEach(c => c.addEventListener('change', e => { imageFiles[e.target.dataset.index].keepOriginal = e.target.checked; renderCards(); }));
         document.querySelectorAll('.title-input').forEach(i => i.addEventListener('input', e => imageFiles[e.target.dataset.index].customTitle = e.target.value));
         document.querySelectorAll('.description-input').forEach(i => i.addEventListener('input', e => imageFiles[e.target.dataset.index].customDescription = e.target.value));
