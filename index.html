@@ -3,66 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - Gestor de Imágenes</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Dashboard | Upload Hub</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="bg-slate-50 min-h-screen p-4 md:p-8" style="color: var(--text-main);">
+<body>
+    <main class="dashboard-container">
+        <header>
+            <div class="hero-icono">🔗</div>
+            <h1>Generador de Enlaces</h1>
+            <p>Crea links de subida temporales para tus clientes.</p>
+        </header>
 
-    <div class="max-w-2xl mx-auto flex flex-col gap-6">
-        
-        <!-- Cabecera del Panel -->
-        <div class="card flex flex-col gap-2">
-            <h1 class="text-2xl font-bold tracking-wide">Panel Generador de Enlaces</h1>
-            <p class="text-xs" style="color: var(--text-muted);">Crea accesos temporales y seguros con firma criptográfica para la subida de imágenes.</p>
-        </div>
-
-        <!-- Formulario de Generación -->
-        <div class="card flex flex-col gap-4">
-            <form id="linkGeneratorForm" class="flex flex-col gap-4">
-                
-                <!-- Selección de Proyecto -->
-                <div>
-                    <label for="projectSelect" class="block font-semibold mb-1 text-xs" style="color: var(--text-muted);">Proyecto:</label>
-                    <select id="projectSelect" class="w-full border rounded px-3 py-2 text-xs focus-ring bg-white font-medium" required>
+        <section class="card">
+            <form id="linkGeneratorForm">
+                <div class="form-group">
+                    <label for="projectSelect"><span class="numero-paso">1</span> ¿Para qué proyecto es?</label>
+                    <select id="projectSelect" name="projectSelect" class="border rounded px-3 py-2 w-full" required>
                         <option value="">Cargando proyectos...</option>
                     </select>
                 </div>
 
-                <!-- Selección de Fecha de Expiración -->
-                <div>
-                    <label for="expirationDate" class="block font-semibold mb-1 text-xs" style="color: var(--text-muted);">Fecha y hora de expiración:</label>
-                    <input type="datetime-local" id="expirationDate" class="w-full border rounded px-3 py-2 text-xs focus-ring bg-white font-medium" required>
-                    <p class="text-[11px] mt-1" style="color: var(--text-muted);">Si superas los 6 meses de vigencia, el sistema activará automáticamente la protección por contraseña de larga duración.</p>
+                <div class="form-group">
+                    <label for="expirationDate"><span class="numero-paso">2</span> ¿Hasta cuándo estará activo?</label>
+                    <input type="datetime-local" id="expirationDate" name="expirationDate" required>
+                    <p class="ayuda">Por defecto el enlace dura 24 horas. Puedes cambiarlo.</p>
                 </div>
 
-                <!-- Nuevo: Selector de Tipo de Enlace -->
-                <div>
-                    <label for="linkTypeSelect" class="block font-semibold mb-1 text-xs" style="color: var(--text-muted);">Tipo de interfaz para el destinatario:</label>
-                    <select id="linkTypeSelect" class="w-full border rounded px-3 py-2 text-xs focus-ring bg-white font-medium">
-                        <option value="completo">Completo (Admin / Técnico - Con opciones avanzadas)</option>
-                        <option value="cliente">Simplificado (Solo Subida - Estricto para Cliente)</option>
-                    </select>
-                </div>
-
-                <!-- Botón de Generar -->
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-4 rounded text-xs transition-colors cursor-pointer shadow-sm mt-2">
-                    Generar Enlace Seguro
-                </button>
+                <button type="submit" class="btn-primary">✨ Generar enlace</button>
             </form>
+        </section>
 
-            <!-- Contenedor del Resultado -->
-            <div id="resultContainer" class="hidden flex flex-col gap-3 pt-4 border-t mt-2" style="border-color: var(--border-color);">
-                <label class="block font-semibold text-xs" style="color: var(--text-muted);">Enlace generado con éxito:</label>
-                <div class="flex gap-2">
-                    <input type="text" id="generatedLink" readonly class="w-full border rounded px-3 py-2 text-xs font-mono bg-slate-50 select-all" style="border-color: var(--border-color); color: var(--text-main);">
-                    <button id="copyBtn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-4 py-2 rounded text-xs transition-colors cursor-pointer shrink-0">Copiar</button>
-                </div>
-                <p id="copyStatus" class="text-xs font-semibold text-emerald-600 h-4"></p>
+        <!-- Contenedor oculto hasta que se genera el link -->
+        <section id="resultContainer" class="card result-card hidden">
+            <h2>✅ ¡Enlace listo!</h2>
+            <p>Copia este link y envíaselo al cliente:</p>
+            <div class="copy-wrapper">
+                <input type="text" id="generatedLink" readonly>
+                <button type="button" id="copyBtn" class="btn-secondary">📋 Copiar</button>
             </div>
-        </div>
-
-    </div>
+            <p id="copyStatus" class="status-msg"></p>
+        </section>
+    </main>
 
     <script src="js/dashboard.js"></script>
 </body>
