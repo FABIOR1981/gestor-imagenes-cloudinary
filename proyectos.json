@@ -10,6 +10,7 @@
         "eliminar"
         
       ],
+      "soloCarpetasDefinidas": true,
       "carpetas": [
         {
           "value": "galeria",

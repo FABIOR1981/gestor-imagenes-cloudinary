@@ -14,7 +14,6 @@
     <div class="max-w-5xl mx-auto">
         <div id="loadingState" class="text-center py-24"><div class="spinner"></div><p class="text-base font-medium animate-pulse" style="color: var(--text-muted);">Validando acceso seguro...</p></div>
         <div id="errorState" class="card max-w-md mx-auto text-center hidden mt-12 p-8 shadow-xl" style="border-top: 4px solid #EF4444;"><div class="icono-estado">🔒</div><h1 class="text-2xl font-bold mb-3" style="color: #EF4444;">Enlace no válido o caducado</h1><p id="errorMessage" style="color: var(--text-muted); font-size: 0.95rem;">Por seguridad, solicita un enlace nuevo al administrador.</p></div>
-        <div id="passwordState" class="card max-w-md mx-auto text-center hidden mt-12 p-8 shadow-xl" style="border-top: 4px solid var(--primary-color);"><div class="icono-estado">🔐</div><h1 class="text-2xl font-bold mb-3" style="color: var(--text-main);">Acceso protegido</h1><p class="text-sm mb-6" style="color: var(--text-muted);">Ingresa la contraseña proporcionada por el administrador.</p><form id="passwordForm" class="flex flex-col gap-4"><input type="password" id="accessPassword" placeholder="Contraseña" class="border rounded px-3 py-2 text-center font-mono" required><button type="submit" class="btn-primary">Desbloquear acceso</button><p id="passwordError" class="text-xs text-red-600 font-semibold hidden">Contraseña incorrecta.</p></form></div>
         <div id="mainInterface" class="hidden">
             <header class="cliente-header mb-6 card p-5 md:p-6 shadow-sm">
                 <div class="cliente-info"><span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 inline-block mb-2">Portal seguro</span><h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: var(--text-main);">Carga tus imágenes</h1><p class="text-sm mt-1" style="color: var(--text-muted);">Proyecto: <strong id="displayProjectName" class="capitalize" style="color: var(--text-main);"></strong></p><p class="text-xs mt-1 font-medium" style="color: #D97706;">Válido hasta: <span id="displayExpDate"></span></p><div class="mt-5 max-w-xs"><label for="globalCategory" class="paso-label text-xs font-semibold block mb-1" style="color: var(--text-muted);"><span class="numero-paso">1</span> Carpeta destino</label><select id="globalCategory" class="border rounded px-2.5 py-2 text-xs focus-ring w-full bg-slate-50 font-medium"></select></div></div>
@@ -25,6 +24,7 @@
             <div id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
         </div>
     </div>
+    <script src="js/acceso.js"></script>
     <script src="js/subir.js"></script>
 </body>
 </html>
