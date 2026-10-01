@@ -487,9 +487,9 @@ function initApp(initialFolders) {
                             <div class="flex flex-col gap-2" id="meta-container-${index}">
                                 ${item.customMetadata.map((meta, mIdx) => `
                                     <div class="flex gap-1.5 items-center">
-                                        <select data-index="${index}" data-meta-index="${mIdx}" class="meta-name-select border rounded px-2 py-1 text-xs w-1/2 focus-ring bg-slate-50 font-mono">${buildMetadataNameOptions(item, mIdx)}</select>
-                                        <input type="text" placeholder="Nombre de etiqueta nueva" value="${metadataFields.some(field => field.name === meta.name) ? '' : escapeAttribute(meta.name)}" data-index="${index}" data-meta-index="${mIdx}" class="meta-new-name-input border rounded px-2 py-1 text-xs w-1/2 focus-ring bg-slate-50 font-mono" ${metadataFields.some(field => field.name === meta.name) ? 'hidden' : ''}>
-                                        <input type="text" list="meta-values-${index}-${mIdx}" placeholder="Valor existente o nuevo" value="${escapeAttribute(meta.value)}" data-index="${index}" data-meta-index="${mIdx}" class="meta-value-input border rounded px-2 py-1 text-xs w-1/2 focus-ring bg-white">
+                                        <select data-index="${index}" data-meta-index="${mIdx}" class="meta-name-select border rounded px-2 py-1 text-xs flex-1 min-w-0 focus-ring bg-slate-50 font-mono">${buildMetadataNameOptions(item, mIdx)}</select>
+                                        <input type="text" placeholder="Nombre de etiqueta nueva" value="${metadataFields.some(field => field.name === meta.name) ? '' : escapeAttribute(meta.name)}" data-index="${index}" data-meta-index="${mIdx}" class="meta-new-name-input border rounded px-2 py-1 text-xs flex-1 min-w-0 focus-ring bg-slate-50 font-mono" ${metadataFields.some(field => field.name === meta.name) ? 'hidden' : ''}>
+                                        <input type="text" list="meta-values-${index}-${mIdx}" placeholder="Valor existente o nuevo" value="${escapeAttribute(meta.value)}" data-index="${index}" data-meta-index="${mIdx}" class="meta-value-input border rounded px-2 py-1 text-xs flex-1 min-w-0 focus-ring bg-white">
                                         <datalist id="meta-values-${index}-${mIdx}">${buildMetadataOptions(getMetadataValues(meta.name))}</datalist>
                                         <button type="button" data-index="${index}" data-meta-index="${mIdx}" class="remove-meta-btn text-red-500 font-bold px-2 py-1 hover:bg-red-50 rounded text-sm">×</button>
                                     </div>
@@ -584,19 +584,47 @@ function initApp(initialFolders) {
             renderCards();
         }));
 
-        document.querySelectorAll('.meta-name-input').forEach(i => {
-            i.addEventListener('input', e => {
+        document.querySelectorAll('.meta-name-select').forEach(select => select.addEventListener('change', e => {
+            const idx = e.target.dataset.index;
+            const mIdx = e.target.dataset.metaIndex;
+            const metadata = imageFiles[idx].customMetadata[mIdx];
+            const selectedName = e.target.value;
+
+            if (selectedName === '__new__') {
+                metadata.name = '';
+                metadata.value = '';
+                renderCards();
+                return;
+            }
+
+            const duplicate = imageFiles[idx].customMetadata.some((item, index) => index !== Number(mIdx) && item.name === selectedName);
+            if (duplicate) {
+                alert('Esta etiqueta ya existe en esta imagen.');
+                renderCards();
+                return;
+            }
+
+            metadata.name = selectedName;
+            if (!metadata.value) metadata.value = getSuggestedMetadataValue(selectedName);
+            renderCards();
+        }));
+
+        document.querySelectorAll('.meta-new-name-input').forEach(input => {
+            input.addEventListener('input', e => {
                 const idx = e.target.dataset.index;
                 const mIdx = e.target.dataset.metaIndex;
                 imageFiles[idx].customMetadata[mIdx].name = e.target.value;
             });
-            i.addEventListener('change', e => {
+            input.addEventListener('change', e => {
                 const idx = e.target.dataset.index;
                 const mIdx = e.target.dataset.metaIndex;
-                const metadata = imageFiles[idx].customMetadata[mIdx];
-                metadata.name = e.target.value;
-                if (!metadata.value) metadata.value = getSuggestedMetadataValue(metadata.name);
-                renderCards();
+                const name = e.target.value.trim();
+                const duplicate = imageFiles[idx].customMetadata.some((item, index) => index !== Number(mIdx) && item.name.trim() === name);
+                if (name && duplicate) {
+                    alert('Esta etiqueta ya existe en esta imagen.');
+                    imageFiles[idx].customMetadata[mIdx].name = '';
+                    renderCards();
+                }
             });
         });
 
@@ -637,6 +665,16 @@ function initApp(initialFolders) {
         const statusEl = document.getElementById(`upload-status-${index}`);
         const folderPath = `${BASE_FOLDER}/${item.category}`; 
         const tag = `${PROYECTO_ACTUAL.replace(/\//g, '_')}_${item.category}`;
+        const metadataNames = item.customMetadata.map(metadata => metadata.name.trim()).filter(Boolean);
+        const hasDuplicateMetadata = new Set(metadataNames).size !== metadataNames.length;
+
+        if (hasDuplicateMetadata) {
+            if (statusEl) {
+                statusEl.textContent = 'Revisa etiquetas repetidas';
+                statusEl.className = "text-xs px-2 py-1 rounded shrink-0 bg-red-50 text-red-600 font-semibold";
+            }
+            return;
+        }
 
         if (statusEl) {
             statusEl.textContent = 'Subiendo…'; 
