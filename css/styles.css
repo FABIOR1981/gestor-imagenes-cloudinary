@@ -251,9 +251,13 @@ label[for="fileInput"] > div:first-child {
 #batchActions .btn-secondary { padding: 12px 20px; border-radius: 999px; }
 
 /* Tarjetas de imagen */
-#cardsContainer { gap: 22px; }
+#cardsContainer {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
+    justify-content: center;
+    gap: 20px;
+}
 #cardsContainer > .card {
-    margin: 0; padding: 16px; border-radius: 22px;
+    margin: 0; padding: 12px; border-radius: 22px;
     transition: transform .2s, box-shadow .2s;
 }
 #cardsContainer > .card:hover { transform: translateY(-3px); box-shadow: 0 22px 40px -20px rgba(30, 41, 59, .4); }
@@ -290,6 +294,7 @@ label[for="fileInput"] > div:first-child {
 
 @media (max-width: 640px) {
     .card { padding: 20px; }
+    #cardsContainer { grid-template-columns: minmax(0, 1fr); }
     #batchActions { top: 8px; }
     #cardsContainer > .card:hover { transform: none; }
 }
