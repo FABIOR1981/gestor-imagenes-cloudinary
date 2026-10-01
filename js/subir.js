@@ -1,5 +1,6 @@
 let PROYECTO_ACTUAL = "";
 let BASE_FOLDER = "";
+let TOKEN_ACTUAL = "";
 
 const cfgCloudinary = (typeof CONFIG !== 'undefined' && CONFIG.CLOUDINARY) ? CONFIG.CLOUDINARY : {};
 const CLOUD_NAME = cfgCloudinary.CLOUD_NAME || 'p0qlmlor';
@@ -10,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const token = urlParams.get('token');
     const loadingState = document.getElementById('loadingState');
     const errorState = document.getElementById('errorState');
+    const passwordState = document.getElementById('passwordState');
     const mainInterface = document.getElementById('mainInterface');
 
     if (!token) {
@@ -18,8 +20,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
+    TOKEN_ACTUAL = token;
+
     try {
-        // Consultamos al servidor de Netlify si el token firmado es válido y no ha expirado
+        // Consultamos al servidor de Netlify si el token es válido
         const res = await fetch('/.netlify/functions/verificar-token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -28,39 +32,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const data = await res.json();
 
+        // Si el servidor indica que es de larga duración y requiere contraseña, mostramos el modal
+        if (res.status === 401 && data.requiresPassword) {
+            loadingState.classList.add('hidden');
+            if (passwordState) {
+                passwordState.classList.remove('hidden');
+                initPasswordProtection();
+            } else {
+                errorState.classList.remove('hidden');
+            }
+            return;
+        }
+
         if (!res.ok || !data.valid) {
             loadingState.classList.add('hidden');
             errorState.classList.remove('hidden');
             return;
         }
 
-        PROYECTO_ACTUAL = data.project; 
-        BASE_FOLDER = PROYECTO_ACTUAL; 
-
-        document.getElementById('displayProjectName').textContent = PROYECTO_ACTUAL;
-        document.getElementById('displayExpDate').textContent = new Date(data.exp).toLocaleString('es-UY', { dateStyle: 'medium', timeStyle: 'short' });
-
-        let projectFolders = [
-            { value: 'galeria', label: 'Galería' },
-            { value: 'instalaciones', label: 'Instalaciones' }
-        ];
-
-        try {
-            const response = await fetch('proyectos.json');
-            if (response.ok) {
-                const projData = await response.json();
-                const foundProj = projData.proyectos.find(p => p.id === PROYECTO_ACTUAL);
-                if (foundProj && Array.isArray(foundProj.carpetas) && foundProj.carpetas.length > 0) {
-                    projectFolders = foundProj.carpetas;
-                }
-            }
-        } catch (err) {
-            console.warn('Usando carpetas por defecto', err);
-        }
-
-        loadingState.classList.add('hidden');
-        mainInterface.classList.remove('hidden');
-        initApp(projectFolders); 
+        // Si el token es válido y no requiere contraseña adicional, cargamos la aplicación
+        await cargarInterfazProyecto(data.project, data.exp);
 
     } catch (error) {
         loadingState.classList.add('hidden');
@@ -68,6 +59,89 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('errorMessage').textContent = "No se pudo validar el acceso con el servidor o el enlace no es válido.";
     }
 });
+
+// Función para manejar el formulario de contraseña en pantalla
+function initPasswordProtection() {
+    const passwordForm = document.getElementById('passwordForm');
+    const accessPasswordInput = document.getElementById('accessPassword');
+    const passwordError = document.getElementById('passwordError');
+    const passwordState = document.getElementById('passwordState');
+    const loadingState = document.getElementById('loadingState');
+
+    if (!passwordForm) return;
+
+    passwordForm.onsubmit = async (e) => {
+        e.preventDefault();
+        const password = accessPasswordInput.value.trim();
+        passwordError.classList.add('hidden');
+
+        try {
+            passwordState.classList.add('hidden');
+            loadingState.classList.remove('hidden');
+
+            // Re-enviamos el token junto con la contraseña ingresada para que el servidor la valide
+            const res = await fetch('/.netlify/functions/verificar-token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: TOKEN_ACTUAL, password })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok || !data.valid) {
+                loadingState.classList.add('hidden');
+                passwordState.classList.remove('hidden');
+                passwordError.textContent = data.error || 'Contraseña incorrecta.';
+                passwordError.classList.remove('hidden');
+                return;
+            }
+
+            // Contraseña correcta: ocultamos el modal y cargamos la app del proyecto
+            passwordState.classList.add('hidden');
+            await cargarInterfazProyecto(data.project, data.exp);
+
+        } catch (err) {
+            loadingState.classList.add('hidden');
+            passwordState.classList.remove('hidden');
+            passwordError.textContent = 'Error al verificar la contraseña.';
+            passwordError.classList.remove('hidden');
+        }
+    };
+}
+
+// Función auxiliar para inicializar la app una vez validado el acceso y permisos
+async function cargarInterfazProyecto(projectName, expDate) {
+    const loadingState = document.getElementById('loadingState');
+    const mainInterface = document.getElementById('mainInterface');
+
+    PROYECTO_ACTUAL = projectName; 
+    BASE_FOLDER = PROYECTO_ACTUAL; 
+
+    document.getElementById('displayProjectName').textContent = PROYECTO_ACTUAL;
+    document.getElementById('displayExpDate').textContent = new Date(expDate).toLocaleString('es-UY', { dateStyle: 'medium', timeStyle: 'short' });
+
+    let projectFolders = [
+        { value: 'galeria', label: 'Galería' },
+        { value: 'instalaciones', label: 'Instalaciones' }
+    ];
+
+    try {
+        const response = await fetch('proyectos.json');
+        if (response.ok) {
+            const projData = await response.json();
+            const foundProj = projData.proyectos.find(p => p.id === PROYECTO_ACTUAL);
+            if (foundProj && Array.isArray(foundProj.carpetas) && foundProj.carpetas.length > 0) {
+                projectFolders = foundProj.carpetas;
+            }
+        }
+    } catch (err) {
+        console.warn('Usando carpetas por defecto', err);
+    }
+
+    loadingState.classList.add('hidden');
+    mainInterface.classList.remove('hidden');
+    initApp(projectFolders); 
+}
 
 function initApp(initialFolders) {
     const NEW_FOLDER_OPTION = '__nueva__';
@@ -506,7 +580,7 @@ function initApp(initialFolders) {
         } catch (err) {
             if (statusEl) {
                 statusEl.textContent = 'Error ✕'; 
-                statusEl.className = "text-xs px-2.5 py-1 rounded shrink-0 bg-red-50 text-red-600 font-semibold";
+                statusEl.className = "text-xs px-2 py-1 rounded shrink-0 bg-red-50 text-red-600 font-semibold";
                 statusEl.title = err.message;
             }
         }

@@ -26,6 +26,19 @@
             <p id="errorMessage" style="color: var(--text-muted); font-size: 0.95rem;">Por seguridad, los enlaces de subida tienen una fecha límite estricta. Solicita uno nuevo al administrador.</p>
         </div>
 
+        <!-- Pantalla de Solicitud de Contraseña (Para enlaces protegidos / larga duración) -->
+        <div id="passwordState" class="card max-w-md mx-auto text-center hidden mt-12 p-8 shadow-xl" style="border-top: 4px solid var(--primary-color);">
+            <div class="icono-estado">🔐</div>
+            <h1 class="text-2xl font-bold mb-3" style="color: var(--text-main);">Acceso Protegido</h1>
+            <p class="text-sm mb-6" style="color: var(--text-muted);">Este enlace de larga duración requiere una contraseña proporcionada por el administrador.</p>
+            
+            <form id="passwordForm" class="flex flex-col gap-4">
+                <input type="password" id="accessPassword" placeholder="Ingresa la contraseña..." class="border rounded px-3 py-2 text-center font-mono" required>
+                <button type="submit" class="btn-primary">🔓 Desbloquear acceso</button>
+                <p id="passwordError" class="text-xs text-red-600 font-semibold hidden">Contraseña incorrecta. Inténtalo de nuevo.</p>
+            </form>
+        </div>
+
         <!-- Interfaz Principal -->
         <div id="mainInterface" class="hidden">
             

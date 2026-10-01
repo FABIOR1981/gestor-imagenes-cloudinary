@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
-// Usamos una clave secreta interna del servidor (Netlify la lee de sus variables de entorno)
-const SECRET_KEY = process.env.TOKEN_SECRET || 'clave-secreta-super-segura-cambiar-en-produccion';
+const GLOBAL_SECRET = process.env.TOKEN_SECRET || 'clave-maestra-global';
+const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000; // Aprox 6 meses en milisegundos
 
 export async function handler(event) {
     if (event.httpMethod !== 'POST') {
@@ -15,17 +15,37 @@ export async function handler(event) {
             return { statusCode: 400, body: JSON.stringify({ error: 'Faltan datos obligatorios' }) };
         }
 
-        // Estructura de datos que viaja en el token
-        const payload = { project, exp };
+        const duration = exp - Date.now();
+        const isLongTerm = duration > SIX_MONTHS_MS;
+
+        let secretToUse = GLOBAL_SECRET;
+
+        // Si es de larga duración, aplicamos la doble contraseña combinándola con la del proyecto
+        if (isLongTerm) {
+            const sanitizedProj = project.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
+            const longTermEnvVar = `TOKEN_SECRET_${sanitizedProj}_LARGO`;
+            const projectLongSecret = process.env[longTermEnvVar];
+
+            if (!projectLongSecret) {
+                return { 
+                    statusCode: 400, 
+                    body: JSON.stringify({ error: `Falta configurar la variable de entorno ${longTermEnvVar} en Netlify para este proyecto de larga duración.` }) 
+                };
+            }
+
+            // Combinamos la clave global y la específica del proyecto largo
+            secretToUse = `${GLOBAL_SECRET}_${projectLongSecret}`;
+        }
+
+        const payload = { project, exp, longTerm: isLongTerm };
         const payloadBase64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
 
-        // Generamos una firma HMAC-SHA256 inalterable
+        // Generamos la firma criptográfica con la(s) clave(s) correspondiente(s)
         const signature = crypto
-            .createHmac('sha256', SECRET_KEY)
+            .createHmac('sha256', secretToUse)
             .update(payloadBase64)
             .digest('base64url');
 
-        // El token final une los datos + un punto + la firma criptográfica
         const token = `${payloadBase64}.${signature}`;
 
         return {
