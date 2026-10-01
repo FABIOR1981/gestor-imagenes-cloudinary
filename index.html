@@ -6,73 +6,142 @@
     <title>Dashboard | Upload Hub</title>
     <link rel="stylesheet" href="css/styles.css">
     <style>
+        /* Página compacta: formulario a la izquierda y tarjeta del enlace fija a la derecha, sin scroll vertical en pantallas comunes */
+        body { padding-block: clamp(12px, 3vh, 28px); }
+        .dashboard-container { max-width: 980px; }
+
+        .dashboard-container > header.cabecera {
+            display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+            text-align: left; margin-bottom: 16px;
+        }
+        .cabecera .hero-icono { margin: 0; width: 46px; height: 46px; font-size: 22px; border-radius: 14px; flex: none; }
+        .dashboard-container > header.cabecera h1 { font-size: 1.35rem; margin: 0 0 2px; }
+        .dashboard-container > header.cabecera p { font-size: .85rem; margin: 0; }
+        #navAdmin { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+        .nav-boton {
+            display: inline-flex; align-items: center; padding: 9px 14px; border-radius: 12px; border: none;
+            background: #EEF2FF; color: #4338CA; font-size: .85rem; font-weight: 600; text-decoration: none; cursor: pointer;
+        }
+        .nav-boton:hover { background: #E0E7FF; }
+
+        .rejilla { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 18px; align-items: stretch; }
+        .rejilla > .card { margin-bottom: 0; }
+        @media (max-width: 820px) { .rejilla { grid-template-columns: 1fr; } }
+
+        /* Formulario compacto */
+        .form-card { padding: 22px 24px; }
+        .form-card .form-group { margin-bottom: 14px; }
+        .form-card .form-group label { margin-bottom: 7px; font-size: .88rem; }
+        .form-card select, .form-card input[type="datetime-local"] { padding: 9px 12px; font-size: .9rem; }
+        .form-card .btn-primary { padding: 12px 16px; margin-top: 4px; }
+        .fila-dos { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        @media (max-width: 520px) { .fila-dos { grid-template-columns: 1fr; } }
+        .form-card .ayuda { margin-top: 6px; }
+
         /* Las cuatro casillas de permisos en una sola fila (pasan a la siguiente solo si no entran) */
         .grupo-permisos { display: flex; flex-wrap: wrap; gap: 8px 22px; }
         .form-group .grupo-permisos label { margin: 0; font-size: .92rem; font-weight: 500; cursor: pointer; }
         .grupo-permisos input[type="checkbox"] { width: 17px; height: 17px; margin: 0; cursor: pointer; }
+
+        /* Tarjeta del enlace: siempre está en su lugar; al generar sale y vuelve con el enlace nuevo */
+        .tarjeta-enlace { display: flex; flex-direction: column; justify-content: center; transition: opacity .16s ease, transform .16s ease; }
+        .tarjeta-enlace.saliendo { opacity: 0; transform: translateY(8px) scale(.99); }
+        .tarjeta-enlace.nuevo { animation: destello .9s ease; }
+        @keyframes destello {
+            0%   { box-shadow: 0 0 0 0 rgba(34, 197, 94, .55); }
+            60%  { box-shadow: 0 0 0 12px rgba(34, 197, 94, 0); }
+            100% { box-shadow: var(--sombra); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tarjeta-enlace { transition: none; }
+            .tarjeta-enlace.nuevo { animation: none; }
+        }
+        .resultado-vacio { text-align: center; color: var(--text-muted); }
+        .resultado-vacio p { margin: 0 0 4px; }
+        .resumen { font-size: .85rem; margin: 0 0 12px; }
+        .tarjeta-enlace textarea {
+            width: 100%; resize: none; background: #F8FAFC; font-size: .8rem; line-height: 1.35;
+            font-family: ui-monospace, Menlo, Consolas, monospace; word-break: break-all;
+        }
+        .fila-copiar { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+        .fila-copiar .btn-secondary { padding: 10px 18px; white-space: nowrap; }
+        .fila-copiar .status-msg { margin: 0; min-height: 0; text-align: left; }
     </style>
 </head>
 <body>
     <main class="dashboard-container">
-        <header>
+        <header class="cabecera">
             <div class="hero-icono">🔗</div>
-            <h1>Generador de Enlaces</h1>
-            <p>Crea links de subida temporales para tus clientes.</p>
+            <div>
+                <h1>Generador de Enlaces</h1>
+                <p>Crea links de subida temporales para tus clientes.</p>
+            </div>
+            <nav id="navAdmin" class="hidden">
+                <a href="admin.html" class="nav-boton">🖼️ Imágenes</a>
+                <a href="seguridad.html" class="nav-boton">🔑 Claves</a>
+                <button type="button" id="logoutBtn" class="nav-boton">Salir</button>
+            </nav>
         </header>
 
-        <!-- Generador (visible solo con sesión de administrador) -->
-        <div id="panelGenerador" class="hidden">
-            <section class="card">
+        <!-- Generador (visible solo con sesión de administrador; el login lo muestra js/acceso.js) -->
+        <div id="panelGenerador" class="hidden rejilla">
+            <section class="card form-card">
                 <form id="linkGeneratorForm">
-                    <div class="form-group">
-                        <label for="projectSelect"><span class="numero-paso">1</span> ¿Para qué proyecto es?</label>
-                        <select id="projectSelect" name="projectSelect" class="border rounded px-3 py-2 w-full" required>
-                            <option value="">Cargando proyectos...</option>
-                        </select>
+                    <div class="fila-dos">
+                        <div class="form-group">
+                            <label for="projectSelect"><span class="numero-paso">1</span> ¿Para qué proyecto?</label>
+                            <select id="projectSelect" name="projectSelect" required>
+                                <option value="">Cargando proyectos...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="modeSelect"><span class="numero-paso">2</span> ¿Qué pantalla verá?</label>
+                            <select id="modeSelect" name="modeSelect" required>
+                                <option value="admin">Carga completa</option>
+                                <option value="cliente">Carga simplificada</option>
+                                <option value="galeria">Galería de imágenes</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="modeSelect"><span class="numero-paso">2</span> ¿Qué pantalla verá quien use el enlace?</label>
-                        <select id="modeSelect" name="modeSelect" required>
-                            <option value="admin">Completa - todas las opciones de carga</option>
-                            <option value="cliente">Simplificada - carga reducida</option>
-                            <option value="galeria">Galería - ver, editar y eliminar (según permisos)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label><span class="numero-paso">3</span> ¿Qué podrá hacer con el enlace?</label>
+                        <label title="Los permisos los valida el servidor. Por proyecto se preseleccionan los de proyectos.json."><span class="numero-paso">3</span> ¿Qué podrá hacer?</label>
                         <div id="permisosGrupo" class="grupo-permisos">
                             <label><input type="checkbox" name="permisos" value="alta"> Subir</label>
                             <label><input type="checkbox" name="permisos" value="listar"> Ver</label>
                             <label><input type="checkbox" name="permisos" value="modificar"> Modificar</label>
                             <label><input type="checkbox" name="permisos" value="eliminar"> Eliminar</label>
                         </div>
-                        <p class="ayuda">Los permisos los valida el servidor. Por proyecto se preseleccionan los de proyectos.json.</p>
                     </div>
 
                     <div class="form-group">
                         <label for="expirationDate"><span class="numero-paso">4</span> ¿Hasta cuándo estará activo?</label>
                         <input type="datetime-local" id="expirationDate" name="expirationDate" required>
-                        <p class="ayuda">Por defecto dura 24 horas. Si supera los 6 meses, quien lo abra deberá ingresar la contraseña larga del proyecto.</p>
+                        <p class="ayuda">Por defecto 24 horas. Más de 6 meses: el enlace pide contraseña.</p>
                     </div>
 
                     <button type="submit" class="btn-primary">✨ Generar enlace</button>
                 </form>
             </section>
 
-            <section id="resultContainer" class="card result-card hidden">
-                <h2>✅ ¡Enlace listo!</h2>
-                <p>Copia este link y envíaselo al cliente:</p>
-                <div class="copy-wrapper">
-                    <input type="text" id="generatedLink" readonly>
-                    <button type="button" id="copyBtn" class="btn-secondary">📋 Copiar</button>
+            <section id="resultContainer" class="card tarjeta-enlace">
+                <div id="resultadoVacio" class="resultado-vacio">
+                    <div class="icono-estado">🔗</div>
+                    <p><strong>Tu enlace aparecerá acá</strong></p>
+                    <p class="ayuda">Completá el formulario y tocá «Generar enlace».</p>
                 </div>
-                <p id="copyStatus" class="status-msg"></p>
-                <p id="avisoLargo" class="ayuda hidden"></p>
-            </section>
 
-            <p><a href="admin.html" class="btn-secondary">🖼️ Administrar imágenes</a> <a href="seguridad.html" class="btn-secondary">🔑 Claves</a> <button type="button" id="logoutBtn" class="btn-secondary">Cerrar sesión</button></p>
+                <div id="resultadoListo" class="hidden">
+                    <h2>✅ ¡Enlace listo!</h2>
+                    <p id="resumenEnlace" class="resumen"></p>
+                    <textarea id="generatedLink" rows="5" readonly></textarea>
+                    <div class="fila-copiar">
+                        <button type="button" id="copyBtn" class="btn-secondary">📋 Copiar enlace</button>
+                        <span id="copyStatus" class="status-msg"></span>
+                    </div>
+                    <p id="avisoLargo" class="ayuda hidden"></p>
+                </div>
+            </section>
         </div>
     </main>
 

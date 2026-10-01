@@ -2,12 +2,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const FUNCIONES = '/.netlify/functions';
 
     const panel = document.getElementById('panelGenerador');
+    const navAdmin = document.getElementById('navAdmin');
     const logoutBtn = document.getElementById('logoutBtn');
     const form = document.getElementById('linkGeneratorForm');
     const projectSelect = document.getElementById('projectSelect');
     const modeSelect = document.getElementById('modeSelect');
     const expirationInput = document.getElementById('expirationDate');
     const resultContainer = document.getElementById('resultContainer');
+    const resultadoVacio = document.getElementById('resultadoVacio');
+    const resultadoListo = document.getElementById('resultadoListo');
+    const resumenEnlace = document.getElementById('resumenEnlace');
     const generatedLinkInput = document.getElementById('generatedLink');
     const copyBtn = document.getElementById('copyBtn');
     const copyStatus = document.getElementById('copyStatus');
@@ -24,20 +28,50 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function mostrarPanel(si) {
         panel.classList.toggle('hidden', !si);
+        navAdmin.classList.toggle('hidden', !si);
         if (si) login.ocultar(); else login.mostrar();
     }
 
     function sesionVencida() {
         Acceso.sesionAdmin.borrar();
+        reiniciarResultado();
         panel.classList.add('hidden');
+        navAdmin.classList.add('hidden');
         login.mostrar('La sesión venció. Ingresá de nuevo.');
     }
 
     logoutBtn.addEventListener('click', () => {
         Acceso.sesionAdmin.borrar();
-        resultContainer.classList.add('hidden');
+        reiniciarResultado();
         mostrarPanel(false);
     });
+
+    // --- Tarjeta del enlace: siempre en su lugar; al generar sale y vuelve con el enlace nuevo ---
+    const esperar = ms => new Promise(r => setTimeout(r, ms));
+
+    function reiniciarResultado() {
+        generatedLinkInput.value = '';
+        resultadoListo.classList.add('hidden');
+        resultadoVacio.classList.remove('hidden');
+        resultContainer.classList.remove('result-card', 'saliendo', 'nuevo');
+    }
+
+    async function mostrarResultado({ url, resumen, larga }) {
+        resultContainer.classList.add('saliendo');            // la tarjeta se va...
+        await esperar(160);
+        resultadoVacio.classList.add('hidden');
+        resultadoListo.classList.remove('hidden');
+        resultContainer.classList.add('result-card');
+        generatedLinkInput.value = url;
+        resumenEnlace.textContent = resumen;
+        copyStatus.textContent = '';
+        avisoLargo.classList.toggle('hidden', !larga);
+        if (larga) avisoLargo.textContent = 'Enlace de larga duración: al abrirlo se pedirá la contraseña guardada en la variable TOKEN_SECRET_..._LARGO de este proyecto.';
+        resultContainer.classList.remove('saliendo');         // ...y vuelve con el enlace nuevo
+        resultContainer.classList.remove('nuevo');
+        void resultContainer.offsetWidth;                     // reinicia la animación del destello
+        resultContainer.classList.add('nuevo');
+    }
 
     // --- Proyectos y permisos por defecto ---
     function aplicarPermisosPorDefecto() {
@@ -108,11 +142,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             const modo = modeSelect.value === 'galeria' ? 'cliente' : modeSelect.value;
             const url = `${window.location.origin}/${pagina}?token=${encodeURIComponent(data.token)}&modo=${encodeURIComponent(modo)}`;
 
-            generatedLinkInput.value = url;
-            resultContainer.classList.remove('hidden');
-            copyStatus.textContent = '';
-            avisoLargo.classList.toggle('hidden', !data.larga);
-            if (data.larga) avisoLargo.textContent = 'Enlace de larga duración: al abrirlo se pedirá la contraseña guardada en la variable TOKEN_SECRET_..._LARGO de este proyecto.';
+            const nombresPermisos = { alta: 'subir', listar: 'ver', modificar: 'modificar', eliminar: 'eliminar' };
+            const nombreProyecto = projectSelect.options[projectSelect.selectedIndex].textContent;
+            const nombrePantalla = modeSelect.options[modeSelect.selectedIndex].textContent;
+            const vence = new Date(data.exp).toLocaleString('es-UY', { dateStyle: 'short', timeStyle: 'short' });
+            await mostrarResultado({
+                url,
+                larga: data.larga,
+                resumen: `${nombreProyecto} · ${nombrePantalla} · ${permisos.map(p => nombresPermisos[p] || p).join(', ')} · vence ${vence}`
+            });
         } catch (err) {
             alert('Hubo un error al generar el enlace: ' + err.message);
         }
