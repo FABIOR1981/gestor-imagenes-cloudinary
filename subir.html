@@ -3,121 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subir Archivos | Gestor de Imágenes</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Subida de Imágenes - Gestor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="min-h-screen p-4 md:p-8">
+<body class="bg-slate-50 min-h-screen p-4 md:p-8" style="color: var(--text-main);">
 
-    <div class="max-w-7xl mx-auto">
-        <!-- Mensaje de Validación Inicial -->
-        <div id="loadingState" class="text-center py-24">
-            <div class="spinner"></div>
-            <p class="text-base font-medium animate-pulse" style="color: var(--text-muted);">Validando acceso seguro...</p>
+    <div class="max-w-4xl mx-auto">
+        <!-- Estado de Carga / Validación -->
+        <div id="loadingState" class="card text-center py-12">
+            <div class="animate-spin text-4xl mb-3">⏳</div>
+            <h2 class="text-xl font-bold">Validando enlace seguro...</h2>
+            <p class="text-sm mt-1" style="color: var(--text-muted);">Por favor espera un momento.</p>
         </div>
 
-        <!-- Pantalla de Error -->
-        <div id="errorState" class="card max-w-md mx-auto text-center hidden mt-12 p-8 shadow-xl" style="border-top: 4px solid #EF4444;">
-            <div class="icono-estado">🔒</div>
-            <h1 class="text-2xl font-bold mb-3" style="color: #EF4444;">Enlace no válido o caducado</h1>
-            <p id="errorMessage" style="color: var(--text-muted); font-size: 0.95rem;">Por seguridad, los enlaces de subida tienen una fecha límite estricta. Solicita uno nuevo al administrador.</p>
+        <!-- Estado de Error o Enlace Inválido -->
+        <div id="errorState" class="card text-center py-12 hidden">
+            <div class="text-4xl mb-3">❌</div>
+            <h2 class="text-xl font-bold text-red-600">Acceso No Válido</h2>
+            <p id="errorMessage" class="text-sm mt-1 mb-4" style="color: var(--text-muted);">El enlace ha caducado, es incorrecto o la firma no coincide.</p>
         </div>
 
-        <!-- Pantalla de Solicitud de Contraseña (Para enlaces protegidos / larga duración) -->
+        <!-- Pantalla de Solicitud de Contraseña (Larga Duración) -->
         <div id="passwordState" class="card max-w-md mx-auto text-center hidden mt-12 p-8 shadow-xl" style="border-top: 4px solid var(--primary-color);">
-            <div class="icono-estado">🔐</div>
-            <h1 class="text-2xl font-bold mb-3" style="color: var(--text-main);">Acceso Protegido</h1>
+            <div class="text-4xl mb-3">🔐</div>
+            <h1 class="text-2xl font-bold mb-3">Acceso Protegido</h1>
             <p class="text-sm mb-6" style="color: var(--text-muted);">Este enlace de larga duración requiere una contraseña proporcionada por el administrador.</p>
             
             <form id="passwordForm" class="flex flex-col gap-4">
-                <input type="password" id="accessPassword" placeholder="Ingresa la contraseña..." class="border rounded px-3 py-2 text-center font-mono" required>
-                <button type="submit" class="btn-primary">🔓 Desbloquear acceso</button>
+                <input type="password" id="accessPassword" placeholder="Ingresa la contraseña..." class="border rounded px-3 py-2 text-center font-mono focus-ring" required>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition-colors">🔓 Desbloquear acceso</button>
                 <p id="passwordError" class="text-xs text-red-600 font-semibold hidden">Contraseña incorrecta. Inténtalo de nuevo.</p>
             </form>
         </div>
 
-        <!-- Interfaz Principal -->
-        <div id="mainInterface" class="hidden">
-            
-            <!-- Encabezado Pro y Organizado -->
-            <header class="mb-6 card p-5 md:p-6 shadow-sm">
-                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <!-- Interfaz Principal (Oculta hasta validar) -->
+        <div id="mainInterface" class="hidden flex flex-col gap-6">
+            <!-- Cabecera del Proyecto -->
+            <div class="card flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold uppercase tracking-wide" id="displayProjectName">Proyecto</h1>
+                    <p class="text-xs mt-0.5" style="color: var(--text-muted);">Enlace seguro activo hasta: <strong id="displayExpDate">--/--/----</strong></p>
+                </div>
+                <div class="flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span>🟢 Conexión Segura</span>
+                </div>
+            </div>
+
+            <!-- Panel de Selección de Archivos -->
+            <div class="card flex flex-col gap-4">
+                <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                    <label class="w-full sm:flex-1 border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors hover:border-blue-500 bg-slate-50/50 flex flex-col items-center justify-center gap-2" style="border-color: var(--border-color);">
+                        <span class="text-2xl">📁</span>
+                        <span class="text-sm font-semibold">Seleccionar o arrastrar imágenes</span>
+                        <span class="text-xs" style="color: var(--text-muted);">Se procesarán automáticamente</span>
+                        <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
+                    </label>
+                </div>
+
+                <!-- Opciones Generales (Ocultas automáticamente en Modo Cliente) -->
+                <div id="globalOptionsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t" style="border-color: var(--border-color);">
                     <div>
-                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 inline-block mb-2">🔒 Portal seguro</span>
-                        <h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: var(--text-main);">Sube tus imágenes</h1>
-                        <p class="text-sm mt-1" style="color: var(--text-muted);">Proyecto: <strong id="displayProjectName" class="capitalize" style="color: var(--text-main);"></strong></p>
-                        <p class="text-xs mt-1 font-medium" style="color: #D97706;">Válido hasta: <span id="displayExpDate"></span></p>
+                        <label class="font-semibold block mb-1.5 text-xs" style="color: var(--text-muted);">Carpeta general:</label>
+                        <select id="globalCategory" class="w-full border rounded px-3 py-2 text-xs focus-ring bg-white font-medium"></select>
                     </div>
-                    
-                    <!-- Controles Globales Responsivos -->
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap items-end gap-3 w-full lg:w-auto pt-4 lg:pt-0 border-t lg:border-t-0 border-slate-100">
-                        <div>
-                            <label for="globalCategory" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Carpeta destino</label>
-                            <select id="globalCategory" class="border rounded px-2.5 py-2 text-xs focus-ring w-full bg-slate-50 font-medium"></select>
-                        </div>
-                        <div>
-                            <label for="globalMaxWidth" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Ancho Máx.</label>
-                            <select id="globalMaxWidth" class="border rounded px-2.5 py-2 text-xs focus-ring w-full bg-slate-50 font-medium">
-                                <option value="800">800 px (Liviana)</option>
-                                <option value="1200" selected>1200 px (Estándar)</option>
-                                <option value="1600">1600 px (Intermedia)</option>
-                                <option value="1920">1920 px (Alta / HD)</option>
-                                <option value="0">Original</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="globalQuality" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Compresión (<span id="globalQualityVal">80</span>%)</label>
-                            <input type="range" id="globalQuality" min="0.1" max="1.0" step="0.05" value="0.8" class="w-full accent-blue-600 cursor-pointer h-8">
-                        </div>
-                        <div class="col-span-2 sm:col-span-1">
-                            <label for="globalTitle" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Título global</label>
-                            <input type="text" id="globalTitle" placeholder="Ej.: Actividad 2026" class="border rounded px-2.5 py-2 text-xs focus-ring w-full bg-slate-50">
-                        </div>
-                        <div class="flex items-center gap-2 col-span-2 sm:col-span-3 lg:col-span-auto pt-2 lg:pt-0">
-                            <input type="checkbox" id="globalKeepOriginal" checked class="w-4 h-4 cursor-pointer accent-blue-600">
-                            <label for="globalKeepOriginal" class="text-xs cursor-pointer font-medium" style="color: var(--text-main);">Respetar nombre original</label>
-                        </div>
+                    <div>
+                        <label class="font-semibold block mb-1.5 text-xs" style="color: var(--text-muted);">Ancho máx. general:</label>
+                        <select id="globalMaxWidth" class="w-full border rounded px-3 py-2 text-xs focus-ring bg-white font-medium">
+                            <option value="800">800 px</option>
+                            <option value="1200" selected>1200 px</option>
+                            <option value="1600">1600 px</option>
+                            <option value="1920">1920 px</option>
+                            <option value="0">Original</option>
+                        </select>
                     </div>
-                </div>
-            </header>
-
-            <!-- Zona de Carga (Drag & Drop amigable para Celular y PC) -->
-            <div class="mb-8">
-                <h2 class="paso-titulo"><span class="numero-paso">1</span> Elige tus imágenes</h2>
-                <label for="fileInput" class="card border-2 border-dashed p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group hover:border-blue-600 hover:bg-blue-50/20 text-center" style="border-color: var(--border-color);">
-                    <div class="w-14 h-14 mb-3 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
+                    <div class="flex flex-col justify-end">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="font-semibold text-xs" style="color: var(--text-muted);">Calidad WebP:</label>
+                            <span id="globalQualityVal" class="font-bold text-blue-600 text-xs">80%</span>
+                        </div>
+                        <input type="range" id="globalQuality" min="0.1" max="1.0" step="0.05" value="0.8" class="w-full accent-blue-600 cursor-pointer">
                     </div>
-                    <span class="text-sm md:text-base font-semibold" style="color: var(--text-main);">Toca aquí para elegir tus imágenes</span>
-                    <span class="text-xs mt-1" style="color: var(--text-muted);">Puedes elegir varias a la vez · PNG, JPG o WEBP</span>
-                    <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
-                </label>
-            </div>
-
-            <!-- Acciones Globales Flotantes / de Lote -->
-            <div id="batchActions" class="card hidden mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 p-4 shadow-md bg-white border-l-4 border-l-blue-600">
-                <span id="counterText" class="text-sm font-bold" style="color: var(--text-main);">0 imágenes cargadas</span>
-                <div class="flex flex-wrap gap-2.5 w-full sm:w-auto justify-end">
-                    <button id="uploadAllBtn" class="btn-primary flex-1 sm:flex-none py-2.5 px-5 text-xs md:text-sm">
-                        🚀 Subir todas a Cloudinary
-                    </button>
-                    <button id="downloadAllBtn" class="btn-secondary flex-1 sm:flex-none py-2.5 px-4 text-xs md:text-sm">
-                        📥 Descargar .WebP
-                    </button>
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="font-semibold block mb-1.5 text-xs" style="color: var(--text-muted);">Título descriptivo general (Opcional):</label>
+                        <input type="text" id="globalTitle" placeholder="Ej. Avance de obra" class="w-full border rounded px-3 py-2 text-xs focus-ring">
+                    </div>
+                    <div class="flex items-center gap-2 pt-6">
+                        <input type="checkbox" id="globalKeepOriginal" class="w-4 h-4 cursor-pointer accent-blue-600">
+                        <label for="globalKeepOriginal" class="cursor-pointer text-xs font-semibold" style="color: var(--text-main);">Respetar nombre original</label>
+                    </div>
                 </div>
             </div>
 
-            <!-- Contenedor de Tarjetas (Grid Optimizado) -->
-            <div id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+            <!-- Acciones por Lote (Ocultas botones de descarga en modo cliente) -->
+            <div id="batchActions" class="card flex justify-between items-center hidden py-3 px-4">
+                <span id="counterText" class="text-xs font-semibold" style="color: var(--text-muted);">0 imágenes cargadas</span>
+                <div class="flex gap-2">
+                    <button id="downloadAllBtn" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer">Descargar todas</button>
+                    <button id="uploadAllBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer shadow-sm">Subir todas</button>
+                </div>
+            </div>
+
+            <!-- Contenedor de Tarjetas de Imágenes -->
+            <div id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </div>
     </div>
 
-    <!-- Scripts externos -->
     <script src="js/subir.js"></script>
 </body>
 </html>
