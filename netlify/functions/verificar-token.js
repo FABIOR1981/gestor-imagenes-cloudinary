@@ -8,7 +8,7 @@ export async function handler(event) {
     }
 
     try {
-        const { token } = JSON.parse(event.body);
+        const { token, password } = JSON.parse(event.body);
 
         if (!token || !token.includes('.')) {
             return { statusCode: 400, body: JSON.stringify({ valid: false, error: 'Token mal formado' }) };
@@ -26,17 +26,27 @@ export async function handler(event) {
 
         let secretToUse = GLOBAL_SECRET;
 
-        // Si el token indica que es de larga duración, exigimos y combinamos la clave específica
+        // Si el token indica que es de larga duración, manejamos la doble verificación
         if (payload.longTerm) {
             const sanitizedProj = payload.project.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
             const longTermEnvVar = `TOKEN_SECRET_${sanitizedProj}_LARGO`;
             const projectLongSecret = process.env[longTermEnvVar];
 
             if (!projectLongSecret) {
-                return { statusCode: 401, body: JSON.zIndex, body: JSON.stringify({ valid: false, error: 'Falta la clave de larga duración en el servidor' }) };
+                return { statusCode: 500, body: JSON.stringify({ valid: false, error: `Falta configurar la variable ${longTermEnvVar} en Netlify.` }) };
             }
 
-            secretToUse = `${GLOBAL_SECRET}_${projectLongSecret}`;
+            // Si el cliente todavía no mandó la contraseña desde el modal
+            if (!password) {
+                return { 
+                    statusCode: 401, 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ valid: false, requiresPassword: true }) 
+                };
+            }
+
+            // Combinamos la clave global con la contraseña ingresada para verificar si coincide con la del proyecto
+            secretToUse = `${GLOBAL_SECRET}_${password}`;
         }
 
         // Recalculamos la firma matemática en el servidor
@@ -46,7 +56,11 @@ export async function handler(event) {
             .digest('base64url');
 
         if (receivedSignature !== expectedSignature) {
-            return { statusCode: 401, body: JSON.stringify({ valid: false, error: 'Firma inválida o alterada' }) };
+            return { 
+                statusCode: 401, 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ valid: false, error: payload.longTerm ? 'Contraseña incorrecta.' : 'Firma inválida o alterada' }) 
+            };
         }
 
         return {
