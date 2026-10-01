@@ -198,6 +198,38 @@ label[for="fileInput"] > div:first-child {
     width: 56px; height: 56px; margin-bottom: 8px;
 }
 
+.cliente-header {
+    display: grid;
+    grid-template-columns: minmax(0, .85fr) minmax(320px, 1.15fr);
+    gap: 28px;
+    align-items: center;
+}
+.cliente-upload-panel { min-width: 0; }
+.cliente-upload-panel .paso-titulo { margin-bottom: 10px; }
+.cliente-file-picker {
+    min-height: 128px;
+    padding: 16px;
+    border-radius: 20px;
+}
+.cliente-file-picker > div:first-child {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 8px;
+}
+.cliente-page #batchActions {
+    position: static;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+    backdrop-filter: none;
+}
+
+@media (max-width: 760px) {
+    .cliente-header { grid-template-columns: 1fr; gap: 22px; }
+    .cliente-info .max-w-xs { max-width: none; }
+}
+
 /* Barra de acciones (queda visible al bajar) */
 #batchActions {
     position: sticky; top: 12px; z-index: 30;
