@@ -10,10 +10,11 @@ const UPLOAD_PRESET = cfgCloudinary.UPLOAD_PRESET || 'subir_gestor';
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
+    IS_CLIENT_MODE = urlParams.get('mode') === 'client';
+
     const loadingState = document.getElementById('loadingState');
     const errorState = document.getElementById('errorState');
     const passwordState = document.getElementById('passwordState');
-    const mainInterface = document.getElementById('mainInterface');
 
     if (!token) {
         loadingState.classList.add('hidden');
@@ -48,9 +49,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             errorState.classList.remove('hidden');
             return;
         }
-
-        // Evaluamos si el token indica modo cliente
-        IS_CLIENT_MODE = data.mode === 'client';
 
         await cargarInterfazProyecto(data.project, data.exp);
 
@@ -95,7 +93,6 @@ function initPasswordProtection() {
                 return;
             }
 
-            IS_CLIENT_MODE = data.mode === 'client';
             passwordState.classList.add('hidden');
             await cargarInterfazProyecto(data.project, data.exp);
 
@@ -118,7 +115,6 @@ async function cargarInterfazProyecto(projectName, expDate) {
     document.getElementById('displayProjectName').textContent = PROYECTO_ACTUAL;
     document.getElementById('displayExpDate').textContent = new Date(expDate).toLocaleString('es-UY', { dateStyle: 'medium', timeStyle: 'short' });
 
-    // Si es modo cliente, ocultamos por completo el panel de opciones generales de arriba
     if (IS_CLIENT_MODE) {
         const globalOptionsContainer = document.getElementById('globalOptionsContainer');
         if (globalOptionsContainer) globalOptionsContainer.classList.add('hidden');
@@ -261,7 +257,6 @@ function initApp(initialFolders) {
     fileInput.addEventListener('change', (e) => {
         const files = Array.from(e.target.files);
         let processedCount = 0;
-        // En modo cliente se fuerza ancho 1200 y calidad 0.8 por defecto de forma estricta
         const defaultMaxWidth = IS_CLIENT_MODE ? 1200 : (globalMaxWidth ? parseInt(globalMaxWidth.value) : 1200);
         const defaultQuality = IS_CLIENT_MODE ? 0.8 : (globalQuality ? parseFloat(globalQuality.value) : 0.8);
         const defaultFolder = (globalCategory && globalCategory.value !== NEW_FOLDER_OPTION) ? globalCategory.value : getLastFolder();
@@ -357,7 +352,6 @@ function initApp(initialFolders) {
             card.className = "card flex flex-col gap-4 shadow-sm transition-all hover:shadow-md";
             const finalGeneratedName = `${getFinalName(item)}.webp`;
 
-            // Si es modo cliente, ocultamos los controles detallados de ancho, calidad y metadatos de cada tarjeta para mantenerlo ultra simple
             let cardControlsHtml = '';
             if (!IS_CLIENT_MODE) {
                 cardControlsHtml = `
@@ -396,7 +390,6 @@ function initApp(initialFolders) {
                     </div>
                 `;
             } else {
-                // En modo cliente solo dejamos la selección de carpeta y el título opcional
                 cardControlsHtml = `
                     <div class="grid grid-cols-1 gap-2">
                         <div>
@@ -442,7 +435,7 @@ function initApp(initialFolders) {
                     </div>
                 </div>
 
-                <!-- Botones de Acción Individual (Sin botón de descarga individual en modo cliente) -->
+                <!-- Botones de Acción Individual -->
                 <div class="flex justify-between items-center pt-3 border-t mt-auto gap-2 flex-wrap" style="border-color: var(--border-color);">
                     <button data-index="${index}" class="delete-btn text-xs font-semibold text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded transition-colors cursor-pointer">Eliminar</button>
                     <div class="flex items-center gap-2 flex-wrap justify-end">
