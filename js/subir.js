@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             TOKEN_PASSWORD = password;
             Acceso.guardarClave(token, password);
             tarjetaClave.ocultar();
-            await cargarInterfazProyecto(data.proyecto, data.exp);
+            await cargarInterfazProyecto(data.proyecto, data.exp, data.permisos);
         }
     });
 
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         TOKEN_PASSWORD = claveGuardada || '';
-        await cargarInterfazProyecto(data.proyecto, data.exp);
+        await cargarInterfazProyecto(data.proyecto, data.exp, data.permisos);
 
     } catch (error) {
         loadingState.classList.add('hidden');
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Función auxiliar para inicializar la app una vez validado el acceso y permisos
-async function cargarInterfazProyecto(projectName, expDate) {
+async function cargarInterfazProyecto(projectName, expDate, permisos = []) {
     const loadingState = document.getElementById('loadingState');
     const mainInterface = document.getElementById('mainInterface');
 
@@ -84,6 +84,16 @@ async function cargarInterfazProyecto(projectName, expDate) {
 
     document.getElementById('displayProjectName').textContent = PROYECTO_ACTUAL;
     document.getElementById('displayExpDate').textContent = new Date(expDate).toLocaleString('es-UY', { dateStyle: 'medium', timeStyle: 'short' });
+
+    // Si el enlace incluye el permiso de listar (ver), habilitamos el botón para volver a la galería
+    if (Array.isArray(permisos) && permisos.includes('listar')) {
+        const btnGaleria = document.getElementById('btnVolverGaleria');
+        if (btnGaleria) {
+            const modoGaleria = IS_CLIENT_MODE ? 'cliente' : 'admin';
+            btnGaleria.href = `galeria.html?token=${encodeURIComponent(TOKEN_ACTUAL)}&modo=${modoGaleria}`;
+            btnGaleria.classList.remove('hidden');
+        }
+    }
 
     let projectFolders = [
         { value: 'galeria', label: 'Galería' },
@@ -776,7 +786,7 @@ function initApp(initialFolders) {
         } catch (err) {
             if (statusEl) {
                 statusEl.textContent = 'Error ✕'; 
-                statusEl.className = "text-xs px-2 py-1 rounded shrink-0 bg-red-50 text-red-600 font-semibold";
+                statusEl.className = "text-xs px-2.5 py-1.5 rounded shrink-0 bg-red-50 text-red-600 font-semibold";
                 statusEl.title = err.message;
             }
             reportUploadError(index, err.message || 'Error desconocido al subir a Cloudinary.', errorCollector);
