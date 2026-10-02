@@ -178,6 +178,8 @@ function initApp(initialFolders) {
         document.getElementById('uploadEditCategory').innerHTML = buildFolderOptionsHtml(item.category);
         document.getElementById('uploadEditMaxWidth').value = String(item.maxWidth);
         document.getElementById('uploadEditQuality').value = String(item.quality);
+        document.getElementById('uploadEditMaxWidth').closest('label').classList.toggle('hidden', IS_CLIENT_MODE);
+        document.getElementById('uploadEditQuality').closest('label').classList.toggle('hidden', IS_CLIENT_MODE);
         document.getElementById('uploadEditTitle').value = item.customTitle || '';
         document.getElementById('uploadEditDescription').value = item.customDescription || '';
         renderUploadMetadataRows(item);
@@ -193,8 +195,10 @@ function initApp(initialFolders) {
         const generatedPrefix = `${item.dateStr}_`;
         item.customName = name.startsWith(generatedPrefix) ? name.slice(generatedPrefix.length) : name;
         item.category = document.getElementById('uploadEditCategory').value;
-        item.maxWidth = parseInt(document.getElementById('uploadEditMaxWidth').value, 10);
-        item.quality = parseFloat(document.getElementById('uploadEditQuality').value);
+        if (!IS_CLIENT_MODE) {
+            item.maxWidth = parseInt(document.getElementById('uploadEditMaxWidth').value, 10);
+            item.quality = parseFloat(document.getElementById('uploadEditQuality').value);
+        }
         item.customTitle = document.getElementById('uploadEditTitle').value.trim();
         item.customDescription = document.getElementById('uploadEditDescription').value.trim();
         item.customMetadata = [...uploadEditMetadata.querySelectorAll('.upload-edit-meta-row')].map(row => ({
