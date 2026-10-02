@@ -85,7 +85,7 @@ async function cargarInterfazProyecto(projectName, expDate, permisos = []) {
     document.getElementById('displayExpDate').textContent = new Date(expDate).toLocaleString('es-UY', { dateStyle: 'medium', timeStyle: 'short' });
 
     // Si el enlace incluye el permiso de listar (ver), habilitamos el botón para volver a la galería
-    if (Array.isArray(permisos) && permisos.includes('listar')) {
+    if (!IS_CLIENT_MODE && Array.isArray(permisos) && permisos.includes('listar')) {
         const btnGaleria = document.getElementById('btnVolverGaleria');
         if (btnGaleria) {
             const modoGaleria = IS_CLIENT_MODE ? 'cliente' : 'admin';
