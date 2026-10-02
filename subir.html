@@ -29,65 +29,78 @@
         <!-- Interfaz Principal -->
         <div id="mainInterface" class="hidden">
             
-            <!-- Encabezado Pro y Organizado -->
-            <header class="mb-6 card p-5 md:p-6 shadow-sm">
-                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-                    <div>
-                        <div class="flex items-center gap-2 mb-2 flex-wrap">
-                            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 inline-block">🔒 Portal seguro</span>
-                            <a id="btnVolverGaleria" href="#" class="hidden text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">← Volver a la galería</a>
-                        </div>
-                        <h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: var(--text-main);">Sube tus imágenes</h1>
-                        <p class="text-sm mt-1" style="color: var(--text-muted);">Proyecto: <strong id="displayProjectName" class="capitalize" style="color: var(--text-main);"></strong></p>
-                        <p class="text-xs mt-1 font-medium" style="color: #D97706;">Válido hasta: <span id="displayExpDate"></span></p>
-                    </div>
-                    
-                    <!-- Controles Globales Responsivos -->
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap items-end gap-3 w-full lg:w-auto pt-4 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+            <!-- TARJETA 1: Cabecera Principal unificada -->
+            <header class="mb-6 card p-5 md:p-6 shadow-sm" style="border-top: 4px solid var(--primary-color, #2563EB);">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div class="flex items-start gap-3.5">
+                        <div class="hero-icono w-11 h-11 text-xl rounded-xl flex items-center justify-center shrink-0" style="background: var(--bg-color, #F1F5F9);">⬆️</div>
                         <div>
-                            <label for="globalCategory" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Carpeta destino</label>
-                            <select id="globalCategory" class="border rounded px-2.5 py-2 text-xs focus-ring w-full bg-slate-50 font-medium"></select>
-                        </div>
-                        <div>
-                            <label for="globalMaxWidth" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Ancho Máx.</label>
-                            <select id="globalMaxWidth" class="border rounded px-2.5 py-2 text-xs focus-ring w-full bg-slate-50 font-medium">
-                                <option value="800">800 px (Liviana)</option>
-                                <option value="1200" selected>1200 px (Estándar)</option>
-                                <option value="1600">1600 px (Intermedia)</option>
-                                <option value="1920">1920 px (Alta / HD)</option>
-                                <option value="0">Original</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="globalQuality" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Compresión (<span id="globalQualityVal">80</span>%)</label>
-                            <input type="range" id="globalQuality" min="0.1" max="1.0" step="0.05" value="0.8" class="w-full accent-blue-600 cursor-pointer h-8">
-                        </div>
-                        <div class="col-span-2 sm:col-span-1">
-                            <label for="globalTitle" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Título global</label>
-                            <input type="text" id="globalTitle" placeholder="Ej.: Actividad 2026" class="border rounded px-2.5 py-2 text-xs focus-ring w-full bg-slate-50">
-                        </div>
-                        <div class="flex items-center gap-2 col-span-2 sm:col-span-3 lg:col-span-auto pt-2 lg:pt-0">
-                            <input type="checkbox" id="globalKeepOriginal" checked class="w-4 h-4 cursor-pointer accent-blue-600">
-                            <label for="globalKeepOriginal" class="text-xs cursor-pointer font-medium" style="color: var(--text-main);">Respetar nombre original</label>
+                            <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 inline-block">🔒 Portal seguro</span>
+                                <a id="btnVolverGaleria" href="#" class="hidden text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">← Volver a la galería</a>
+                            </div>
+                            <h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: var(--text-main);">Sube tus imágenes</h1>
+                            <p class="text-sm mt-1" style="color: var(--text-muted);">Proyecto: <strong id="displayProjectName" class="capitalize" style="color: var(--text-main);"></strong></p>
+                            <p class="text-xs mt-1 font-medium" style="color: #D97706;">Válido hasta: <span id="displayExpDate"></span></p>
                         </div>
                     </div>
                 </div>
             </header>
 
-            <!-- Zona de Carga (Drag & Drop amigable para Celular y PC) -->
-            <div class="mb-8">
-                <h2 class="paso-titulo"><span class="numero-paso">1</span> Elige tus imágenes</h2>
-                <label for="fileInput" class="card border-2 border-dashed p-6 md:p-10 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group hover:border-blue-600 hover:bg-blue-50/20 text-center" style="border-color: var(--border-color);">
-                    <div class="w-14 h-14 mb-3 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
+            <!-- TARJETA 2: Panel de Controles Globales y Selección -->
+            <section class="card p-5 md:p-6 shadow-sm mb-6">
+                <div class="space-y-5">
+                    <!-- Controles Globales -->
+                    <div>
+                        <h2 class="paso-titulo text-sm uppercase tracking-wider mb-3" style="color: var(--text-muted);"><span class="numero-paso">1</span> Configuración general</h2>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 items-end gap-3 w-full">
+                            <div>
+                                <label for="globalCategory" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Carpeta destino</label>
+                                <select id="globalCategory" class="border rounded px-2.5 py-2 text-xs focus-ring w-full bg-slate-50 font-medium"></select>
+                            </div>
+                            <div>
+                                <label for="globalMaxWidth" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Ancho Máx.</label>
+                                <select id="globalMaxWidth" class="border rounded px-2.5 py-2 text-xs focus-ring w-full bg-slate-50 font-medium">
+                                    <option value="800">800 px (Liviana)</option>
+                                    <option value="1200" selected>1200 px (Estándar)</option>
+                                    <option value="1600">1600 px (Intermedia)</option>
+                                    <option value="1920">1920 px (Alta / HD)</option>
+                                    <option value="0">Original</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="globalQuality" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Compresión (<span id="globalQualityVal">80</span>%)</label>
+                                <input type="range" id="globalQuality" min="0.1" max="1.0" step="0.05" value="0.8" class="w-full accent-blue-600 cursor-pointer h-8">
+                            </div>
+                            <div>
+                                <label for="globalTitle" class="text-xs font-semibold block mb-1" style="color: var(--text-muted);">Título global</label>
+                                <input type="text" id="globalTitle" placeholder="Ej.: Actividad 2026" class="border rounded px-2.5 py-2 text-xs focus-ring w-full bg-slate-50">
+                            </div>
+                            <div class="flex items-center gap-2 col-span-full pt-1">
+                                <input type="checkbox" id="globalKeepOriginal" checked class="w-4 h-4 cursor-pointer accent-blue-600">
+                                <label for="globalKeepOriginal" class="text-xs cursor-pointer font-medium" style="color: var(--text-main);">Respetar nombre original</label>
+                            </div>
+                        </div>
                     </div>
-                    <span class="text-sm md:text-base font-semibold" style="color: var(--text-main);">Toca aquí para elegir tus imágenes</span>
-                    <span class="text-xs mt-1" style="color: var(--text-muted);">Puedes elegir varias a la vez · PNG, JPG o WEBP</span>
-                    <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
-                </label>
-            </div>
+
+                    <hr class="border-slate-100 my-4">
+
+                    <!-- Zona de Carga (Drag & Drop) -->
+                    <div>
+                        <h2 class="paso-titulo text-sm uppercase tracking-wider mb-3" style="color: var(--text-muted);"><span class="numero-paso">2</span> Seleccionar archivos</h2>
+                        <label for="fileInput" class="border-2 border-dashed p-6 md:p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group hover:border-blue-600 hover:bg-blue-50/20 text-center rounded-2xl bg-slate-50/50" style="border-color: var(--border-color);">
+                            <div class="w-12 h-12 mb-2 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <span class="text-sm font-semibold" style="color: var(--text-main);">Toca aquí para elegir tus imágenes</span>
+                            <span class="text-xs mt-1" style="color: var(--text-muted);">Puedes elegir varias a la vez · PNG, JPG o WEBP</span>
+                            <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
+                        </label>
+                    </div>
+                </div>
+            </section>
 
             <!-- Acciones Globales Flotantes / de Lote -->
             <div id="batchActions" class="card hidden mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 p-4 shadow-md bg-white border-l-4 border-l-blue-600">
