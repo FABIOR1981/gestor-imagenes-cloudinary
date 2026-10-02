@@ -375,3 +375,55 @@ label[for="fileInput"] > div:first-child {
     /* Un ligero oscurecimiento adicional sobre el fondo */
     background: rgba(241, 245, 249, 0.2); 
 }
+
+/* Editor de detalles de cada imagen del portal de subida */
+.upload-edit-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, .58);
+}
+.upload-edit-panel {
+    width: min(100%, 560px);
+    max-height: min(92vh, 780px);
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 22px;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, .3);
+}
+.upload-edit-header, .upload-edit-label-row, .upload-edit-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.upload-edit-kicker { margin: 0 0 2px; color: var(--text-muted); font-size: .72rem; font-weight: 700; text-transform: uppercase; }
+.upload-edit-header h2 { margin: 0; font-size: 1.15rem; }
+.upload-edit-close { width: 34px; height: 34px; padding: 0; background: #F1F5F9; color: var(--text-muted); font-size: 1.5rem; line-height: 1; }
+.upload-edit-preview { min-height: 120px; display: grid; place-items: center; overflow: hidden; border-radius: 12px; background: #0F172A; }
+.upload-edit-preview img { display: block; max-width: 100%; max-height: 180px; object-fit: contain; }
+.upload-edit-panel label { display: flex; flex-direction: column; gap: 5px; font-size: .78rem; }
+.upload-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.upload-edit-label-row { color: var(--text-muted); font-size: .78rem; font-weight: 700; }
+.upload-edit-link { padding: 0; background: transparent; color: var(--primary-color); font-size: .78rem; }
+.upload-edit-metadata { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+.upload-edit-meta-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; }
+.upload-edit-actions { justify-content: flex-end; margin-top: 4px; }
+.upload-edit-actions .btn-primary { width: auto; }
+.upload-edit-actions .btn-secondary { padding: 12px 18px; }
+.upload-card-summary { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.upload-card-summary .upload-card-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+.upload-card-summary .upload-card-meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-muted); font-size: .76rem; }
+.upload-card-edit { width: auto; padding: 8px 12px; background: #EEF2FF; color: #4338CA; font-size: .78rem; }
+.upload-card-compact { min-width: 0; }
+.upload-card-compact > div:nth-child(2) { display: none; }
+.upload-card-compact > div:first-child { min-height: 170px; }
+@media (max-width: 520px) { .upload-edit-grid, .upload-edit-meta-row { grid-template-columns: 1fr; } .upload-edit-meta-row button { justify-self: end; } }

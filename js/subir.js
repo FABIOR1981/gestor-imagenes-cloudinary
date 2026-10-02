@@ -144,6 +144,77 @@ function initApp(initialFolders) {
     let metadataFields = [];
     let previewOverlay = null;
     let previewTimeout = null;
+    let editingIndex = null;
+
+    const uploadEditModal = document.getElementById('uploadEditModal');
+    const uploadEditForm = document.getElementById('uploadEditForm');
+    const uploadEditMetadata = document.getElementById('uploadEditMetadata');
+
+    function closeUploadEditor() {
+        editingIndex = null;
+        if (uploadEditModal) uploadEditModal.classList.add('hidden');
+    }
+
+    function renderUploadMetadataRows(item) {
+        uploadEditMetadata.innerHTML = item.customMetadata.map((meta, index) => `
+            <div class="upload-edit-meta-row" data-meta-index="${index}">
+                <input type="text" class="upload-meta-name" value="${escapeAttribute(meta.name)}" placeholder="Etiqueta">
+                <input type="text" class="upload-meta-value" value="${escapeAttribute(meta.value)}" placeholder="Valor">
+                <button type="button" class="upload-edit-close upload-meta-remove" aria-label="Quitar metadato">×</button>
+            </div>`).join('');
+        uploadEditMetadata.querySelectorAll('.upload-meta-remove').forEach(button => {
+            button.addEventListener('click', () => {
+                button.closest('.upload-edit-meta-row').remove();
+            });
+        });
+    }
+
+    function openUploadEditor(index) {
+        const item = imageFiles[index];
+        if (!item || !uploadEditModal) return;
+        editingIndex = index;
+        document.getElementById('uploadEditPreview').innerHTML = `<img src="${item.imgElement.src}" alt="Vista previa">`;
+        document.getElementById('uploadEditName').value = getFinalName(item);
+        document.getElementById('uploadEditCategory').innerHTML = buildFolderOptionsHtml(item.category);
+        document.getElementById('uploadEditMaxWidth').value = String(item.maxWidth);
+        document.getElementById('uploadEditQuality').value = String(item.quality);
+        document.getElementById('uploadEditTitle').value = item.customTitle || '';
+        document.getElementById('uploadEditDescription').value = item.customDescription || '';
+        renderUploadMetadataRows(item);
+        uploadEditModal.classList.remove('hidden');
+    }
+
+    if (uploadEditForm) uploadEditForm.addEventListener('submit', event => {
+        event.preventDefault();
+        if (editingIndex === null || !imageFiles[editingIndex]) return;
+        const item = imageFiles[editingIndex];
+        const name = document.getElementById('uploadEditName').value.trim().replace(/\.webp$/i, '');
+        item.keepOriginal = name === item.originalName;
+        const generatedPrefix = `${item.dateStr}_`;
+        item.customName = name.startsWith(generatedPrefix) ? name.slice(generatedPrefix.length) : name;
+        item.category = document.getElementById('uploadEditCategory').value;
+        item.maxWidth = parseInt(document.getElementById('uploadEditMaxWidth').value, 10);
+        item.quality = parseFloat(document.getElementById('uploadEditQuality').value);
+        item.customTitle = document.getElementById('uploadEditTitle').value.trim();
+        item.customDescription = document.getElementById('uploadEditDescription').value.trim();
+        item.customMetadata = [...uploadEditMetadata.querySelectorAll('.upload-edit-meta-row')].map(row => ({
+            name: row.querySelector('.upload-meta-name').value.trim(),
+            value: row.querySelector('.upload-meta-value').value.trim()
+        })).filter(meta => meta.name && meta.value);
+        closeUploadEditor();
+        renderCards();
+    });
+    document.getElementById('uploadEditCancel')?.addEventListener('click', closeUploadEditor);
+    document.getElementById('uploadEditClose')?.addEventListener('click', closeUploadEditor);
+    uploadEditModal?.addEventListener('click', event => { if (event.target === uploadEditModal) closeUploadEditor(); });
+    document.getElementById('uploadEditAddMeta')?.addEventListener('click', () => {
+        if (editingIndex === null) return;
+        const row = document.createElement('div');
+        row.className = 'upload-edit-meta-row';
+        row.innerHTML = '<input type="text" class="upload-meta-name" placeholder="Etiqueta"><input type="text" class="upload-meta-value" placeholder="Valor"><button type="button" class="upload-edit-close upload-meta-remove" aria-label="Quitar metadato">×</button>';
+        row.querySelector('.upload-meta-remove').addEventListener('click', () => row.remove());
+        uploadEditMetadata.appendChild(row);
+    });
 
     function showExpandedPreview(imgElement) {
         if (previewOverlay) previewOverlay.remove();
@@ -459,7 +530,7 @@ function initApp(initialFolders) {
 
         imageFiles.forEach((item, index) => {
             const card = document.createElement('div');
-            card.className = "card flex flex-col gap-4 shadow-sm transition-all hover:shadow-md";
+            card.className = "card upload-card-compact flex flex-col gap-4 shadow-sm transition-all hover:shadow-md";
             const finalGeneratedName = `${getFinalName(item)}.webp`;
 
             card.innerHTML = `
@@ -551,6 +622,13 @@ function initApp(initialFolders) {
                 </div>
             `;
             cardsContainer.appendChild(card);
+            const actionBar = card.lastElementChild;
+            const editButton = document.createElement('button');
+            editButton.type = 'button';
+            editButton.className = 'upload-card-edit';
+            editButton.textContent = '✏️ Editar';
+            editButton.addEventListener('click', () => openUploadEditor(index));
+            actionBar.prepend(editButton);
             card.querySelector('.preview-canvas').addEventListener('click', () => showExpandedPreview(item.imgElement));
             drawPreviewAndMeasure(index);
         });
