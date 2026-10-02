@@ -94,7 +94,7 @@
                                 </svg>
                             </div>
                             <div class="text-left flex items-center gap-2 flex-wrap">
-                                <span class="text-xs font-semibold" style="color: var(--text-main);">Toca aquí para elegir tus imágenes</span>
+                                <span class="text-xs font-semibold" style="color: var(--text-main);">Toca o arrastra tus imágenes aquí</span>
                                 <span class="text-[11px]" style="color: var(--text-muted);">· Puedes elegir varias a la vez</span>
                             </div>
                             <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
@@ -131,15 +131,15 @@
                 <button type="button" id="uploadEditClose" class="upload-edit-close" aria-label="Cerrar">×</button>
             </div>
             <div id="uploadEditPreview" class="upload-edit-preview"></div>
-            <label>Nombre<input id="uploadEditName" type="text"></label>
+            <label>Nombre<input id="uploadEditName" type="text" required></label>
             <label>Carpeta<select id="uploadEditCategory"></select></label>
             <div class="upload-edit-grid">
                 <label>Ancho máximo<select id="uploadEditMaxWidth"><option value="800">800 px</option><option value="1200">1200 px</option><option value="1600">1600 px</option><option value="1920">1920 px</option><option value="0">Original</option></select></label>
                 <label>Calidad WebP<input id="uploadEditQuality" type="range" min="0.1" max="1" step="0.05"></label>
             </div>
-            <label>Título<input id="uploadEditTitle" type="text" maxlength="300"></label>
+            <label>Título<input id="uploadEditTitulo" type="text" maxlength="300"></label>
             <label>Descripción<textarea id="uploadEditDescription" rows="3" maxlength="1000"></textarea></label>
-            <div><div class="upload-edit-label-row"><span>Metadatos</span><button type="button" id="uploadEditAddMeta" class="upload-edit-link">+ Agregar</button></div><div id="uploadEditMetadata" class="upload-edit-metadata"></div></div>
+            <div><div class="upload-edit-label-row"><span>Metadatos</span><button type="button" id="uploadEditAddMeta" class="upload-edit-link">+ Agregar</button></div><div id="uploadEditMetadata" class="upload-edit-metadata"></div><datalist id="uploadMetaNombres"></datalist></div>
             <div class="upload-edit-actions"><button type="button" id="uploadEditCancel" class="btn-secondary">Cancelar</button><button type="submit" class="btn-primary">Guardar cambios</button></div>
         </form>
     </div>

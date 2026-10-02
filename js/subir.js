@@ -149,40 +149,52 @@ function initApp(initialFolders) {
     const uploadEditModal = document.getElementById('uploadEditModal');
     const uploadEditForm = document.getElementById('uploadEditForm');
     const uploadEditMetadata = document.getElementById('uploadEditMetadata');
+    const uploadEditCategory = document.getElementById('uploadEditCategory');
 
     function closeUploadEditor() {
         editingIndex = null;
         if (uploadEditModal) uploadEditModal.classList.add('hidden');
     }
 
-    function renderUploadMetadataRows(item) {
-        uploadEditMetadata.innerHTML = item.customMetadata.map((meta, index) => `
-            <div class="upload-edit-meta-row" data-meta-index="${index}">
-                <input type="text" class="upload-meta-name" value="${escapeAttribute(meta.name)}" placeholder="Etiqueta">
-                <input type="text" class="upload-meta-value" value="${escapeAttribute(meta.value)}" placeholder="Valor">
-                <button type="button" class="upload-edit-close upload-meta-remove" aria-label="Quitar metadato">×</button>
-            </div>`).join('');
-        uploadEditMetadata.querySelectorAll('.upload-meta-remove').forEach(button => {
-            button.addEventListener('click', () => {
-                button.closest('.upload-edit-meta-row').remove();
-            });
+    // Una fila de metadato: etiqueta (con las ya usadas como sugerencia) y valor (con los de esa etiqueta)
+    function addUploadMetaRow(name = '', value = '') {
+        const row = document.createElement('div');
+        row.className = 'upload-edit-meta-row';
+        const listId = `uploadMetaValores-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+        row.innerHTML = `
+            <input type="text" class="upload-meta-name" list="uploadMetaNombres" placeholder="Etiqueta" value="${escapeAttribute(name)}">
+            <input type="text" class="upload-meta-value" list="${listId}" placeholder="Valor" value="${escapeAttribute(value)}">
+            <datalist id="${listId}">${buildMetadataOptions(getMetadataValues(name))}</datalist>
+            <button type="button" class="upload-edit-close upload-meta-remove" aria-label="Quitar metadato">×</button>`;
+        const nameInput = row.querySelector('.upload-meta-name');
+        const valueInput = row.querySelector('.upload-meta-value');
+        const valueList = row.querySelector('datalist');
+        nameInput.addEventListener('change', () => {
+            const currentName = nameInput.value.trim();
+            valueList.innerHTML = buildMetadataOptions(getMetadataValues(currentName));
+            if (currentName && !valueInput.value.trim()) valueInput.value = getSuggestedMetadataValue(currentName);
         });
+        row.querySelector('.upload-meta-remove').addEventListener('click', () => row.remove());
+        uploadEditMetadata.appendChild(row);
     }
 
     function openUploadEditor(index) {
         const item = imageFiles[index];
         if (!item || !uploadEditModal) return;
         editingIndex = index;
-        document.getElementById('uploadEditPreview').innerHTML = `<img src="${item.imgElement.src}" alt="Vista previa">`;
+        document.getElementById('uploadEditPreview').innerHTML = `<img src="${escapeAttribute(item.imgElement.src)}" alt="Vista previa" title="Toca para ampliar">`;
         document.getElementById('uploadEditName').value = getFinalName(item);
-        document.getElementById('uploadEditCategory').innerHTML = buildFolderOptionsHtml(item.category);
+        uploadEditCategory.innerHTML = buildFolderOptionsHtml(item.category);
         document.getElementById('uploadEditMaxWidth').value = String(item.maxWidth);
         document.getElementById('uploadEditQuality').value = String(item.quality);
-        document.getElementById('uploadEditMaxWidth').closest('label').classList.toggle('hidden', IS_CLIENT_MODE);
-        document.getElementById('uploadEditQuality').closest('label').classList.toggle('hidden', IS_CLIENT_MODE);
-        document.getElementById('uploadEditTitle').value = item.customTitle || '';
+        // En el modo simplificado no se elige carpeta, ancho ni calidad por imagen (rige la carpeta general)
+        uploadEditCategory.closest('label').classList.toggle('hidden', IS_CLIENT_MODE);
+        document.querySelector('.upload-edit-grid').classList.toggle('hidden', IS_CLIENT_MODE);
+        document.getElementById('uploadEditTitulo').value = item.customTitle || '';
         document.getElementById('uploadEditDescription').value = item.customDescription || '';
-        renderUploadMetadataRows(item);
+        document.getElementById('uploadMetaNombres').innerHTML = metadataFields.map(field => `<option value="${escapeAttribute(field.name)}"></option>`).join('');
+        uploadEditMetadata.innerHTML = '';
+        item.customMetadata.forEach(meta => addUploadMetaRow(meta.name, meta.value));
         uploadEditModal.classList.remove('hidden');
     }
 
@@ -190,34 +202,57 @@ function initApp(initialFolders) {
         event.preventDefault();
         if (editingIndex === null || !imageFiles[editingIndex]) return;
         const item = imageFiles[editingIndex];
+
         const name = document.getElementById('uploadEditName').value.trim().replace(/\.webp$/i, '');
+        if (!name) { alert('El nombre no puede quedar vacío.'); return; }
+
+        const metadata = [...uploadEditMetadata.querySelectorAll('.upload-edit-meta-row')].map(row => ({
+            name: row.querySelector('.upload-meta-name').value.trim(),
+            value: row.querySelector('.upload-meta-value').value.trim()
+        })).filter(meta => meta.name || meta.value);
+
+        // Mismas reglas de siempre: etiqueta y valor completos, sin repetir, y números únicos
+        for (let i = 0; i < metadata.length; i++) {
+            const meta = metadata[i];
+            if (!meta.name || !meta.value) { alert('Cada metadato necesita etiqueta y valor. Completalo o quítalo.'); return; }
+            if (metadata.some((other, j) => j !== i && other.name === meta.name && other.value === meta.value)) {
+                alert(`«${meta.name}: ${meta.value}» está repetido en esta imagen.`); return;
+            }
+            if (hasNumericMetadataConflict(editingIndex, meta.name, meta.value)) {
+                alert(`El valor ${meta.value} de «${meta.name}» ya está en uso. Elige otro número.`); return;
+            }
+        }
+
         item.keepOriginal = name === item.originalName;
         const generatedPrefix = `${item.dateStr}_`;
         item.customName = name.startsWith(generatedPrefix) ? name.slice(generatedPrefix.length) : name;
-        item.category = document.getElementById('uploadEditCategory').value;
         if (!IS_CLIENT_MODE) {
+            if (uploadEditCategory.value && uploadEditCategory.value !== NEW_FOLDER_OPTION) item.category = uploadEditCategory.value;
             item.maxWidth = parseInt(document.getElementById('uploadEditMaxWidth').value, 10);
             item.quality = parseFloat(document.getElementById('uploadEditQuality').value);
         }
-        item.customTitle = document.getElementById('uploadEditTitle').value.trim();
+        item.customTitle = document.getElementById('uploadEditTitulo').value.trim();
         item.customDescription = document.getElementById('uploadEditDescription').value.trim();
-        item.customMetadata = [...uploadEditMetadata.querySelectorAll('.upload-edit-meta-row')].map(row => ({
-            name: row.querySelector('.upload-meta-name').value.trim(),
-            value: row.querySelector('.upload-meta-value').value.trim()
-        })).filter(meta => meta.name && meta.value);
+        item.customMetadata = metadata;
         closeUploadEditor();
         renderCards();
     });
+
+    // "+ Nueva carpeta…" también funciona dentro del editor
+    if (uploadEditCategory) uploadEditCategory.addEventListener('change', () => {
+        handleFolderSelectChange(uploadEditCategory, value => {
+            uploadEditCategory.innerHTML = buildFolderOptionsHtml(value);
+            uploadEditCategory.value = value;
+        });
+    });
+
     document.getElementById('uploadEditCancel')?.addEventListener('click', closeUploadEditor);
     document.getElementById('uploadEditClose')?.addEventListener('click', closeUploadEditor);
     uploadEditModal?.addEventListener('click', event => { if (event.target === uploadEditModal) closeUploadEditor(); });
-    document.getElementById('uploadEditAddMeta')?.addEventListener('click', () => {
-        if (editingIndex === null) return;
-        const row = document.createElement('div');
-        row.className = 'upload-edit-meta-row';
-        row.innerHTML = '<input type="text" class="upload-meta-name" placeholder="Etiqueta"><input type="text" class="upload-meta-value" placeholder="Valor"><button type="button" class="upload-edit-close upload-meta-remove" aria-label="Quitar metadato">×</button>';
-        row.querySelector('.upload-meta-remove').addEventListener('click', () => row.remove());
-        uploadEditMetadata.appendChild(row);
+    document.addEventListener('keydown', event => { if (event.key === 'Escape' && editingIndex !== null) closeUploadEditor(); });
+    document.getElementById('uploadEditAddMeta')?.addEventListener('click', () => { if (editingIndex !== null) addUploadMetaRow(); });
+    document.getElementById('uploadEditPreview')?.addEventListener('click', event => {
+        if (event.target.tagName === 'IMG' && editingIndex !== null) showExpandedPreview(imageFiles[editingIndex].imgElement);
     });
 
     function showExpandedPreview(imgElement) {
@@ -386,20 +421,29 @@ function initApp(initialFolders) {
         });
     }
 
-    fileInput.addEventListener('change', (e) => {
-        const files = Array.from(e.target.files);
+    function agregarArchivos(lista) {
+        const files = Array.from(lista).filter(file => file.type.startsWith('image/'));
+        if (!files.length) return;
         let processedCount = 0;
         const defaultFolder = globalCategory.value === NEW_FOLDER_OPTION ? getLastFolder() : globalCategory.value;
 
+        // Se cuenta también cada archivo que falla, para que las demás miniaturas aparezcan igual
+        const terminado = () => {
+            processedCount++;
+            if (processedCount === files.length) {
+                imageFiles.sort((a, b) => b.timestamp - a.timestamp);
+                renderCards();
+            }
+        };
+
         files.forEach(file => {
-            if (!file.type.startsWith('image/')) return;
             const reader = new FileReader();
             reader.onload = (event) => {
                 const img = new Image();
                 img.onload = () => {
                     const fileDate = file.lastModified ? new Date(file.lastModified) : new Date();
                     const rawName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-                    
+
                     const yyyy = fileDate.getFullYear();
                     const mm = String(fileDate.getMonth() + 1).padStart(2, '0');
                     const dd = String(fileDate.getDate()).padStart(2, '0');
@@ -419,24 +463,41 @@ function initApp(initialFolders) {
                         category: defaultFolder,
                         customTitle: globalTitle ? globalTitle.value.trim() : '',
                         customDescription: '',
-                        customMetadata: [], 
+                        customMetadata: [],
                         maxWidth: globalMaxWidth ? parseInt(globalMaxWidth.value) : 1200,
                         dateStr: dateStr,
                         quality: globalQuality ? parseFloat(globalQuality.value) : 0.8
                     });
-                    
-                    processedCount++;
-                    if (processedCount === files.filter(f => f.type.startsWith('image/')).length) {
-                        imageFiles.sort((a, b) => b.timestamp - a.timestamp);
-                        renderCards();
-                    }
+                    terminado();
                 };
+                img.onerror = terminado;
                 img.src = event.target.result;
             };
+            reader.onerror = terminado;
             reader.readAsDataURL(file);
         });
+    }
+
+    fileInput.addEventListener('change', (e) => {
+        agregarArchivos(e.target.files);
         fileInput.value = '';
     });
+
+    // Arrastrar y soltar sobre la zona de carga
+    const zonaCarga = document.querySelector('label[for="fileInput"]');
+    if (zonaCarga) {
+        ['dragenter', 'dragover'].forEach(evento => zonaCarga.addEventListener(evento, (e) => {
+            e.preventDefault();
+            zonaCarga.classList.add('arrastrando');
+        }));
+        ['dragleave', 'drop'].forEach(evento => zonaCarga.addEventListener(evento, (e) => {
+            e.preventDefault();
+            zonaCarga.classList.remove('arrastrando');
+        }));
+        zonaCarga.addEventListener('drop', (e) => {
+            if (e.dataTransfer && e.dataTransfer.files.length) agregarArchivos(e.dataTransfer.files);
+        });
+    }
 
     if (globalKeepOriginal) globalKeepOriginal.addEventListener('change', () => {
         const val = globalKeepOriginal.checked;
@@ -534,106 +595,33 @@ function initApp(initialFolders) {
 
         imageFiles.forEach((item, index) => {
             const card = document.createElement('div');
-            card.className = "card upload-card-compact flex flex-col gap-4 shadow-sm transition-all hover:shadow-md";
+            card.className = 'card upload-tile';
             const finalGeneratedName = `${getFinalName(item)}.webp`;
+            const metaCount = item.customMetadata.filter(meta => meta.name && meta.value).length;
+            const resumen = [];
+            if (!IS_CLIENT_MODE) resumen.push(`${escapeAttribute(item.category)} · <span id="size-badge-${index}">Calc...</span>`);
+            if (metaCount) resumen.push(`${metaCount} ${metaCount === 1 ? 'etiqueta' : 'etiquetas'}`);
 
+            // Miniatura + nombre/resumen + estado y botones. El detalle completo se edita en el modal.
             card.innerHTML = `
-                <!-- Vista Previa de la Imagen -->
-                <div class="relative rounded-lg overflow-hidden aspect-video flex items-center justify-center border bg-slate-900" style="border-color: var(--border-color);">
-                    <canvas id="canvas-${index}" class="preview-canvas object-contain w-full h-full"></canvas>
+                <button type="button" data-index="${index}" class="upload-tile-thumb edit-btn" title="Editar detalles" aria-label="Editar detalles de ${escapeAttribute(finalGeneratedName)}">
+                    <canvas id="canvas-${index}" class="preview-canvas"></canvas>
+                </button>
+                <div class="upload-tile-info">
+                    <p class="upload-tile-name" title="${escapeAttribute(finalGeneratedName)}">${escapeAttribute(item.customTitle || finalGeneratedName)}</p>
+                    <p class="upload-tile-sub">${resumen.join(' · ') || '&nbsp;'}</p>
                 </div>
-
-                <!-- Panel de Datos e Inputs -->
-                <div class="flex flex-col gap-2.5 text-xs">
-                    <div class="flex justify-between items-center pb-1 border-b border-slate-100">
-                        <span style="color: var(--text-muted);">Original: <strong style="color: var(--text-main);">${formatBytes(item.originalSize)}</strong></span>
-                        <div class="flex items-center gap-1.5">
-                            <input type="checkbox" data-index="${index}" class="card-keep-original w-3.5 h-3.5 cursor-pointer accent-blue-600" ${item.keepOriginal ? 'checked' : ''}>
-                            <span class="cursor-pointer font-medium" style="color: var(--text-main);">Respetar nombre</span>
-                        </div>
-                    </div>
-
-                    ${item.keepOriginal ? `<div class="w-full border rounded px-2.5 py-1.5 truncate bg-slate-50 font-mono text-xs" style="border-color: var(--border-color); color: var(--text-muted);">${item.originalName}</div>` : `<input type="text" value="${finalGeneratedName}" data-index="${index}" placeholder="Nombre del archivo..." class="custom-name-input w-full border rounded px-2.5 py-1.5 focus-ring font-mono text-xs">`}
-                    
-                    <div class="grid grid-cols-2 gap-2">
-                        ${IS_CLIENT_MODE ? '' : `<div>
-                            <label class="font-semibold block mb-1" style="color: var(--text-muted);">Carpeta:</label>
-                            <select data-index="${index}" class="category-select w-full border rounded px-2 py-1.5 focus-ring bg-white">
-                                ${buildFolderOptionsHtml(item.category)}
-                            </select>
-                        </div>`}
-                        ${IS_CLIENT_MODE ? '' : `<div>
-                            <label class="font-semibold block mb-1" style="color: var(--text-muted);">Ancho máx.:</label>
-                            <select data-index="${index}" class="card-maxwidth-select w-full border rounded px-2 py-1.5 focus-ring bg-white">
-                                <option value="800" ${item.maxWidth === 800 ? 'selected' : ''}>800 px</option>
-                                <option value="1200" ${item.maxWidth === 1200 ? 'selected' : ''}>1200 px</option>
-                                <option value="1600" ${item.maxWidth === 1600 ? 'selected' : ''}>1600 px</option>
-                                <option value="1920" ${item.maxWidth === 1920 ? 'selected' : ''}>1920 px</option>
-                                <option value="0" ${item.maxWidth === 0 ? 'selected' : ''}>Original</option>
-                            </select>
-                        </div>`}
-                        ${IS_CLIENT_MODE ? '' : `<div class="col-span-2">
-                            <div class="flex justify-between items-center mb-1">
-                                <label class="font-semibold" style="color: var(--text-muted);">Calidad WebP:</label>
-                                <span id="quality-val-${index}" class="font-bold text-blue-600">${Math.round(item.quality * 100)}%</span>
-                            </div>
-                            <input type="range" data-index="${index}" min="0.1" max="1.0" step="0.05" value="${item.quality}" class="card-quality-range w-full accent-blue-600 cursor-pointer">
-                        </div>`}
-                        <div class="col-span-2">
-                            <label class="font-semibold block mb-1" style="color: var(--text-muted);">Título descriptivo:</label>
-                            <input type="text" value="${item.customTitle.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}" data-index="${index}" placeholder="Ej. Vista principal" class="title-input w-full border rounded px-2.5 py-1.5 focus-ring">
-                        </div>
-                        <div class="col-span-2">
-                            <label class="font-semibold block mb-1" style="color: var(--text-muted);">Descripción (Opcional):</label>
-                            <textarea data-index="${index}" placeholder="Detalles de la toma..." class="description-input w-full border rounded px-2.5 py-1.5 focus-ring" rows="2">${item.customDescription ? item.customDescription.replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])) : ''}</textarea>
-                        </div>
-
-                        <!-- SECCIÓN DE METADATOS MANUALES -->
-                        <div class="col-span-2 border-t pt-3 mt-1">
-                            <div class="flex justify-between items-center mb-2">
-                                <label class="font-semibold" style="color: var(--text-muted);">Metadatos personalizados:</label>
-                                <button type="button" data-index="${index}" class="add-meta-btn text-xs text-blue-600 font-semibold hover:underline bg-blue-50 px-2 py-1 rounded">+ Agregar campo</button>
-                            </div>
-                            <div class="flex flex-col gap-2" id="meta-container-${index}">
-                                ${item.customMetadata.map((meta, mIdx) => `
-                                    <div class="flex gap-1.5 items-center">
-                                        <select data-index="${index}" data-meta-index="${mIdx}" class="meta-name-select border rounded px-2 py-1 text-xs flex-1 min-w-0 focus-ring bg-slate-50 font-mono">${buildMetadataNameOptions(item, mIdx)}</select>
-                                        <input type="text" placeholder="Nombre de etiqueta nueva" value="${metadataFields.some(field => field.name === meta.name) ? '' : escapeAttribute(meta.name)}" data-index="${index}" data-meta-index="${mIdx}" class="meta-new-name-input border rounded px-2 py-1 text-xs flex-1 min-w-0 focus-ring bg-slate-50 font-mono" ${metadataFields.some(field => field.name === meta.name) ? 'hidden' : ''}>
-                                        <input type="text" list="meta-values-${index}-${mIdx}" placeholder="Valor existente o nuevo" value="${escapeAttribute(meta.value)}" data-index="${index}" data-meta-index="${mIdx}" class="meta-value-input border rounded px-2 py-1 text-xs flex-1 min-w-0 focus-ring bg-white">
-                                        <datalist id="meta-values-${index}-${mIdx}">${buildMetadataOptions(getMetadataValues(meta.name))}</datalist>
-                                        <button type="button" data-index="${index}" data-meta-index="${mIdx}" class="remove-meta-btn text-red-500 font-bold px-2 py-1 hover:bg-red-50 rounded text-sm">×</button>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    ${IS_CLIENT_MODE ? '' : `<!-- Ruta final resultante -->
-                    <div class="truncate mt-1 p-2 rounded border flex justify-between items-center bg-slate-50 font-mono text-[11px] text-blue-700 font-medium" style="border-color: var(--border-color);">
-                        <span class="truncate"><span style="color: var(--text-muted);">${BASE_FOLDER}/${item.category}/</span>${finalGeneratedName}</span>
-                        <span id="size-badge-${index}" class="px-2 py-0.5 rounded shrink-0 bg-slate-200 text-slate-700 font-sans font-semibold">Calc...</span>
-                    </div>`}
-                </div>
-
-                <!-- Botones de Acción Individual Uniformados -->
-                <div class="flex justify-between items-center pt-3 border-t mt-auto gap-2 flex-wrap" style="border-color: var(--border-color);">
-                    <button data-index="${index}" class="delete-btn text-xs font-semibold text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded transition-colors cursor-pointer">Eliminar</button>
-                    <div class="flex items-center gap-2 flex-wrap justify-end">
-                        <span id="upload-status-${index}" class="text-xs px-2.5 py-1.5 rounded shrink-0 bg-slate-100 font-medium" style="color: var(--text-muted);">Pendiente</span>
-                        <button data-index="${index}" class="upload-btn font-semibold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-blue-600 hover:bg-blue-700 text-white shadow-sm">Subir</button>
-                        ${IS_CLIENT_MODE ? '' : `<button data-index="${index}" class="download-single-btn font-semibold px-3 py-1.5 rounded text-xs transition-colors cursor-pointer bg-slate-200 hover:bg-slate-300 text-slate-700">Descargar</button>`}
+                <div class="upload-tile-actions">
+                    <span id="upload-status-${index}" class="text-xs px-2.5 py-1.5 rounded shrink-0 bg-slate-100 font-medium" style="color: var(--text-muted);">Pendiente</span>
+                    <div class="upload-tile-buttons">
+                        <button type="button" data-index="${index}" class="upload-card-edit edit-btn font-semibold cursor-pointer">✏️ Editar</button>
+                        <button type="button" data-index="${index}" class="upload-btn font-semibold transition-colors cursor-pointer bg-blue-600 hover:bg-blue-700 text-white shadow-sm">Subir</button>
+                        ${IS_CLIENT_MODE ? '' : `<button type="button" data-index="${index}" class="download-single-btn font-semibold transition-colors cursor-pointer bg-slate-200 hover:bg-slate-300 text-slate-700" title="Descargar .webp" aria-label="Descargar .webp">⬇</button>`}
+                        <button type="button" data-index="${index}" class="delete-btn font-semibold cursor-pointer" title="Quitar de la lista" aria-label="Quitar de la lista">🗑</button>
                     </div>
                 </div>
             `;
             cardsContainer.appendChild(card);
-            const actionBar = card.lastElementChild;
-            const editButton = document.createElement('button');
-            editButton.type = 'button';
-            editButton.className = 'upload-card-edit';
-            editButton.textContent = '✏️ Editar';
-            editButton.addEventListener('click', () => openUploadEditor(index));
-            actionBar.prepend(editButton);
-            card.querySelector('.preview-canvas').addEventListener('click', () => showExpandedPreview(item.imgElement));
             drawPreviewAndMeasure(index);
         });
         attachEvents();
@@ -671,111 +659,17 @@ function initApp(initialFolders) {
     }
 
     function attachEvents() {
-        document.querySelectorAll('.custom-name-input').forEach(i => i.addEventListener('input', e => {
-            const item = imageFiles[e.target.dataset.index];
-            let value = e.target.value.replace(/\.webp$/i, '');
-            const generatedPrefix = `${item.dateStr}_`;
-            if (value.startsWith(generatedPrefix)) value = value.slice(generatedPrefix.length);
-            item.customName = value;
-        }));
-        document.querySelectorAll('.card-keep-original').forEach(c => c.addEventListener('change', e => { imageFiles[e.target.dataset.index].keepOriginal = e.target.checked; renderCards(); }));
-        document.querySelectorAll('.title-input').forEach(i => i.addEventListener('input', e => imageFiles[e.target.dataset.index].customTitle = e.target.value));
-        document.querySelectorAll('.description-input').forEach(i => i.addEventListener('input', e => imageFiles[e.target.dataset.index].customDescription = e.target.value));
-        document.querySelectorAll('.card-maxwidth-select').forEach(s => s.addEventListener('change', e => { imageFiles[e.target.dataset.index].maxWidth = parseInt(e.target.value); drawPreviewAndMeasure(e.target.dataset.index); }));
-        
-        document.querySelectorAll('.card-quality-range').forEach(r => r.addEventListener('input', e => {
-            const idx = e.target.dataset.index;
-            const val = parseFloat(e.target.value);
-            imageFiles[idx].quality = val;
-            const qValEl = document.getElementById(`quality-val-${idx}`);
-            if (qValEl) qValEl.textContent = `${Math.round(val * 100)}%`;
-            drawPreviewAndMeasure(idx);
-        }));
-
-        document.querySelectorAll('.category-select').forEach(s => s.addEventListener('change', e => handleFolderSelectChange(s, val => { imageFiles[e.target.dataset.index].category = val; renderCards(); })));
-        document.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', e => { imageFiles.splice(e.target.dataset.index, 1); renderCards(); }));
-
-        document.querySelectorAll('.add-meta-btn').forEach(b => b.addEventListener('click', e => {
-            const idx = e.target.dataset.index;
-            imageFiles[idx].customMetadata.push({ name: '', value: '' });
-            renderCards();
-        }));
-
-        document.querySelectorAll('.meta-name-select').forEach(select => select.addEventListener('change', e => {
-            const idx = e.target.dataset.index;
-            const mIdx = e.target.dataset.metaIndex;
-            const metadata = imageFiles[idx].customMetadata[mIdx];
-            const selectedName = e.target.value;
-
-            if (selectedName === '__new__') {
-                metadata.name = '';
-                metadata.value = '';
-                renderCards();
-                return;
-            }
-
-            metadata.name = selectedName;
-            if (!metadata.value) metadata.value = getSuggestedMetadataValue(selectedName);
-            if (hasNumericMetadataConflict(Number(idx), metadata.name, metadata.value) || hasDuplicateMetadataPair(imageFiles[idx], Number(mIdx), metadata.name, metadata.value)) {
-                alert('Esta combinación de etiqueta y valor ya existe en esta imagen.');
-                metadata.value = '';
-            }
-            renderCards();
-        }));
-
-        document.querySelectorAll('.meta-new-name-input').forEach(input => {
-            input.addEventListener('input', e => {
-                const idx = e.target.dataset.index;
-                const mIdx = e.target.dataset.metaIndex;
-                imageFiles[idx].customMetadata[mIdx].name = e.target.value;
-            });
-            input.addEventListener('change', e => {
-                const idx = e.target.dataset.index;
-                const mIdx = e.target.dataset.metaIndex;
-                const name = e.target.value.trim();
-                const metadata = imageFiles[idx].customMetadata[mIdx];
-                if (name && (hasNumericMetadataConflict(Number(idx), name, metadata.value) || hasDuplicateMetadataPair(imageFiles[idx], Number(mIdx), name, metadata.value))) {
-                    alert('Esta combinación de etiqueta y valor ya existe en esta imagen.');
-                    imageFiles[idx].customMetadata[mIdx].name = '';
-                    renderCards();
-                }
-            });
-        });
-
-        document.querySelectorAll('.meta-value-input').forEach(i => {
-            i.addEventListener('input', e => {
-                const idx = e.target.dataset.index;
-                const mIdx = e.target.dataset.metaIndex;
-                imageFiles[idx].customMetadata[mIdx].value = e.target.value;
-            });
-            i.addEventListener('change', e => {
-                const idx = e.target.dataset.index;
-                const mIdx = e.target.dataset.metaIndex;
-                const metadata = imageFiles[idx].customMetadata[mIdx];
-                if (hasNumericMetadataConflict(Number(idx), metadata.name, metadata.value) || hasDuplicateMetadataPair(imageFiles[idx], Number(mIdx), metadata.name, metadata.value)) {
-                    alert('Esta combinación de etiqueta y valor ya existe en esta imagen.');
-                    metadata.value = '';
-                    renderCards();
-                }
-            });
-        });
-
-        document.querySelectorAll('.remove-meta-btn').forEach(b => b.addEventListener('click', e => {
-            const idx = e.target.dataset.index;
-            const mIdx = e.target.dataset.metaIndex;
-            imageFiles[idx].customMetadata.splice(mIdx, 1);
-            renderCards();
-        }));
-        
-        document.querySelectorAll('.upload-btn').forEach(b => b.addEventListener('click', e => uploadToCloudinary(e.target.dataset.index)));
-        document.querySelectorAll('.download-single-btn').forEach(b => b.addEventListener('click', async e => {
-            const item = imageFiles[e.target.dataset.index];
+        cardsContainer.querySelectorAll('.edit-btn').forEach(b => b.addEventListener('click', () => openUploadEditor(Number(b.dataset.index))));
+        cardsContainer.querySelectorAll('.delete-btn').forEach(b => b.addEventListener('click', () => { imageFiles.splice(Number(b.dataset.index), 1); renderCards(); }));
+        cardsContainer.querySelectorAll('.upload-btn').forEach(b => b.addEventListener('click', () => uploadToCloudinary(Number(b.dataset.index))));
+        cardsContainer.querySelectorAll('.download-single-btn').forEach(b => b.addEventListener('click', async () => {
+            const item = imageFiles[Number(b.dataset.index)];
             const blob = await buildProcessedBlob(item);
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = `${getFinalName(item)}.webp`;
             a.click(); URL.revokeObjectURL(url);
         }));
-        
+
         if (uploadAllBtn) uploadAllBtn.onclick = async () => {
             const errors = [];
             const indexes = imageFiles.map((_, index) => index);
