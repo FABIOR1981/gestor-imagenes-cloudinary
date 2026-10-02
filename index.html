@@ -69,14 +69,14 @@
     </style>
 </head>
 <body>
-    <main class="dashboard-container">
+    <main id="contenedorPrincipal" class="dashboard-container interfaz-bloqueada">
         <header class="cabecera">
             <div class="hero-icono">🔗</div>
             <div>
                 <h1>Generador de Enlaces</h1>
                 <p>Crea links de subida temporales para tus clientes.</p>
             </div>
-            <nav id="navAdmin" class="hidden">
+            <nav id="navAdmin">
                 <a href="admin.html" class="nav-boton">🖼️ Imágenes</a>
                 <a href="seguridad.html" class="nav-boton">🔑 Claves</a>
                 <button type="button" id="logoutBtn" class="nav-boton">Salir</button>
@@ -84,7 +84,7 @@
         </header>
 
         <!-- Generador (visible solo con sesión de administrador; el login lo muestra js/acceso.js) -->
-        <div id="panelGenerador" class="hidden rejilla">
+        <div id="panelGenerador" class="rejilla">
             <section class="card form-card">
                 <form id="linkGeneratorForm">
                     <div class="fila-dos">

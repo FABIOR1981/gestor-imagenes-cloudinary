@@ -6,12 +6,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---------- Sesión de administrador (pantalla compartida: js/acceso.js) ----------
     const login = Acceso.loginAdmin(() => iniciar());
     function mostrar(logueado) {
-        app.classList.toggle('hidden', !logueado);
+        app.classList.toggle('interfaz-bloqueada', !logueado);
         if (logueado) login.ocultar(); else login.mostrar();
     }
     function sesionVencida() {
         Acceso.sesionAdmin.borrar();
-        app.classList.add('hidden');
+        app.classList.add('interfaz-bloqueada');
         login.mostrar('La sesión venció. Ingresá de nuevo.');
     }
 
@@ -53,11 +53,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---------- 1) ADMIN_PASSWORD_HASH (se calcula en el servidor) ----------
     $('btnHash').addEventListener('click', async () => {
-        $('errorHash').textContent = '';
-        $('resultadoHash').classList.add('hidden');
+        $('errorHash').textContent = '';$('resultadoHash').classList.add('hidden');
         const clave = $('claveNueva').value;
         if (clave.length < 12) { $('errorHash').textContent = 'Usá al menos 12 caracteres.'; return; }
-        if (clave !== $('claveRepetida').value) { $('errorHash').textContent = 'Las dos contraseñas no coinciden.'; return; }
+        if (clave !== $('claveRepetida').value) {$('errorHash').textContent = 'Las dos contraseñas no coinciden.'; return; }
 
         const sesion = Acceso.sesionAdmin.leer();
         if (!sesion) { sesionVencida(); return; }
@@ -73,8 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!res.ok) throw new Error(data.error || 'No se pudo generar el valor');
             $('valorHash').value = data.valor;
             $('resultadoHash').classList.remove('hidden');
-            $('claveNueva').value = '';
-            $('claveRepetida').value = '';
+            $('claveNueva').value = '';$('claveRepetida').value = '';
         } catch (err) {
             $('errorHash').textContent = err.message;
         } finally {
@@ -85,15 +83,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---------- 2) TOKEN_SECRET (se genera en el navegador) ----------
     $('btnSecreto').addEventListener('click', () => {
-        $('valorSecreto').value = secretoBase64Url(48);
-        $('resultadoSecreto').classList.remove('hidden');
+        $('valorSecreto').value = secretoBase64Url(48);$('resultadoSecreto').classList.remove('hidden');
     });
     $('btnCopiarSecreto').addEventListener('click', e => copiar($('valorSecreto').value, e.currentTarget));
 
     // ---------- 3) TOKEN_SECRET_{PROYECTO}_LARGO ----------
-    const actualizarNombre = () => { $('nombreVariable').value = $('selProyecto').value ? nombreVariable($('selProyecto').value) : ''; };
-    $('selProyecto').addEventListener('change', actualizarNombre);
-    $('btnAleatoria').addEventListener('click', () => { $('claveLarga').value = claveAleatoria(16); });
+    const actualizarNombre = () => { $('nombreVariable').value =$('selProyecto').value ? nombreVariable($('selProyecto').value) : ''; };$('selProyecto').addEventListener('change', actualizarNombre);
+    $('btnAleatoria').addEventListener('click', () => {$('claveLarga').value = claveAleatoria(16); });
     $('btnCopiarNombre').addEventListener('click', e => copiar($('nombreVariable').value, e.currentTarget));
     $('btnCopiarClaveLarga').addEventListener('click', e => copiar($('claveLarga').value, e.currentTarget));
 

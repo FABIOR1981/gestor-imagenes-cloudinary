@@ -3,9 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const $ = id => document.getElementById(id);
     const app = $('app');
-    const selProyecto = $('selProyecto'), selCarpeta = $('selCarpeta');
-    const grilla = $('grilla'), estado = $('estado');
-    const btnMas = $('btnMas'), btnBorrarSel = $('btnBorrarSel'), contSel = $('contSel');
+    const selProyecto = $('selProyecto'), selCarpeta =$('selCarpeta');
+    const grilla = $('grilla'), estado =$('estado');
+    const btnMas = $('btnMas'), btnBorrarSel = $('btnBorrarSel'), contSel =$('contSel');
     const modal = $('modal');
 
     let proyectos = [];
@@ -26,12 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const login = Acceso.loginAdmin(() => iniciar());
     const leerSesion = Acceso.sesionAdmin.leer;
     function mostrar(logueado) {
-        app.classList.toggle('hidden', !logueado);
+        app.classList.toggle('interfaz-bloqueada', !logueado);
         if (logueado) login.ocultar(); else login.mostrar();
     }
     function cerrarSesion(aviso) {
         Acceso.sesionAdmin.borrar();
-        app.classList.add('hidden');
+        app.classList.add('interfaz-bloqueada');
         login.mostrar(aviso);
     }
     $('btnSalir').addEventListener('click', () => cerrarSesion());
@@ -154,16 +154,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <button type="button" class="quitar text-red-600 px-2" title="Quitar">✕</button>`;
         $('editMetadatos').appendChild(fila);
     }
-    $('btnAgregarMeta').addEventListener('click', () => agregarFila());
-    $('editMetadatos').addEventListener('click', (e) => { if (e.target.classList.contains('quitar')) e.target.closest('.fila-meta').remove(); });
+    $('btnAgregarMeta').addEventListener('click', () => agregarFila());$('editMetadatos').addEventListener('click', (e) => { if (e.target.classList.contains('quitar')) e.target.closest('.fila-meta').remove(); });
 
     function abrirEdicion(img) {
         editando = img;
         $('errorEditar').textContent = '';
-        $('editVista').src = miniatura(img.url);
-        $('editNombre').value = nombreDe(img);
-        $('editCarpeta').value = relCarpeta(img);
-        $('editTitulo').value = img.titulo;
+        $('editVista').src = miniatura(img.url);$('editNombre').value = nombreDe(img);
+        $('editCarpeta').value = relCarpeta(img);$('editTitulo').value = img.titulo;
         $('editDescripcion').value = img.descripcion;
         $('editMetadatos').innerHTML = '';
         img.metadatos.forEach(m => agregarFila(m.name, m.value));

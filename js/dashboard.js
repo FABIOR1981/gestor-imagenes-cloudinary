@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const FUNCIONES = '/.netlify/functions';
 
+    const contenedorPrincipal = document.getElementById('contenedorPrincipal');
     const panel = document.getElementById('panelGenerador');
     const navAdmin = document.getElementById('navAdmin');
     const logoutBtn = document.getElementById('logoutBtn');
@@ -27,16 +28,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     function mostrarPanel(si) {
-        panel.classList.toggle('hidden', !si);
-        navAdmin.classList.toggle('hidden', !si);
+        contenedorPrincipal.classList.toggle('interfaz-bloqueada', !si);
         if (si) login.ocultar(); else login.mostrar();
     }
 
     function sesionVencida() {
         Acceso.sesionAdmin.borrar();
         reiniciarResultado();
-        panel.classList.add('hidden');
-        navAdmin.classList.add('hidden');
+        contenedorPrincipal.classList.add('interfaz-bloqueada');
         login.mostrar('La sesión venció. Ingresá de nuevo.');
     }
 
@@ -69,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (larga) avisoLargo.textContent = 'Enlace de larga duración: al abrirlo se pedirá la contraseña guardada en la variable TOKEN_SECRET_..._LARGO de este proyecto.';
         resultContainer.classList.remove('saliendo');         // ...y vuelve con el enlace nuevo
         resultContainer.classList.remove('nuevo');
-        void resultContainer.offsetWidth;                     // reinicia la animación del destello
+        void resultContainer.offsetWidth;                     // reinicia la animation del destello
         resultContainer.classList.add('nuevo');
     }
 

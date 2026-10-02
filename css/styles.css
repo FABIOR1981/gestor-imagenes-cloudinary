@@ -353,3 +353,25 @@ label[for="fileInput"] > div:first-child {
     #batchActions { top: 8px; }
     #cardsContainer > .card:hover { transform: none; }
 }
+
+
+/* Efecto Glassmorphism para la interfaz bloqueada */
+.interfaz-bloqueada {
+    filter: blur(8px);
+    opacity: 0.4;
+    pointer-events: none; /* Evita que el usuario haga clic en los botones de atrás */
+    user-select: none;
+    transition: filter 0.4s ease, opacity 0.4s ease;
+}
+
+/* Contenedor flotante para la tarjeta de acceso */
+.acceso-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    /* Un ligero oscurecimiento adicional sobre el fondo */
+    background: rgba(241, 245, 249, 0.2); 
+}
