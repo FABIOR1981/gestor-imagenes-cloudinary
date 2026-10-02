@@ -19,7 +19,7 @@ seguridad.html + js/seguridad.js        Genera los valores de las variables de N
 galeria.html + js/galeria.js            Galería para quien entra con enlace: ver/editar/eliminar/subir según permisos
 subir.html / subir-cliente.html         Portal de carga (pantalla completa / simplificada); requiere permiso "alta"
 js/subir.js                             Portal: validación del enlace, tarjetas, metadatos, subida firmada
-js/acceso.js                            Pantalla de contraseña y sesión de admin, COMPARTIDAS por todas las páginas
+js/acceso.js                            Pantalla de contraseña flotante y sesión de admin, COMPARTIDAS por todas las páginas
 js/dashboard.js                         Login y generación de enlaces
 proyectos.json                          Proyectos, carpetas y permisos por defecto
 herramientas/generar-hash-admin.js      Genera ADMIN_PASSWORD_HASH desde la PC: solo para la instalación inicial o si se pierde el acceso
@@ -95,12 +95,14 @@ Tras cambiar variables hay que volver a desplegar.
 
 ### Permisos de un enlace
 
-| Permiso | Qué permite |
-| --- | --- |
-| `alta` | Subir imágenes (y ver las sugerencias de metadatos al subir) |
-| `listar` | Ver las imágenes del proyecto (necesario para la galería) |
-| `modificar` | Cambiar título, descripción, metadatos, nombre y carpeta |
-| `eliminar` | Borrar imágenes |
+| Permiso Interno (JSON/Backend) | Etiqueta en Interfaz | Qué permite |
+| --- | --- | --- |
+| `alta` | **Subir** | Subir imágenes (y ver las sugerencias de metadatos al subir) |
+| `listar` | **Ver** | Ver las imágenes del proyecto (necesario para la galería) |
+| `modificar` | **Modificar** | Cambiar título, descripción, metadatos, nombre y carpeta |
+| `eliminar` | **Eliminar** | Borrar imágenes |
+
+> **Nota sobre la terminología:** El sistema utiliza términos técnicos estándar (`alta`, `listar`) en el código backend y en el archivo `proyectos.json` para definir la lógica de seguridad. Sin embargo, en la interfaz visual se utilizan verbos cotidianos (`Subir`, `Ver`) para facilitar la experiencia de usuario. Esta separación asegura que el núcleo de seguridad permanezca intacto aunque se cambien los textos o el idioma de la interfaz en el futuro.
 
 El administrador (sesión de `index.html`) no necesita permisos: puede todo en cualquier proyecto.
 
@@ -159,7 +161,7 @@ Por defecto cualquier enlace puede crear carpetas nuevas dentro de su proyecto. 
 - **Instalación inicial o acceso perdido:** `seguridad.html` exige entrar como admin, así que la primera vez (o si se pierde la contraseña) el valor de `ADMIN_PASSWORD_HASH` hay que generarlo con `node herramientas/generar-hash-admin.js "clave"` y pegarlo en Netlify. Por eso conviene conservar ese archivo.
 - **Cortar enlaces en una emergencia:** cambiar `TOKEN_SECRET` invalida todos los enlaces y sesiones; cambiar la variable `_LARGO` de un proyecto invalida solo sus enlaces largos. No hay revocación individual.
 - **Después de cambiar variables de entorno** siempre hay que volver a desplegar.
-- **Pantalla de contraseña:** las cinco páginas que piden contraseña (`index`, `admin`, `galeria`, `subir`, `subir-cliente`) usan la misma tarjeta, definida en `js/acceso.js`. Para cambiar su aspecto o sus textos se edita solo ese archivo. La contraseña de un enlace largo se escribe una vez por pestaña (se guarda en `sessionStorage` y se reutiliza al pasar de la galería a la carga).
+- **Pantalla de contraseña:** las cinco páginas que piden contraseña (`index`, `admin`, `galeria`, `subir`, `subir-cliente`) usan la misma tarjeta flotante central, definida en `js/acceso.js`. Para cambiar su aspecto o sus textos se edita solo ese archivo. La contraseña de un enlace largo se escribe una vez por pestaña (se guarda en `sessionStorage` y se reutiliza al pasar de la galería a la carga).
 
 ### Lista de verificación de seguridad
 
