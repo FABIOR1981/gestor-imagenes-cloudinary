@@ -34,7 +34,7 @@
                 </div>
             </header>
 
-            <!-- TARJETA 2: Panel de Carpeta y Selector de Archivos Simplificado -->
+            <!-- TARJETA 2: Panel Fino de Carpeta y Selector Horizontal -->
             <section class="card p-4 md:p-5 shadow-sm mb-4">
                 <div class="space-y-4">
                     <div>
@@ -45,11 +45,13 @@
                     <hr class="border-slate-100 my-2">
 
                     <div>
-                        <h2 class="paso-titulo text-sm font-semibold mb-2" style="color: var(--text-main);"><span class="numero-paso">2</span> Elige tus imágenes</h2>
-                        <label for="fileInput" class="cliente-file-picker border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group hover:border-blue-600 hover:bg-blue-50/20 text-center rounded-2xl bg-slate-50/50 p-5" style="border-color: var(--border-color);">
-                            <div class="w-10 h-10 mb-2 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><span class="text-lg">▧</span></div>
-                            <span class="text-sm font-semibold" style="color: var(--text-main);">Toca aquí para elegir tus imágenes</span>
-                            <span class="text-xs mt-1" style="color: var(--text-muted);">Puedes elegir varias a la vez</span>
+                        <h2 class="paso-titulo text-xs uppercase tracking-wider mb-2" style="color: var(--text-muted);"><span class="numero-paso">2</span> Elige tus imágenes</h2>
+                        <label for="fileInput" class="border-2 border-dashed py-4 px-6 flex items-center justify-center gap-4 cursor-pointer transition-all duration-200 group hover:border-blue-600 hover:bg-blue-50/20 text-center rounded-2xl bg-slate-50/50" style="border-color: var(--border-color);">
+                            <div class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0"><span class="text-lg">▧</span></div>
+                            <div class="text-left">
+                                <span class="text-sm font-semibold block" style="color: var(--text-main);">Toca aquí para elegir tus imágenes</span>
+                                <span class="text-xs" style="color: var(--text-muted);">Puedes elegir varias a la vez</span>
+                            </div>
                             <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
                         </label>
                     </div>
