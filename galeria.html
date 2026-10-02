@@ -20,12 +20,16 @@
     </div>
 
     <div id="app" class="hidden max-w-6xl mx-auto p-4">
-        <header class="flex flex-wrap items-center gap-3 mb-4">
-            <div class="mr-auto">
-                <h1 class="text-xl font-bold">🖼️ <span id="nombreProyecto"></span></h1>
-                <p class="text-xs text-slate-500">Enlace activo hasta <span id="fechaVence"></span></p>
+        <!-- Cabecera unificada con el estilo de tarjeta -->
+        <header class="mb-6 card p-5 md:p-6 shadow-sm">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 inline-block mb-2">🖼️ Galería del proyecto</span>
+                    <h1 class="text-2xl md:text-3xl font-bold tracking-tight" style="color: var(--text-main);"><span id="nombreProyecto"></span></h1>
+                    <p class="text-xs mt-1 font-medium" style="color: #D97706;">Enlace activo hasta <span id="fechaVence"></span></p>
+                </div>
+                <a id="enlaceSubir" href="#" class="hidden btn-primary sm:w-auto py-2.5 px-5 text-xs md:text-sm text-center">⬆ Subir imágenes</a>
             </div>
-            <a id="enlaceSubir" href="#" class="hidden rounded px-3 py-2 bg-emerald-600 text-white text-sm">⬆ Subir imágenes</a>
         </header>
 
         <p id="avisoSinPermiso" class="hidden bg-amber-50 text-amber-800 rounded-lg p-3 text-sm mb-4">Este enlace no permite ver las imágenes.</p>
