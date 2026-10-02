@@ -82,7 +82,6 @@ async function cargarInterfazProyecto(projectName, expDate, permisos = []) {
     PROYECTO_ACTUAL = projectName; 
     BASE_FOLDER = PROYECTO_ACTUAL; 
 
-    document.getElementById('displayProjectName').textContent = PROYECTO_ACTUAL;
     document.getElementById('displayExpDate').textContent = new Date(expDate).toLocaleString('es-UY', { dateStyle: 'medium', timeStyle: 'short' });
 
     // Si el enlace incluye el permiso de listar (ver), habilitamos el botón para volver a la galería
@@ -105,12 +104,14 @@ async function cargarInterfazProyecto(projectName, expDate, permisos = []) {
         if (response.ok) {
             const projData = await response.json();
             const foundProj = projData.proyectos.find(p => p.id === PROYECTO_ACTUAL);
+            document.getElementById('displayProjectName').textContent = foundProj?.nombre || PROYECTO_ACTUAL;
             if (foundProj && Array.isArray(foundProj.carpetas) && foundProj.carpetas.length > 0) {
                 projectFolders = foundProj.carpetas;
             }
         }
     } catch (err) {
         console.warn('Usando carpetas por defecto', err);
+        document.getElementById('displayProjectName').textContent = PROYECTO_ACTUAL;
     }
 
     loadingState.classList.add('hidden');
