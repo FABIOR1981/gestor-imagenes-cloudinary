@@ -17,7 +17,7 @@
         
         <div id="mainInterface" class="hidden">
             <!-- TARJETA 1: Cabecera Principal unificada -->
-            <header class="mb-6 card p-5 md:p-6 shadow-sm" style="border-top: 4px solid var(--primary-color, #2563EB);">
+            <header class="mb-4 card p-5 md:p-6 shadow-sm" style="border-top: 4px solid var(--primary-color, #2563EB);">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div class="flex items-start gap-3.5">
                         <div class="hero-icono w-11 h-11 text-xl rounded-xl flex items-center justify-center shrink-0" style="background: var(--bg-color, #F1F5F9);">⬆️</div>
@@ -35,7 +35,7 @@
             </header>
 
             <!-- TARJETA 2: Panel de Carpeta y Selector de Archivos Simplificado -->
-            <section class="card p-5 md:p-6 shadow-sm mb-6">
+            <section class="card p-4 md:p-5 shadow-sm mb-4">
                 <div class="space-y-4">
                     <div>
                         <label for="globalCategory" class="paso-label text-xs font-semibold block mb-1.5" style="color: var(--text-muted);"><span class="numero-paso">1</span> Carpeta destino</label>
@@ -46,26 +46,26 @@
 
                     <div>
                         <h2 class="paso-titulo text-sm font-semibold mb-2" style="color: var(--text-main);"><span class="numero-paso">2</span> Elige tus imágenes</h2>
-                        <label for="fileInput" class="cliente-file-picker border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group hover:border-blue-600 hover:bg-blue-50/20 text-center rounded-2xl bg-slate-50/50 p-6" style="border-color: var(--border-color);">
-                            <div class="w-12 h-12 mb-2 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><span class="text-xl">▧</span></div>
+                        <label for="fileInput" class="cliente-file-picker border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group hover:border-blue-600 hover:bg-blue-50/20 text-center rounded-2xl bg-slate-50/50 p-5" style="border-color: var(--border-color);">
+                            <div class="w-10 h-10 mb-2 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><span class="text-lg">▧</span></div>
                             <span class="text-sm font-semibold" style="color: var(--text-main);">Toca aquí para elegir tus imágenes</span>
                             <span class="text-xs mt-1" style="color: var(--text-muted);">Puedes elegir varias a la vez</span>
                             <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
                         </label>
                     </div>
 
-                    <div id="batchActions" class="hidden mt-4 pt-4 border-t border-slate-100 flex justify-between items-center gap-3">
+                    <div id="batchActions" class="hidden mt-3 pt-3 border-t border-slate-100 flex justify-between items-center gap-3">
                         <div class="flex items-center gap-2">
                             <span class="numero-paso">3</span>
                             <span id="counterText" class="text-sm font-bold" style="color: var(--text-main);">0 imágenes cargadas</span>
                         </div>
-                        <button id="uploadAllBtn" class="btn-primary py-2.5 px-5 text-xs md:text-sm w-auto">Subir todas</button>
+                        <button id="uploadAllBtn" class="btn-primary py-2 px-4 text-xs md:text-sm w-auto">Subir todas</button>
                     </div>
                 </div>
             </section>
 
             <h2 id="cardsStepTitle" class="paso-titulo hidden text-sm font-semibold mb-3"><span class="numero-paso">3</span> Revisa tus imágenes</h2>
-            <div id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+            <div id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"></div>
         </div>
     </div>
     <script src="js/acceso.js"></script>
