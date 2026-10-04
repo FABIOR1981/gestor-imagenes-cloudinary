@@ -80,6 +80,19 @@
           "label": "Ensayos"
         }
       ]
+    },
+    {
+      "id": "brochures",
+      "nombre": "Brochures",
+      "permisosCliente": [
+        "alta"
+      ],
+      "carpetas": [
+        {
+          "value": "logos",
+          "label": "Logos"
+        }
+      ]
     }
   ]
 }
