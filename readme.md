@@ -4,14 +4,14 @@ Aplicación web estática (HTML, CSS y JS, sin build) con funciones de Netlify. 
 
 ## Manuales de usuario
 
-Hay un manual para el administrador y uno para cada tipo de enlace que puede recibir un cliente. Están en la carpeta [`documentacion/`](documentacion/), en Markdown y en PDF:
+Hay un manual para el administrador y uno para cada tipo de enlace que puede recibir un cliente. Están en el repositorio [documentacion-central](https://github.com/FABIOR1981/documentacion-central/tree/main/gestor-imagenes-cloudinary/documentacion), en Markdown y en PDF:
 
 | Manual | Para quién | Markdown | PDF |
 |---|---|---|---|
-| Manual del Administrador | Quien ingresa con la contraseña de administrador: crea enlaces, administra imágenes y claves | [MD](documentacion/MANUAL_ADMINISTRADOR.md) | [PDF](documentacion/Manual_Administrador.pdf) |
-| Cliente: carga simplificada | Quien recibe un enlace de *Carga simplificada* (solo subir) | [MD](documentacion/MANUAL_CLIENTE_CARGA_SIMPLIFICADA.md) | [PDF](documentacion/Manual_Cliente_Carga_Simplificada.pdf) |
-| Cliente: galería | Quien recibe un enlace de *Galería* (ver y, según permisos, subir, modificar o eliminar) | [MD](documentacion/MANUAL_CLIENTE_GALERIA.md) | [PDF](documentacion/Manual_Cliente_Galeria.pdf) |
-| Cliente: carga completa | Quien recibe un enlace de *Carga completa* (subir con opciones de tamaño y calidad) | [MD](documentacion/MANUAL_CLIENTE_CARGA_COMPLETA.md) | [PDF](documentacion/Manual_Cliente_Carga_Completa.pdf) |
+| Manual del Administrador | Quien ingresa con la contraseña de administrador: crea enlaces, administra imágenes y claves | [MD](https://github.com/FABIOR1981/documentacion-central/blob/main/gestor-imagenes-cloudinary/documentacion/MANUAL_ADMINISTRADOR.md) | [PDF](https://github.com/FABIOR1981/documentacion-central/blob/main/gestor-imagenes-cloudinary/documentacion/Manual_Administrador.pdf) |
+| Cliente: carga simplificada | Quien recibe un enlace de *Carga simplificada* (solo subir) | [MD](https://github.com/FABIOR1981/documentacion-central/blob/main/gestor-imagenes-cloudinary/documentacion/MANUAL_CLIENTE_CARGA_SIMPLIFICADA.md) | [PDF](https://github.com/FABIOR1981/documentacion-central/blob/main/gestor-imagenes-cloudinary/documentacion/Manual_Cliente_Carga_Simplificada.pdf) |
+| Cliente: galería | Quien recibe un enlace de *Galería* (ver y, según permisos, subir, modificar o eliminar) | [MD](https://github.com/FABIOR1981/documentacion-central/blob/main/gestor-imagenes-cloudinary/documentacion/MANUAL_CLIENTE_GALERIA.md) | [PDF](https://github.com/FABIOR1981/documentacion-central/blob/main/gestor-imagenes-cloudinary/documentacion/Manual_Cliente_Galeria.pdf) |
+| Cliente: carga completa | Quien recibe un enlace de *Carga completa* (subir con opciones de tamaño y calidad) | [MD](https://github.com/FABIOR1981/documentacion-central/blob/main/gestor-imagenes-cloudinary/documentacion/MANUAL_CLIENTE_CARGA_COMPLETA.md) | [PDF](https://github.com/FABIOR1981/documentacion-central/blob/main/gestor-imagenes-cloudinary/documentacion/Manual_Cliente_Carga_Completa.pdf) |
 
 Las capturas de los manuales usan proyectos e imágenes de ejemplo.
 
